@@ -24,7 +24,7 @@
  */
 #define MPX_SAMPLE_RATE		RDS_SAMPLE_RATE
 
-#define OUTPUT_SAMPLE_RATE	96000
+#define OUTPUT_SAMPLE_RATE	192000
 
 extern void fm_mpx_init(uint32_t sample_rate);
 extern void fm_rds_get_frames(float *outbuf, size_t num_frames);
