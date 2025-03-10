@@ -267,7 +267,7 @@ done_parsing_opts:
 		fm_rds_get_frames(mpx_buffer, NUM_MPX_FRAMES_IN);
 
 		/* num_bytes = audio frames( * channels) * bytes per sample */
-		if (pa_simple_write(device, mpx_buffer, NUM_MPX_FRAMES_IN * sizeof(int16_t), &pulse_error) != 0) {
+		if (pa_simple_write(device, mpx_buffer, NUM_MPX_FRAMES_IN * sizeof(float), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
