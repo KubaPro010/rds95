@@ -31,7 +31,6 @@ set(SOURCES
     ${SOURCES}
     fm_mpx.c
     control_pipe.c
-    osc.c
     resampler.c
     modulator.c
     lib.c
