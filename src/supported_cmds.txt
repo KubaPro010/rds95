@@ -1,0 +1,27 @@
+AF - Mode A only
+AFCH - Mode A only
+DI
+MS
+PI
+PS
+TPS
+PTY
+PTYN
+PTYNEN
+TEXT | RT1
+RT1EN
+TA
+TP
+CT
+LEVEL - Not redecommended, if possible use `MPX`
+RDSGEN
+ECC
+ECCEN
+G
+LIC
+PIN
+PINEN
+RTP
+RTPRUN
+
+(Magic RDS 3 'Program' page is fully supported.)

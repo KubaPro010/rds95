@@ -1,0 +1,8 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "ascii_cmd.h": "c",
+        "time.h": "c",
+        "rds.h": "c"
+    }
+}

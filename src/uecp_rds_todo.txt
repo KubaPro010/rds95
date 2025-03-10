@@ -1,0 +1,21 @@
+This aims to have the around the same options as UECP should have, this is what is not yet implemented:
+- PIN (low priority, how do i decode that?)
+- EON AF (very low priority)
+- Linkage information (very low priority)
+- (ODA skipped)
+- TDC (low priority)
+- EWS (how do i even implement that? can someone give docs?)
+- IH (low priority)
+- (Paging skipped)
+- (No CT time adjustments)
+- RDS on/off (low priority)
+- RDS phase (might be medium, 9.5 degree steps)
+- (ARI skipped)
+
+Others:
+- Encoder identification (site and encoder address)
+- (PSN skipped)
+- (EON skipped)
+- Data set select
+- Group sequence
+- (other sequence related comamnds skipped)
