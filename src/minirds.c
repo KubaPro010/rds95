@@ -98,11 +98,6 @@ int main(int argc, char **argv) {
 
 	/* buffers */
 	float *mpx_buffer;
-	float *out_buffer;
-	char *dev_out;
-
-	int8_t r;
-	size_t frames;
 
 	/* PASIMPLE */
 	pa_simple *device;
@@ -270,7 +265,7 @@ done_parsing_opts:
 		fm_rds_get_frames(mpx_buffer, NUM_MPX_FRAMES_IN);
 
 		/* num_bytes = audio frames( * channels) * bytes per sample */
-		if (pa_simple_write(device, mpx_buffer, frames * sizeof(int16_t), &pulse_error) != 0) {
+		if (pa_simple_write(device, mpx_buffer, NUM_MPX_FRAMES_IN * sizeof(int16_t), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
@@ -295,8 +290,6 @@ exit:
 	exit_rds_encoder();
 
 	free(mpx_buffer);
-	free(out_buffer);
-	free(dev_out);
 
 	return 0;
 }
