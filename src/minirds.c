@@ -309,7 +309,7 @@ done_parsing_opts:
 
 		/* num_bytes = audio frames( * channels) * bytes per sample */
 		if (pa_simple_write(device, dev_out, frames * sizeof(int16_t), &pulse_error) != 0) {
-			fprintf(stderr, "Error: could not play audio. (%s)\n", pa_strerror(pulse_error));
+			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
 
