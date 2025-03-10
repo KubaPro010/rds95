@@ -98,6 +98,7 @@ int main(int argc, char **argv) {
 
 	/* buffers */
 	float *mpx_buffer;
+	int8_t r;
 
 	/* PASIMPLE */
 	pa_simple *device;
@@ -108,6 +109,7 @@ int main(int argc, char **argv) {
 	pthread_t control_pipe_thread;
 	pthread_mutex_t control_pipe_mutex = PTHREAD_MUTEX_INITIALIZER;
 	pthread_cond_t control_pipe_cond;
+
 
 	const char	*short_opt = "R:i:s:r:p:T:A:P:l:e:L:d:C:"
 	"hv";
