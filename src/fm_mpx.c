@@ -36,10 +36,7 @@ void set_rdsgen(uint8_t gen) {
 }
 
 void set_carrier_volume(uint8_t carrier, float new_volume) {
-	/* check for valid index */
-	if (carrier >= MPX_SUBCARRIER_END) return;
-
-	volumes[carrier] = new_volume / 100.0f;
+	mpx_vol = new_volume / 100.0f;
 }
 
 void fm_mpx_init(uint32_t sample_rate) {
@@ -53,9 +50,8 @@ void fm_rds_get_frames(float *outbuf, size_t num_frames) {
 	for (size_t i = 0; i < num_frames; i++) {
 		out = 0.0f;
 
-		out += get_rds_sample(0)
-			* volumes[MPX_SUBCARRIER_RDS_STREAM_0];
-
+		out += get_rds_sample(0);
+	
 		/* clipper */
 		out = fminf(+1.0f, out);
 		out = fmaxf(-1.0f, out);
