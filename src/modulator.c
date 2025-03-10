@@ -50,13 +50,13 @@ void init_rds_objects() {
 }
 
 void exit_rds_objects() {
-	int has_symbol_shift = rds_ctx[i]->symbol_shift;
+	int has_symbol_shift = rds_ctx[0]->symbol_shift;
 	if (has_symbol_shift) {
-		free(rds_ctx[i]->symbol_shift_buf);
+		free(rds_ctx[0]->symbol_shift_buf);
 	}
-	free(rds_ctx[i]->sample_buffer);
-	free(rds_ctx[i]->bit_buffer);
-	free(rds_ctx[i]);
+	free(rds_ctx[0]->sample_buffer);
+	free(rds_ctx[0]->bit_buffer);
+	free(rds_ctx[0]);
 	free(rds_ctx);
 
 	for (uint8_t i = 0; i < 2; i++) {
