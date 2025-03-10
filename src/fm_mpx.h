@@ -17,8 +17,8 @@
  */
 
 /* MPX */
-#define NUM_MPX_FRAMES_IN	256
-#define NUM_MPX_FRAMES_OUT	(NUM_MPX_FRAMES_IN * 4)
+#define NUM_MPX_FRAMES_IN	512
+#define NUM_MPX_FRAMES_OUT	(NUM_MPX_FRAMES_IN * 2)
 /*
  * The sample rate at which the MPX generation runs at
  */
