@@ -297,6 +297,8 @@ done_parsing_opts:
 		}
 	}
 
+	int pulse_error;
+
 	for (;;) {
 		fm_rds_get_frames(mpx_buffer, NUM_MPX_FRAMES_IN);
 
@@ -305,8 +307,8 @@ done_parsing_opts:
 		float2char2channel(out_buffer, dev_out, frames);
 
 		/* num_bytes = audio frames( * channels) * bytes per sample */
-		if (pa_simple_write(device, dev_out, frames * sizeof(int16_t), NULL) != 0) {
-			fprintf(stderr, "Error: could not play audio.\n");
+		if (pa_simple_write(device, dev_out, frames * sizeof(int16_t), &pulse_error) != 0) {
+			fprintf(stderr, "Error: could not play audio. (%s)\n", pa_strerror(pulse_error));
 			break;
 		}
 
