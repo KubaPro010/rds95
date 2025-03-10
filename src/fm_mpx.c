@@ -36,10 +36,12 @@ void set_rdsgen(uint8_t gen) {
 }
 
 void set_carrier_volume(uint8_t carrier, float new_volume) {
+	(void)carrier;
 	mpx_vol = new_volume / 100.0f;
 }
 
 void fm_mpx_init(uint32_t sample_rate) {
+	(void)sample_rate;
 	rdsgen = 1;
 }
 
