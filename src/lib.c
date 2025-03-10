@@ -21,7 +21,7 @@
 #include <time.h>
 
 /*
- * Stuff common for both RDS and RDS2
+ * Stuff for RDS
  *
  */
 
@@ -175,44 +175,16 @@ uint16_t crc16(uint8_t *data, size_t len) {
 }
 
 /* Calculate the checkword for each block and emit the bits */
-#ifdef RDS2
-void add_checkwords(uint16_t *blocks, uint8_t *bits, bool rds2)
-#else
 void add_checkwords(uint16_t *blocks, uint8_t *bits)
-#endif
 {
 	size_t i, j;
 	uint8_t bit, msb;
 	uint16_t block, block_crc, check, offset_word;
 	bool group_type_b = false;
-#ifdef RDS2
-	bool tunneling_type_b = false;
-#endif
-
-	/* if b11 is 1, then type B */
-#ifdef RDS2
-	if (!rds2 && IS_TYPE_B(blocks))
-#else
 	if (IS_TYPE_B(blocks))
-#endif
 		group_type_b = true;
 
-#ifdef RDS2
-	/* for when version B groups are coded in RDS2 */
-	if (rds2 && IS_TUNNELING(blocks) && IS_TYPE_B(blocks))
-		tunneling_type_b = true;
-#endif
-
 	for (i = 0; i < GROUP_LENGTH; i++) {
-#ifdef RDS2
-		/*
-		 * If tunneling type B groups use offset
-		 * word C' for block 3
-		 */
-		if (rds2 && i == 2 && tunneling_type_b) {
-			offset_word = offset_words[4];
-		} else
-#endif
 		/* Group version B needs C' for block 3 */
 		if (i == 2 && group_type_b) {
 			offset_word = offset_words[4];

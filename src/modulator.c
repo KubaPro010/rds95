@@ -18,9 +18,6 @@
 
 #include "common.h"
 #include "rds.h"
-#ifdef RDS2
-#include "rds2.h"
-#endif
 #include "fm_mpx.h"
 #include "waveforms.h"
 #include "modulator.h"
@@ -33,56 +30,13 @@ static float **waveform;
  *
  */
 void init_rds_objects() {
-	rds_ctx = malloc(NUM_STREAMS * sizeof(struct rds_t));
+	rds_ctx = malloc(sizeof(struct rds_t));
 
-	for (uint8_t i = 0; i < NUM_STREAMS; i++) {
-		rds_ctx[i] = malloc(sizeof(struct rds_t));
-		rds_ctx[i]->bit_buffer = malloc(BITS_PER_GROUP);
-		rds_ctx[i]->sample_buffer =
-			malloc(SAMPLE_BUFFER_SIZE * sizeof(float));
-
-#ifdef RDS2_SYMBOL_SHIFTING
-		/*
-		 * symbol shifting to reduce total power of aggregate carriers
-		 *
-		 * see:
-		 * https://ietresearch.onlinelibrary.wiley.com/doi/pdf/10.1049/el.2019.0292
-		 * for more information
-		 */
-		switch (i) {
-		case 1:
-			/* time offset of 1/2 */
-			rds_ctx[i]->symbol_shift = SAMPLES_PER_BIT / 2;
-			rds_ctx[i]->symbol_shift_buf = malloc(
-				rds_ctx[i]->symbol_shift * sizeof(float));
-			memset(rds_ctx[i]->symbol_shift_buf, 0,
-				rds_ctx[i]->symbol_shift * sizeof(float));
-			break;
-		case 2:
-			/* time offset of 1/4 */
-			rds_ctx[i]->symbol_shift = SAMPLES_PER_BIT / 4;
-			rds_ctx[i]->symbol_shift_buf = malloc(
-				rds_ctx[i]->symbol_shift * sizeof(float));
-			memset(rds_ctx[i]->symbol_shift_buf, 0,
-				rds_ctx[i]->symbol_shift * sizeof(float));
-			break;
-		case 3:
-			/* time offset of 3/4 */
-			rds_ctx[i]->symbol_shift = (SAMPLES_PER_BIT / 4) * 3;
-			rds_ctx[i]->symbol_shift_buf = malloc(
-				rds_ctx[i]->symbol_shift * sizeof(float));
-			memset(rds_ctx[i]->symbol_shift_buf, 0,
-				rds_ctx[i]->symbol_shift * sizeof(float));
-			break;
-		default: /* stream 0 */
-			/* no time offset */
-			rds_ctx[i]->symbol_shift = 0;
-			break;
-		}
-#endif
-		rds_ctx[i]->symbol_shift_buf_idx = 0;
-
-	}
+	rds_ctx[0] = malloc(sizeof(struct rds_t));
+	rds_ctx[0]->bit_buffer = malloc(BITS_PER_GROUP);
+	rds_ctx[0]->sample_buffer =
+		malloc(SAMPLE_BUFFER_SIZE * sizeof(float));
+	rds_ctx[0]->symbol_shift_buf_idx = 0;
 
 	waveform = malloc(2 * sizeof(float));
 
@@ -96,15 +50,13 @@ void init_rds_objects() {
 }
 
 void exit_rds_objects() {
-    for (uint8_t i = 0; i < NUM_STREAMS; i++) {
-        int has_symbol_shift = rds_ctx[i]->symbol_shift;
-        if (has_symbol_shift) {
-            free(rds_ctx[i]->symbol_shift_buf);
-        }
-        free(rds_ctx[i]->sample_buffer);
-        free(rds_ctx[i]->bit_buffer);
-        free(rds_ctx[i]);
-    }
+	int has_symbol_shift = rds_ctx[i]->symbol_shift;
+	if (has_symbol_shift) {
+		free(rds_ctx[i]->symbol_shift_buf);
+	}
+	free(rds_ctx[i]->sample_buffer);
+	free(rds_ctx[i]->bit_buffer);
+	free(rds_ctx[i]);
 	free(rds_ctx);
 
 	for (uint8_t i = 0; i < 2; i++) {
@@ -117,11 +69,7 @@ void exit_rds_objects() {
 /* Get an RDS sample. This generates the envelope of the waveform using
  * pre-generated elementary waveform samples.
  */
-#ifdef RDS2
-float get_rds_sample(uint8_t stream_num, uint8_t rds2tunneling) {
-#else
 float get_rds_sample(uint8_t stream_num) {
-#endif
 	struct rds_t *rds;
 	uint16_t idx;
 	float *cur_waveform;
@@ -132,19 +80,7 @@ float get_rds_sample(uint8_t stream_num) {
 
 	if (rds->sample_count == SAMPLES_PER_BIT) {
 		if (rds->bit_pos == BITS_PER_GROUP) {
-#ifdef RDS2
-			if(!rds2tunneling) {
-				if (stream_num > 0) {
-					get_rds2_bits(stream_num, rds->bit_buffer);
-				} else {
-					get_rds_bits(rds->bit_buffer);
-				}
-			} else {
-				get_rds_bits(rds->bit_buffer);
-			}
-#else
 			get_rds_bits(rds->bit_buffer);
-#endif
 			rds->bit_pos = 0;
 		}
 

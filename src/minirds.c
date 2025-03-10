@@ -68,7 +68,7 @@ static void show_help(char *name) {
 		"Usage: %s [options]\n"
 		"\n"
 		"    -i,--pi           Program Identification code\n"
-		"                        [default: 3073]\n"
+		"                        [default: 305F]\n"
 		"    -s,--ps           Program Service name\n"
 		"                        [default: \"radio95\"]\n"
 		"    -r,--rt1           Radio Text 1\n"
@@ -84,9 +84,6 @@ static void show_help(char *name) {
 		"    -e,--ecc          ECC code\n"
 		"    -d,--di           DI code\n"
 		"    -C,--ctl          FIFO control pipe\n"
-		#ifdef RDS2
-		"    -I,--img          RDS2 Logo path\n"
-		#endif
 		"    -h,--help         Show this help text and exit\n"
 		"    -v,--version      Show version and exit\n"
 		"\n",
@@ -134,9 +131,6 @@ int main(int argc, char **argv) {
 	pthread_cond_t control_pipe_cond;
 
 	const char	*short_opt = "R:i:s:r:p:T:A:P:l:e:L:d:C:"
-	#ifdef RDS2
-	"I:"
-	#endif
 	"hv";
 
 	struct option	long_opt[] =
@@ -154,9 +148,6 @@ int main(int argc, char **argv) {
 		{"lic",    	required_argument, NULL, 'L'},
 		{"di",    	required_argument, NULL, 'd'},
 		{"ctl",		required_argument, NULL, 'C'},
-		#ifdef RDS2
-		{"img",		required_argument, NULL, 'I'},
-		#endif
 
 		{"help",	no_argument, NULL, 'h'},
 		{"version",	no_argument, NULL, 'v'},
@@ -214,12 +205,6 @@ keep_parsing_opts:
 		case 'C': /* ctl */
 			memcpy(control_pipe, optarg, 50);
 			break;
-
-		#ifdef RDS2
-		case 'I': /* img */
-			memcpy(rds_params.rds2_image_path, optarg, 50);
-			break;
-		#endif
 
 		case 'v': /* version */
 			show_version();

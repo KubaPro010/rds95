@@ -93,11 +93,6 @@ typedef struct rds_params_t {
 	uint8_t pin_day;
 	uint8_t pin_hour;
 	uint8_t pin_minute;
-
-	#ifdef RDS2
-	/* RDS2 image path*/
-	char rds2_image_path[51];
-	#endif
 } rds_params_t;
 /* Here, the first member of the struct must be a scalar to avoid a
    warning on -Wmissing-braces with GCC < 4.8.3
@@ -259,14 +254,7 @@ typedef struct rds_params_t {
 #define INT16_14	0x4000
 #define INT16_15	0x8000
 
-/* 18 bit (for RDS2) */
-#define INT18_U2	0x30000
-#define INT18_L4	0x0000f
-
 #define IS_TYPE_B(a)	(a[1] & INT16_11)
-#ifdef RDS2
-#define IS_TUNNELING(a)	(a[0] == 0x0000)
-#endif
 
 #ifdef ODA
 /*
@@ -291,9 +279,6 @@ typedef struct rds_oda_t {
  */
 #define	ODA_AID_RTPLUS	0x4bd7
 #endif
-/* RDS2 */
-#define ODA_AID_RFT	0xff7f
-#define ODA_AID_RFTPLUS	0xff80
 
 extern void init_rds_encoder(struct rds_params_t rds_params);
 extern void exit_rds_encoder();
@@ -325,11 +310,7 @@ extern void set_rds_tp(uint8_t tp);
 extern void set_rds_ms(uint8_t ms);
 extern void set_rds_ct(uint8_t ct);
 extern void set_rds_di(uint8_t di);
-#ifdef RDS2
-extern float get_rds_sample(uint8_t stream_num, uint8_t rds2tunneling);
-#else
 extern float get_rds_sample(uint8_t stream_num);
-#endif
 extern uint16_t get_rds_pi();
 extern void set_rds_cg(uint16_t* blocks);
 

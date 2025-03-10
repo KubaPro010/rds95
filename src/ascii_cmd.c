@@ -56,18 +56,6 @@ void process_ascii_cmd(unsigned char *str) {
 		arg = str + 4;
 
 		if (CMD_MATCHES("MPX")) {
-#ifdef RDS2
-			float gains[5];
-			if (sscanf((char *)arg, "%f,%f,%f,%f,%f",
-				&gains[0], &gains[1], &gains[2], &gains[3],
-				&gains[4]) == 5) {
-				set_carrier_volume(0, gains[0]);
-				set_carrier_volume(1, gains[1]);
-				set_carrier_volume(2, gains[2]);
-				set_carrier_volume(3, gains[3]);
-				set_carrier_volume(4, gains[4]);
-			}
-#else
 			float gains[2];
 			if (sscanf((char *)arg, "%f,%f",
 					   &gains[0], &gains[1]) == 2)
@@ -75,7 +63,6 @@ void process_ascii_cmd(unsigned char *str) {
 				set_carrier_volume(0, gains[0]);
 				set_carrier_volume(1, gains[1]);
 			}
-#endif
 			return;
 		}
 		if (CMD_MATCHES("VOL")) {
@@ -297,10 +284,7 @@ void process_ascii_cmd(unsigned char *str) {
 		arg = str + 2;
 		if (CMD_MATCHES("G")) {
 			uint16_t blocks[4];
-			if(cmd_len == 18){
-				/* RDS2 Group*/
-				/* do a ifdef rds2 here when implementing*/
-			} else if(cmd_len == 14) {
+			if(cmd_len == 14) {
 				/* RDS1 Group*/
 				blocks[0] = get_rds_pi();
 				int count = sscanf((char *)arg, "%4hx%4hx%4hx", &blocks[1], &blocks[2], &blocks[3]);
@@ -336,12 +320,7 @@ void process_ascii_cmd(unsigned char *str) {
 			uint8_t val = strtoul((char *)arg, NULL, 10);
 			val /= 255;
 			val *= 15; /* max value*/
-			#ifdef RDS2
 			set_carrier_volume(1, val);
-			set_carrier_volume(2, val);
-			#else
-			set_carrier_volume(1, val);
-			#endif
 			return;
 		}
 	}
@@ -378,12 +357,7 @@ void process_ascii_cmd(unsigned char *str) {
 			uint8_t val = strtoul((char *)arg, NULL, 10);
 			val /= 255;
 			val *= 15; /* max value*/
-			#ifdef RDS2
 			set_carrier_volume(1, val);
-			set_carrier_volume(2, val);
-			#else
-			set_carrier_volume(1, val);
-			#endif
 			return;
 		}
 

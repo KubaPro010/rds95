@@ -19,9 +19,6 @@
 #include "common.h"
 #include "rds.h"
 #include "modulator.h"
-#ifdef RDS2
-#include "rds2.h"
-#endif
 #include "lib.h"
 #include <time.h>
 
@@ -529,11 +526,7 @@ group_coded:
 void get_rds_bits(uint8_t *bits) {
 	static uint16_t out_blocks[GROUP_LENGTH];
 	get_rds_group(out_blocks);
-#ifdef RDS2
-	add_checkwords(out_blocks, bits, false);
-#else
 	add_checkwords(out_blocks, bits);
-#endif
 }
 
 void init_rds_encoder(struct rds_params_t rds_params) {
@@ -570,16 +563,10 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 
 	/* initialize modulator objects */
 	init_rds_objects();
-#ifdef RDS2
-	init_rds2_encoder(rds_params.rds2_image_path);
-#endif
 }
 
 void exit_rds_encoder() {
 	exit_rds_objects();
-#ifdef RDS2
-	exit_rds2_encoder();
-#endif
 }
 
 void set_rds_pi(uint16_t pi_code) {
