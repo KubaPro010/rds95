@@ -26,7 +26,6 @@
 #include "rds.h"
 #include "fm_mpx.h"
 #include "control_pipe.h"
-#include "resampler.h"
 #include "lib.h"
 #include "ascii_cmd.h"
 
@@ -37,18 +36,6 @@ static void stop() {
 	stop_rds = 1;
 }
 
-static inline void float2char2channel(
-    float *inbuf, char *outbuf, size_t frames) {
-    uint16_t j = 0, k = 0;
-    
-    for (uint16_t i = 0; i < frames; i++) {
-        int16_t sample = lroundf(inbuf[j++] * 16383.5f);
-        
-        // Direct memory write is more efficient for byte conversion
-        outbuf[k++] = sample & 0xFF;
-        outbuf[k++] = (sample >> 8) & 0xFF;
-    }
-}
 
 /* threads */
 static void *control_pipe_worker() {
@@ -116,10 +103,6 @@ int main(int argc, char **argv) {
 
 	int8_t r;
 	size_t frames;
-
-	/* SRC */
-	SRC_STATE *src_state;
-	SRC_DATA src_data;
 
 	/* PASIMPLE */
 	pa_simple *device;
@@ -229,8 +212,6 @@ done_parsing_opts:
 
 	/* Setup buffers */
 	mpx_buffer = malloc(NUM_MPX_FRAMES_IN * 2 * sizeof(float));
-	out_buffer = malloc(NUM_MPX_FRAMES_OUT * 2 * sizeof(float));
-	dev_out = malloc(NUM_MPX_FRAMES_OUT * 2 * sizeof(int16_t) * sizeof(char));
 
 	/* Gracefully stop the encoder on SIGINT or SIGTERM */
 	signal(SIGINT, stop);
@@ -244,7 +225,7 @@ done_parsing_opts:
 	init_rds_encoder(rds_params);
 
 	/* PASIMPLE format */
-	format.format = PA_SAMPLE_S16LE;
+	format.format = PA_SAMPLE_FLOAT32NE;
 	format.channels = 1;
 	format.rate = OUTPUT_SAMPLE_RATE;
 
@@ -261,21 +242,6 @@ done_parsing_opts:
 	);
 	if (device == NULL) {
 		fprintf(stderr, "Error: cannot open sound device.\n");
-		goto exit;
-	}
-
-	/* SRC out (MPX -> output) */
-	memset(&src_data, 0, sizeof(SRC_DATA));
-	src_data.input_frames = NUM_MPX_FRAMES_IN;
-	src_data.output_frames = NUM_MPX_FRAMES_OUT;
-	src_data.src_ratio =
-		(double)OUTPUT_SAMPLE_RATE / (double)MPX_SAMPLE_RATE;
-	src_data.data_in = mpx_buffer;
-	src_data.data_out = out_buffer;
-
-	r = resampler_init(&src_state, 1);
-	if (r < 0) {
-		fprintf(stderr, "Could not create output resampler.\n");
 		goto exit;
 	}
 
@@ -303,12 +269,8 @@ done_parsing_opts:
 	for (;;) {
 		fm_rds_get_frames(mpx_buffer, NUM_MPX_FRAMES_IN);
 
-		if (resample(src_state, src_data, &frames) < 0) break;
-
-		float2char2channel(out_buffer, dev_out, frames);
-
 		/* num_bytes = audio frames( * channels) * bytes per sample */
-		if (pa_simple_write(device, dev_out, frames * sizeof(int16_t), &pulse_error) != 0) {
+		if (pa_simple_write(device, mpx_buffer, frames * sizeof(int16_t), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
@@ -318,8 +280,6 @@ done_parsing_opts:
 			break;
 		}
 	}
-
-	resampler_exit(src_state);
 
 exit:
 	if (control_pipe[0]) {
