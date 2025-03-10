@@ -21,6 +21,7 @@
 #include <getopt.h>
 #include <pthread.h>
 #include <pulse/simple.h>
+#include <pulse/error.h>
 
 #include "rds.h"
 #include "fm_mpx.h"
