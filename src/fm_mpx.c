@@ -20,7 +20,6 @@
 
 #include "rds.h"
 #include "fm_mpx.h"
-#include "osc.h"
 
 static float mpx_vol;
 
