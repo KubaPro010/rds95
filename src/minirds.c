@@ -24,7 +24,6 @@
 #include <pulse/error.h>
 
 #include "rds.h"
-#include "fm_mpx.h"
 #include "control_pipe.h"
 #include "lib.h"
 #include "ascii_cmd.h"
