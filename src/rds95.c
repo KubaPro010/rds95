@@ -1,21 +1,3 @@
-/*
- * mpxgen - FM multiplex encoder with Stereo and RDS
- * Copyright (C) 2019 Anthony96922
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "common.h"
 #include <signal.h>
 #include <getopt.h>
@@ -37,7 +19,6 @@ static void stop() {
 	stop_rds = 1;
 }
 
-
 /* threads */
 static void *control_pipe_worker() {
 	while (!stop_rds) {
@@ -51,8 +32,7 @@ static void *control_pipe_worker() {
 
 static void show_help(char *name) {
 	printf(
-		"This is MiniRDS, a lightweight RDS encoder.\n"
-		"Version %f\n"
+		"rds95 (a RDS encoder by radio95) version %.1f\n"
 		"\n"
 		"Usage: %s [options]\n"
 		"\n"
@@ -74,20 +54,14 @@ static void show_help(char *name) {
 		"    -d,--di           DI code\n"
 		"    -C,--ctl          FIFO control pipe\n"
 		"    -h,--help         Show this help text and exit\n"
-		"    -v,--version      Show version and exit\n"
 		"\n",
 		VERSION,
 		name
 	);
 }
 
-static void show_version() {
-	printf("MiniRDS version (radio95 Edit) %f\n", VERSION);
-}
-
 int main(int argc, char **argv) {
-	int opt;
-	char control_pipe[51];
+	char control_pipe[51] = "\0";
 	struct rds_params_t rds_params = {
 		.ps = "radio95",
 		.rt1 = "",
@@ -95,10 +69,6 @@ int main(int argc, char **argv) {
 		.ecc = 0xE2,
 		.lps = "radio95 - Radio Nowotomyskie"
 	};
-	/* buffers */
-	float *mpx_buffer;
-	int8_t r;
-
 	/* PASIMPLE */
 	pa_simple *device;
 	pa_sample_spec format;
@@ -106,12 +76,9 @@ int main(int argc, char **argv) {
 	/* pthread */
 	pthread_attr_t attr;
 	pthread_t control_pipe_thread;
-	pthread_mutex_t control_pipe_mutex = PTHREAD_MUTEX_INITIALIZER;
 	pthread_cond_t control_pipe_cond;
 
-
-	const char	*short_opt = "R:i:s:r:p:T:A:P:l:e:L:d:C:"
-	"hv";
+	const char	*short_opt = "R:i:s:r:p:T:A:P:l:e:L:d:C:h";
 
 	struct option	long_opt[] =
 	{
@@ -130,84 +97,66 @@ int main(int argc, char **argv) {
 		{"ctl",		required_argument, NULL, 'C'},
 
 		{"help",	no_argument, NULL, 'h'},
-		{"version",	no_argument, NULL, 'v'},
 		{ 0,		0,		0,	0 }
 	};
 
-	memset(control_pipe, 0, 51);
+	int opt;
+	while((opt = getopt_long(argc, argv, short_opt, long_opt, NULL)) != -1) {
+		switch (opt) {
+			case 'i': /* pi */
+				rds_params.pi = strtoul(optarg, NULL, 16);
+				break;
 
-keep_parsing_opts:
+			case 's': /* ps */
+				memcpy(rds_params.ps, xlat((unsigned char *)optarg), PS_LENGTH);
+				break;
 
-	opt = getopt_long(argc, argv, short_opt, long_opt, NULL);
-	if (opt == -1) goto done_parsing_opts;
+			case 'r': /* rt1 */
+				memcpy(rds_params.rt1, xlat((unsigned char *)optarg), RT_LENGTH);
+				break;
 
-	switch (opt) {
-		case 'i': /* pi */
-			rds_params.pi = strtoul(optarg, NULL, 16);
-			break;
+			case 'p': /* pty */
+				rds_params.pty = strtoul(optarg, NULL, 10);
+				break;
 
-		case 's': /* ps */
-			memcpy(rds_params.ps, xlat((unsigned char *)optarg), PS_LENGTH);
-			break;
+			case 'T': /* tp */
+				rds_params.tp = strtoul(optarg, NULL, 10);
+				break;
 
-		case 'r': /* rt1 */
-			memcpy(rds_params.rt1, xlat((unsigned char *)optarg), RT_LENGTH);
-			break;
+			case 'A': /* af */
+				if (add_rds_af(&rds_params.af, strtof(optarg, NULL)) == 1) return 1;
+				break;
 
-		case 'p': /* pty */
-			rds_params.pty = strtoul(optarg, NULL, 10);
-			break;
+			case 'P': /* ptyn */
+				memcpy(rds_params.ptyn, xlat((unsigned char *)optarg), PTYN_LENGTH);
+				break;
 
-		case 'T': /* tp */
-			rds_params.tp = strtoul(optarg, NULL, 10);
-			break;
+			case 'l': /* lps */
+				memcpy(rds_params.lps, (unsigned char *)optarg, LPS_LENGTH);
+				break;
 
-		case 'A': /* af */
-			if (add_rds_af(&rds_params.af, strtof(optarg, NULL)) == 1) return 1;
-			break;
+			case 'e': /* ecc */
+				rds_params.ecc = strtoul(optarg, NULL, 16);
+				break;
 
-		case 'P': /* ptyn */
-			memcpy(rds_params.ptyn, xlat((unsigned char *)optarg), PTYN_LENGTH);
-			break;
+			case 'L': /* lic */
+				rds_params.lic = strtoul(optarg, NULL, 16);
+				break;
 
-		case 'l': /* lps */
-			memcpy(rds_params.lps, (unsigned char *)optarg, LPS_LENGTH);
-			break;
+			case 'C': /* ctl */
+				memcpy(control_pipe, optarg, 50);
+				break;
 
-		case 'e': /* ecc */
-			rds_params.ecc = strtoul(optarg, NULL, 16);
-			break;
-
-		case 'L': /* lic */
-			rds_params.lic = strtoul(optarg, NULL, 16);
-			break;
-
-		case 'C': /* ctl */
-			memcpy(control_pipe, optarg, 50);
-			break;
-
-		case 'v': /* version */
-			show_version();
-			return 0;
-
-		case 'h': /* help */
-		case '?':
-		default:
-			show_help(argv[0]);
-			return 1;
+			case 'h': /* help */
+			default:
+				show_help(argv[0]);
+				return 1;
+		}
 	}
 
-	goto keep_parsing_opts;
-
-done_parsing_opts:
-
 	/* Initialize pthread stuff */
-	pthread_mutex_init(&control_pipe_mutex, NULL);
 	pthread_cond_init(&control_pipe_cond, NULL);
 	pthread_attr_init(&attr);
-
-	/* Setup buffers */
-	mpx_buffer = malloc(NUM_MPX_FRAMES * 2 * sizeof(float));
 
 	/* Gracefully stop the encoder on SIGINT or SIGTERM */
 	signal(SIGINT, stop);
@@ -223,7 +172,7 @@ done_parsing_opts:
 
 	device = pa_simple_new(
 		NULL,                       // Default PulseAudio server
-		"MiniRDS",                 // Application name
+		"rds95",                 // Application name
 		PA_STREAM_PLAYBACK,        // Direction (playback)
 		"RDS",                       // Default device
 		"RDS Generator",           // Stream description
@@ -242,6 +191,7 @@ done_parsing_opts:
 		if (open_control_pipe(control_pipe) == 0) {
 			fprintf(stderr, "Reading control commands on %s.\n", control_pipe);
 			/* Create control pipe polling worker */
+			uint8_t r;
 			r = pthread_create(&control_pipe_thread, &attr, control_pipe_worker, NULL);
 			if (r < 0) {
 				fprintf(stderr, "Could not create control pipe thread.\n");
@@ -258,13 +208,15 @@ done_parsing_opts:
 
 	int pulse_error;
 
+	float mpx_buffer[NUM_MPX_FRAMES];
+
 	for (;;) {
 		for (size_t i = 0; i < NUM_MPX_FRAMES; i++) {
 			mpx_buffer[i] = fminf(1.0f, fmaxf(-1.0f, get_rds_sample()));
 		}
 
 		/* num_bytes = audio frames( * channels) * bytes per sample */
-		if (pa_simple_write(device, mpx_buffer, NUM_MPX_FRAMES * sizeof(float), &pulse_error) != 0) {
+		if (pa_simple_write(device, mpx_buffer, sizeof(mpx_buffer), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
@@ -284,10 +236,8 @@ exit:
 	}
 
 	pthread_attr_destroy(&attr);
-	pa_simple_free(device);
 	exit_rds_encoder();
-
-	free(mpx_buffer);
+	pa_simple_free(device);
 
 	return 0;
 }
