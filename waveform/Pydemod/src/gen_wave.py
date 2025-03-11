@@ -49,7 +49,7 @@ def generate_bit(name):
     offset = int(sample_rate*0.004) # 190 khz = 760
     count = int(offset / 10**(len(str(offset)) - 1)) # 760 / 100 = 7
     l = int(sample_rate / 1187.5) // 2 # 16/2 = 8
-    if count*l < 2*l: raise Exception("Sample rate too small")
+    if l == 1: raise Exception("Sample rate too small")
 
     sample = numpy.zeros(count*l)
     sample[l] = 1
