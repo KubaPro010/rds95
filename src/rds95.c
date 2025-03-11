@@ -12,10 +12,10 @@
 
 #define NUM_MPX_FRAMES	512
 
-static uint8_t stop_rds;
+static volatile uint8_t stop_rds;
 
 static void stop() {
-	printf("Received an stopping signal\n");
+	printf("Received a stopping signal\n");
 	stop_rds = 1;
 }
 
@@ -62,6 +62,7 @@ static void show_help(char *name) {
 
 int main(int argc, char **argv) {
 	char control_pipe[51] = "\0";
+
 	struct rds_params_t rds_params = {
 		.ps = "radio95",
 		.rt1 = "",
@@ -76,7 +77,6 @@ int main(int argc, char **argv) {
 	/* pthread */
 	pthread_attr_t attr;
 	pthread_t control_pipe_thread;
-	pthread_cond_t control_pipe_cond;
 
 	const char	*short_opt = "R:i:s:r:p:T:A:P:l:e:L:d:C:h";
 
@@ -154,22 +154,12 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	/* Initialize pthread stuff */
-	pthread_cond_init(&control_pipe_cond, NULL);
-	pthread_attr_init(&attr);
-
-	/* Gracefully stop the encoder on SIGINT or SIGTERM */
-	signal(SIGINT, stop);
-	signal(SIGTERM, stop);
-
-	/* Initialize the RDS modulator */
-	init_rds_encoder(rds_params);
-
 	/* PASIMPLE format */
 	format.format = PA_SAMPLE_FLOAT32NE;
 	format.channels = 1;
 	format.rate = RDS_SAMPLE_RATE;
 
+	int pulse_error;
 	device = pa_simple_new(
 		NULL,                       // Default PulseAudio server
 		"rds95",                 // Application name
@@ -179,26 +169,35 @@ int main(int argc, char **argv) {
 		&format,                   // Sample format
 		NULL,                       // Default channel map
 		NULL,                       // Default buffering attributes
-		NULL                     // Error variable
+		&pulse_error                     // Error variable
 	);
 	if (device == NULL) {
-		fprintf(stderr, "Error: cannot open sound device.\n");
-		goto exit;
+		fprintf(stderr, "Error: cannot open sound device. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
+		return 1;
 	}
 
-	/* Initialize the control pipe reader */
+	pthread_attr_init(&attr);
+
+	signal(SIGINT, stop);
+	signal(SIGTERM, stop);
+
+	init_rds_encoder(rds_params);
+
 	if (control_pipe[0]) {
 		if (open_control_pipe(control_pipe) == 0) {
-			fprintf(stderr, "Reading control commands on %s.\n", control_pipe);
-			/* Create control pipe polling worker */
+			fprintf(stdout, "Reading control commands on %s.\n", control_pipe);
 			int r;
 			r = pthread_create(&control_pipe_thread, &attr, control_pipe_worker, NULL);
-			if (r < 0) {
+			if (r != 0) {
 				fprintf(stderr, "Could not create control pipe thread.\n");
 				control_pipe[0] = 0;
-				goto exit;
+
+				pthread_attr_destroy(&attr);
+				exit_rds_encoder();
+				pa_simple_free(device);
+				return 1;
 			} else {
-				fprintf(stderr, "Created control pipe thread.\n");
+				fprintf(stdout, "Created control pipe thread.\n");
 			}
 		} else {
 			fprintf(stderr, "Failed to open control pipe: %s.\n", control_pipe);
@@ -206,37 +205,24 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	int pulse_error;
-
 	float mpx_buffer[NUM_MPX_FRAMES];
 
-	for (;;) {
+	while (!stop_rds) {
 		for (size_t i = 0; i < NUM_MPX_FRAMES; i++) {
-			mpx_buffer[i] = fminf(1.0f, fmaxf(-1.0f, get_rds_sample()));
+			mpx_buffer[i] = get_rds_sample();
 		}
 
-		/* num_bytes = audio frames( * channels) * bytes per sample */
 		if (pa_simple_write(device, mpx_buffer, sizeof(mpx_buffer), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
-
-		if (stop_rds) {
-			fprintf(stderr, "Stopping the loop...\n");
-			break;
-		}
 	}
 
-exit:
 	if (control_pipe[0]) {
 		/* shut down threads */
 		fprintf(stderr, "Waiting for pipe thread to shut down.\n");
-		pthread_cond_signal(&control_pipe_cond);
 		pthread_join(control_pipe_thread, NULL);
 	}
-
-	pthread_attr_destroy(&attr);
-	exit_rds_encoder();
 	pa_simple_free(device);
 
 	return 0;

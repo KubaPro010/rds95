@@ -7,7 +7,7 @@ project(rds95 VERSION 1.0)
 option(ODA_RTP "Enable ODA (RT+)" ON)
 
 # Set compiler and flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -Wextra -pedantic -O2 -std=c18 -DVERSION=\"${PROJECT_VERSION}\"")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -Wextra -pedantic -O2 -std=c18 -march=native -DVERSION=\"${PROJECT_VERSION}\"")
 
 # Define sources
 set(SOURCES

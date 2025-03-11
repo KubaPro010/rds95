@@ -79,5 +79,5 @@ float get_rds_sample() {
         rds->sample_buffer[rds->out_sample_index++] = 0;
         if (rds->out_sample_index == SAMPLE_BUFFER_SIZE)
                 rds->out_sample_index = 0;
-        return sample;
+        return fminf(1.0f, fmaxf(-1.0f, sample));
 }
