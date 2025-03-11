@@ -2,9 +2,9 @@ import math
 import io, os
 import matplotlib.pyplot as plt
 
-sample_rate = 4750 
+sample_rate = 9500 
 
-# next 2 funcs are modified from ChristopheJacquet's pydemod
+# this is modified from ChristopheJacquet's pydemod
 def rrcosfilter(NumSamples):
     T_delta = 1/float(sample_rate)
     sample_num = list(range(NumSamples))
@@ -53,16 +53,10 @@ outc.write(header)
 outh.write(header)
 
 def generate():
-    offset = int(sample_rate*0.004)  # 190 khz = 760
-    count = int(offset / 10**(len(str(offset)) - 1))  # 760 / 100 = 7
-    l = int(sample_rate / 1187.5) // 2  # 16/2 = 8
-    if l == 1: raise Exception("Sample rate too small")
-    if count*l < 2*l:
-        # idk from where is this
-        offset *= 2
-        offset += 3
-        count *= 4
-        l *= 2
+    offset = int(sample_rate*0.004)  # 190 khz = 760 760/10/2 = 38 190000/10/2=9500
+    count = int(offset / 10**(len(str(offset)) - 1))  # 760 / 100 = 7 38 / 10 = 3
+    l = int(sample_rate / 1187.5) // 2  # 16/2 = 8 8 / 2 = 4
+    if count*l > l*16: raise Exception("Sample rate too small")
     print(f"{offset=} {count=} {l=}")
 
     sample = [0.0] * (count*l)
@@ -75,16 +69,18 @@ def generate():
 
     # Slice the array like numpy would
     out = shapedSamples[offset-l*count:offset+l*count]
+    out = [i/(max(sf)+0.1) for i in out]
+    if max(out) > 1 or min(out) < -1: print("clipped")
     
-    plt.plot(sf, label="sf") 
-    plt.plot(shapedSamples, label="shapedSamples") 
+    # plt.plot(sf, label="sf") 
+    # plt.plot(shapedSamples, label="shapedSamples") 
     plt.plot(out, label="out")
     plt.legend()
     plt.grid(True)
     plt.show()
 
     outc.write(u"float waveform_biphase[{size}] = {{{values}}};\n\n".format(
-        values = u", ".join(map(str, [val / 2.5 for val in out])),
+        values = u", ".join(map(str, out)),
         size = len(out)))
         # note: need to limit the amplitude so as not to saturate when the biphase
         # waveforms are summed
