@@ -45,39 +45,38 @@ float get_rds_sample() {
 	float sample;
 
 	if (rds->sample_count == SAMPLES_PER_BIT) {
-                // New Sample
+		// New Sample
 		if (rds->bit_pos == BITS_PER_GROUP) {
-                        // New bit stream
+			// New bit stream
 			get_rds_bits(rds->bit_buffer);
 			rds->bit_pos = 0;
 		}
 
-                // Differentially encode, so 1111 becomes 1000 and 0001 becomes 0001
-                rds->cur_bit = rds->bit_buffer[rds->bit_pos++];
-                rds->prev_output = rds->cur_output;
-                rds->cur_output = rds->prev_output ^ rds->cur_bit;
+		// Differentially encode, so 1111 becomes 1000 and 0001 becomes 0001
+		rds->cur_bit = rds->bit_buffer[rds->bit_pos++];
+		rds->prev_output = rds->cur_output;
+		rds->cur_output = rds->prev_output ^ rds->cur_bit;
 
-                idx = rds->in_sample_index;
-                cur_waveform = waveform[rds->cur_output]; // get the waveform, this is the biphase in a 0/180 degree phase shift
+		idx = rds->in_sample_index;
+		cur_waveform = waveform[rds->cur_output]; // get the waveform, this is the biphase in a 0/180 degree phase shift
 
-                // Copy over the biphase to the sample buffer, every SAMPLES_PER_BIT
-                for (uint16_t i = 0; i < FILTER_SIZE; i++) {
+		for (uint16_t i = 0; i < FILTER_SIZE; i++) {
 			rds->sample_buffer[idx++] += *cur_waveform++;
 			if (idx == SAMPLE_BUFFER_SIZE) idx = 0;
 		}
 
-                rds->in_sample_index += SAMPLES_PER_BIT;
-                if (rds->in_sample_index == SAMPLE_BUFFER_SIZE)
-                        rds->in_sample_index = 0;
+		rds->in_sample_index += SAMPLES_PER_BIT;
+		if (rds->in_sample_index == SAMPLE_BUFFER_SIZE)
+			rds->in_sample_index = 0;
 
-                rds->sample_count = 0;
-        }
-        rds->sample_count++;
+		rds->sample_count = 0;
+	}
+	rds->sample_count++;
 
-        sample = rds->sample_buffer[rds->out_sample_index];
+	sample = rds->sample_buffer[rds->out_sample_index];
 
-        rds->sample_buffer[rds->out_sample_index++] = 0;
-        if (rds->out_sample_index == SAMPLE_BUFFER_SIZE)
-                rds->out_sample_index = 0;
-        return sample;
+	rds->sample_buffer[rds->out_sample_index++] = 0;
+	if (rds->out_sample_index == SAMPLE_BUFFER_SIZE)
+			rds->out_sample_index = 0;
+	return sample;
 }
