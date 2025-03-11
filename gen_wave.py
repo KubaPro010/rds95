@@ -1,8 +1,12 @@
+PLOT = True
+FFT = PLOT and True
+
 import math
 import io, os
-import matplotlib.pyplot as plt
+if PLOT: import matplotlib.pyplot as plt
+if FFT: import numpy as np  # Import numpy for FFT
 
-sample_rate = 9500 
+sample_rate = 9500
 
 # this is modified from ChristopheJacquet's pydemod
 def rrcosfilter(NumSamples):
@@ -10,7 +14,7 @@ def rrcosfilter(NumSamples):
     sample_num = list(range(NumSamples))
     h_rrc = [0.0] * NumSamples
     SymbolPeriod = 1/(2*1187.5)
-        
+
     for x in sample_num:
         t = (x-NumSamples/2)*T_delta
         if t == 0.0:
@@ -24,7 +28,7 @@ def rrcosfilter(NumSamples):
         else:
             h_rrc[x] = (4*(t/SymbolPeriod)*math.cos(math.pi*t*2/SymbolPeriod))/ \
                     (math.pi*t*(1-(4*t/SymbolPeriod)*(4*t/SymbolPeriod))/SymbolPeriod)
-        
+
     return h_rrc
 
 def convolve(a, b):
@@ -71,22 +75,34 @@ def generate():
     out = shapedSamples[offset-l*count:offset+l*count]
     out = [i/(max(sf)+0.1) for i in out]
     if max(out) > 1 or min(out) < -1: print("clipped")
-    
-    # plt.plot(sf, label="sf") 
-    # plt.plot(shapedSamples, label="shapedSamples") 
-    plt.plot(out, label="out")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+
+    if PLOT:
+        # Plot the waveform
+        plt.plot(out, label="out")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+    if FFT:
+        # Compute the FFT of the waveform
+        N = len(out)
+        fft_out = np.fft.fft(out)
+        fft_freqs = np.fft.fftfreq(N, d=1/sample_rate)
+
+        # Plot the magnitude of the FFT
+        plt.figure(figsize=(10, 6))
+        plt.plot(fft_freqs[:N//2], np.abs(fft_out)[:N//2])  # Plot only the positive frequencies
+        plt.title("FFT of the waveform")
+        plt.xlabel("Frequency (Hz)")
+        plt.ylabel("Magnitude")
+        plt.grid(True)
+        plt.show()
 
     outc.write(u"float waveform_biphase[{size}] = {{{values}}};\n\n".format(
         values = u", ".join(map(str, out)),
         size = len(out)))
-        # note: need to limit the amplitude so as not to saturate when the biphase
-        # waveforms are summed
 
     outh.write(u"extern float waveform_biphase[{size}];\n".format(size=len(out)))
-
 
 generate()
 
