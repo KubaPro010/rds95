@@ -223,6 +223,8 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Waiting for pipe thread to shut down.\n");
 		pthread_join(control_pipe_thread, NULL);
 	}
+	pthread_attr_destroy(&attr);
+	exit_rds_encoder();
 	pa_simple_free(device);
 
 	return 0;
