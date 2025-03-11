@@ -1,32 +1,6 @@
-/*
- * mpxgen - FM multiplex encoder with Stereo and RDS
- * Copyright (C) 2021 Anthony96922
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "common.h"
 #include "rds.h"
 #include <time.h>
-
-/*
- * Stuff for RDS
- *
- */
-
-/* needed workaround implicit declaration (edit: do we need this? ) */
-extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
 /* millisecond sleep */
 void msleep(unsigned long ms) {
@@ -157,22 +131,6 @@ static uint16_t offset_words[] = {
 	0x1B4, /*  D  */
 	0x350  /*  C' */
 };
-
-/* CRC-16 ITU-T/CCITT checkword calculation */
-/* wanna ask where is this used */
-uint16_t crc16(uint8_t *data, size_t len) {
-	uint16_t crc = 0xffff;
-
-	for (size_t i = 0; i < len; i++) {
-		crc = (crc >> 8) | (crc << 8);
-		crc ^= data[i];
-		crc ^= (crc & 0xff) >> 4;
-		crc ^= (crc << 8) << 4;
-		crc ^= ((crc & 0xff) << 4) << 1;
-	}
-
-	return crc ^ 0xffff;
-}
 
 /* Calculate the checkword for each block and emit the bits */
 void add_checkwords(uint16_t *blocks, uint8_t *bits)

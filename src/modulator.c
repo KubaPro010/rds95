@@ -1,46 +1,22 @@
-/*
- * mpxgen - FM multiplex encoder with Stereo and RDS
- * Copyright (C) 2021 Anthony96922
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "common.h"
 #include "rds.h"
 #include "fm_mpx.h"
 #include "waveforms.h"
 #include "modulator.h"
 
-static struct rds_t **rds_ctx;
+static struct rds_t *rds;
 static float **waveform;
 
-/*
- * Create the RDS objects
- *
- */
 void init_rds_objects() {
-	rds_ctx = malloc(sizeof(struct rds_t));
-
-	rds_ctx[0] = malloc(sizeof(struct rds_t));
-	rds_ctx[0]->bit_buffer = malloc(BITS_PER_GROUP);
-	rds_ctx[0]->sample_buffer =
+	rds = malloc(sizeof(struct rds_t));
+	rds->bit_buffer = malloc(BITS_PER_GROUP);
+	rds->sample_buffer =
 		malloc(SAMPLE_BUFFER_SIZE * sizeof(float));
-	rds_ctx[0]->symbol_shift_buf_idx = 0;
 
 	waveform = malloc(2 * sizeof(float));
 
 	for (uint8_t i = 0; i < 2; i++) {
+                // This is the bpsk, so waveform[0] is 0 degrees out of phase but waveform[1] is 180 degrees, bpsk
 		waveform[i] = malloc(FILTER_SIZE * sizeof(float));
 		for (uint16_t j = 0; j < FILTER_SIZE; j++) {
 			waveform[i][j] = i ?
@@ -50,14 +26,9 @@ void init_rds_objects() {
 }
 
 void exit_rds_objects() {
-	int has_symbol_shift = rds_ctx[0]->symbol_shift;
-	if (has_symbol_shift) {
-		free(rds_ctx[0]->symbol_shift_buf);
-	}
-	free(rds_ctx[0]->sample_buffer);
-	free(rds_ctx[0]->bit_buffer);
-	free(rds_ctx[0]);
-	free(rds_ctx);
+	free(rds->sample_buffer);
+	free(rds->bit_buffer);
+	free(rds);
 
 	for (uint8_t i = 0; i < 2; i++) {
 		free(waveform[i]);
@@ -69,46 +40,33 @@ void exit_rds_objects() {
 /* Get an RDS sample. This generates the envelope of the waveform using
  * pre-generated elementary waveform samples.
  */
-float get_rds_sample(uint8_t stream_num) {
-	struct rds_t *rds;
+float get_rds_sample() {
 	uint16_t idx;
 	float *cur_waveform;
 	float sample;
 
-	/* select context */
-	rds = rds_ctx[stream_num];
-
 	if (rds->sample_count == SAMPLES_PER_BIT) {
+                // New Sample
 		if (rds->bit_pos == BITS_PER_GROUP) {
+                        // New bit stream
 			get_rds_bits(rds->bit_buffer);
 			rds->bit_pos = 0;
 		}
 
-                /* do differential encoding */
+                // Differentially encode, so 1111 becomes 1000 and 0001 becomes 0001
                 rds->cur_bit = rds->bit_buffer[rds->bit_pos++];
                 rds->prev_output = rds->cur_output;
                 rds->cur_output = rds->prev_output ^ rds->cur_bit;
 
                 idx = rds->in_sample_index;
-                cur_waveform = waveform[rds->cur_output];
+                cur_waveform = waveform[rds->cur_output]; // get the waveform, this is the biphase in a 0/180 degree phase shift
 
-    uint16_t buffer_remaining = SAMPLE_BUFFER_SIZE - idx;
-    if (buffer_remaining >= FILTER_SIZE) {
-        // Process continuous chunk
-        for (uint16_t i = 0; i < FILTER_SIZE; i++) {
-            rds->sample_buffer[idx + i] += cur_waveform[i];
-        }
-        idx += FILTER_SIZE;
-    } else {
-        // Process in two parts to handle wrapping
-        for (uint16_t i = 0; i < buffer_remaining; i++) {
-            rds->sample_buffer[idx + i] += cur_waveform[i];
-        }
-        for (uint16_t i = 0; i < FILTER_SIZE - buffer_remaining; i++) {
-            rds->sample_buffer[i] += cur_waveform[buffer_remaining + i];
-        }
-        idx = FILTER_SIZE - buffer_remaining;
-    }
+                // Copy over the biphase to the sample buffer, every SAMPLES_PER_BIT
+                for (uint16_t i = 0; i < FILTER_SIZE; i++) {
+			rds->sample_buffer[idx++] += *cur_waveform++;
+			if (idx == SAMPLE_BUFFER_SIZE) idx = 0;
+		}
+
                 rds->in_sample_index += SAMPLES_PER_BIT;
                 if (rds->in_sample_index == SAMPLE_BUFFER_SIZE)
                         rds->in_sample_index = 0;
@@ -117,20 +75,8 @@ float get_rds_sample(uint8_t stream_num) {
         }
         rds->sample_count++;
 
-        if (rds->symbol_shift) {
-                rds->symbol_shift_buf[rds->symbol_shift_buf_idx++] =
-                        rds->sample_buffer[rds->out_sample_index];
-
-                if (rds->symbol_shift_buf_idx == rds->symbol_shift)
-                        rds->symbol_shift_buf_idx = 0;
-
-                sample = rds->symbol_shift_buf[rds->symbol_shift_buf_idx];
-
-                goto done;
-        }
-
         sample = rds->sample_buffer[rds->out_sample_index];
-done:
+
         rds->sample_buffer[rds->out_sample_index++] = 0;
         if (rds->out_sample_index == SAMPLE_BUFFER_SIZE)
                 rds->out_sample_index = 0;

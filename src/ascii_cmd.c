@@ -1,23 +1,3 @@
-/*
- * MiniRDS - FM RDS Encoder
- * contains code from:
- * mpxgen - FM multiplex encoder with Stereo and RDS
- * Copyright (C) 2019 Anthony96922
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "common.h"
 #include "rds.h"
 #include "fm_mpx.h"
@@ -46,28 +26,6 @@ void process_ascii_cmd(unsigned char *str) {
 			if (count == 4) {
 				set_rds_cg(blocks);
 			}
-			return;
-		}
-	}
-
-	if (cmd_len > 4 && str[3] == ' ') {
-		cmd = str;
-		cmd[3] = 0;
-		arg = str + 4;
-
-		if (CMD_MATCHES("MPX")) {
-			float gains[2];
-			if (sscanf((char *)arg, "%f,%f",
-					   &gains[0], &gains[1]) == 2)
-			{
-				set_carrier_volume(0, gains[0]);
-				set_carrier_volume(1, gains[1]);
-			}
-			return;
-		}
-		if (CMD_MATCHES("VOL")) {
-			arg[4] = 0;
-			set_output_volume(strtof((char *)arg, NULL));
 			return;
 		}
 	}
@@ -316,24 +274,11 @@ void process_ascii_cmd(unsigned char *str) {
 		cmd = str;
 		cmd[5] = 0;
 		arg = str + 6;
-		if (CMD_MATCHES("LEVEL")) {
-			uint8_t val = strtoul((char *)arg, NULL, 10);
-			val /= 255;
-			val *= 15; /* max value*/
-			set_carrier_volume(1, val);
-			return;
-		}
 	}
 	if (cmd_len > 7 && str[6] == '=') {
 		cmd = str;
 		cmd[6] = 0;
 		arg = str + 7;
-
-		if (CMD_MATCHES("RDSGEN")) {
-			arg[1] = 0;
-			set_rdsgen(strtoul((char *)arg, NULL, 10));
-			return;
-		}
 
 		if (CMD_MATCHES("PTYNEN")) {
 			arg[1] = 0;
@@ -353,14 +298,6 @@ void process_ascii_cmd(unsigned char *str) {
 		cmd = str;
 		cmd[5] = 0;
 		arg = str + 6;
-		if (CMD_MATCHES("LEVEL")) {
-			uint8_t val = strtoul((char *)arg, NULL, 10);
-			val /= 255;
-			val *= 15; /* max value*/
-			set_carrier_volume(1, val);
-			return;
-		}
-
 		if (CMD_MATCHES("ECCEN")) {
 			set_rds_ecclic_toggle(arg[0]);
 			return;

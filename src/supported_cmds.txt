@@ -13,8 +13,6 @@ RT1EN
 TA
 TP
 CT
-LEVEL - Not redecommended, if possible use `MPX`
-RDSGEN
 ECC
 ECCEN
 G

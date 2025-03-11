@@ -29,6 +29,8 @@
 #include "lib.h"
 #include "ascii_cmd.h"
 
+#define NUM_MPX_FRAMES	512
+
 static uint8_t stop_rds;
 
 static void stop() {
@@ -94,8 +96,6 @@ int main(int argc, char **argv) {
 		.ecc = 0xE2,
 		.lps = "radio95 - Radio Nowotomyskie"
 	};
-	float volume = 100.0f;
-
 	/* buffers */
 	float *mpx_buffer;
 	int8_t r;
@@ -208,15 +208,11 @@ done_parsing_opts:
 	pthread_attr_init(&attr);
 
 	/* Setup buffers */
-	mpx_buffer = malloc(NUM_MPX_FRAMES_IN * 2 * sizeof(float));
+	mpx_buffer = malloc(NUM_MPX_FRAMES * 2 * sizeof(float));
 
 	/* Gracefully stop the encoder on SIGINT or SIGTERM */
 	signal(SIGINT, stop);
 	signal(SIGTERM, stop);
-
-	/* Initialize the baseband generator */
-	fm_mpx_init(MPX_SAMPLE_RATE);
-	set_output_volume(volume);
 
 	/* Initialize the RDS modulator */
 	init_rds_encoder(rds_params);
@@ -224,7 +220,7 @@ done_parsing_opts:
 	/* PASIMPLE format */
 	format.format = PA_SAMPLE_FLOAT32NE;
 	format.channels = 1;
-	format.rate = OUTPUT_SAMPLE_RATE;
+	format.rate = RDS_SAMPLE_RATE;
 
 	device = pa_simple_new(
 		NULL,                       // Default PulseAudio server
@@ -264,10 +260,12 @@ done_parsing_opts:
 	int pulse_error;
 
 	for (;;) {
-		fm_rds_get_frames(mpx_buffer, NUM_MPX_FRAMES_IN);
+		for (size_t i = 0; i < NUM_MPX_FRAMES; i++) {
+			mpx_buffer[i] = fminf(1.0f, fmaxf(-1.0f, get_rds_sample()));
+		}
 
 		/* num_bytes = audio frames( * channels) * bytes per sample */
-		if (pa_simple_write(device, mpx_buffer, NUM_MPX_FRAMES_IN * sizeof(float), &pulse_error) != 0) {
+		if (pa_simple_write(device, mpx_buffer, NUM_MPX_FRAMES * sizeof(float), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
@@ -288,7 +286,6 @@ exit:
 
 	pthread_attr_destroy(&attr);
 	pa_simple_free(device);
-	fm_mpx_exit();
 	exit_rds_encoder();
 
 	free(mpx_buffer);
