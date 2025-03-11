@@ -2,7 +2,7 @@ import math
 import io, os
 import matplotlib.pyplot as plt
 
-sample_rate = 9500
+sample_rate = 4750 
 
 # next 2 funcs are modified from ChristopheJacquet's pydemod
 def rrcosfilter(NumSamples):
@@ -57,6 +57,12 @@ def generate():
     count = int(offset / 10**(len(str(offset)) - 1))  # 760 / 100 = 7
     l = int(sample_rate / 1187.5) // 2  # 16/2 = 8
     if l == 1: raise Exception("Sample rate too small")
+    if count*l < 2*l:
+        # idk from where is this
+        offset *= 2
+        offset += 3
+        count *= 4
+        l *= 2
     print(f"{offset=} {count=} {l=}")
 
     sample = [0.0] * (count*l)
