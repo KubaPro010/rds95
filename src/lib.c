@@ -2,6 +2,7 @@
 #include "rds.h"
 #include <time.h>
 
+extern int nanosleep(const struct timespec *req, struct timespec *rem);
 /* millisecond sleep */
 void msleep(unsigned long ms) {
 	struct timespec ts;
