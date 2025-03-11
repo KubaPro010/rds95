@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
 		if (open_control_pipe(control_pipe) == 0) {
 			fprintf(stderr, "Reading control commands on %s.\n", control_pipe);
 			/* Create control pipe polling worker */
-			uint8_t r;
+			int r;
 			r = pthread_create(&control_pipe_thread, &attr, control_pipe_worker, NULL);
 			if (r < 0) {
 				fprintf(stderr, "Could not create control pipe thread.\n");
