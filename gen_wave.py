@@ -57,9 +57,9 @@ outc.write(header)
 outh.write(header)
 
 def generate():
-    offset = int(sample_rate*0.004)  # 190 khz = 760 760/10/2 = 38 190000/10/2=9500
-    count = int(offset / 10**(len(str(offset)) - 1))  # 760 / 100 = 7 38 / 10 = 3
-    l = int(sample_rate / 1187.5) // 2  # 16/2 = 8 8 / 2 = 4
+    offset = int(sample_rate*0.004)  # 190 khz = 760
+    count = int(offset / 10**(len(str(offset)) - 1))  # 760 / 100 = 7
+    l = int(sample_rate / 1187.5) // 2  # 16/2 = 8
     if count*l > l*16: raise Exception("Sample rate too small")
     print(f"{offset=} {count=} {l=}")
 

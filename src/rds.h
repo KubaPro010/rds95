@@ -11,7 +11,7 @@
 #define GROUP_LENGTH		4
 #define BITS_PER_GROUP		(GROUP_LENGTH * (BLOCK_SIZE + POLY_DEG))
 #define RDS_SAMPLE_RATE		9500
-#define SAMPLES_PER_BIT     8
+#define SAMPLES_PER_BIT     8 // (1/1187.5)*RDS_SAMPLE_RATE
 #define FILTER_SIZE	 24
 #define SAMPLE_BUFFER_SIZE	(SAMPLES_PER_BIT + FILTER_SIZE)
 
@@ -263,7 +263,6 @@ typedef struct rds_oda_t {
 #endif
 
 extern void init_rds_encoder(struct rds_params_t rds_params);
-extern void exit_rds_encoder();
 extern void get_rds_bits(uint8_t *bits);
 extern void set_rds_pi(uint16_t pi_code);
 extern void set_rds_ecc(uint8_t ecc);

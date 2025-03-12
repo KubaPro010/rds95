@@ -3,37 +3,19 @@
 #include "waveforms.h"
 #include "modulator.h"
 
-static struct rds_t *rds;
-static float **waveform;
+static struct rds_t rds;
+static float waveform[2][FILTER_SIZE];
 
 void init_rds_objects() {
-	rds = malloc(sizeof(struct rds_t));
-	rds->bit_buffer = malloc(BITS_PER_GROUP);
-	rds->sample_buffer =
-		malloc(SAMPLE_BUFFER_SIZE * sizeof(float));
-
-	waveform = malloc(2 * sizeof(float));
+	memset(&rds, 0, sizeof(rds));
 
 	for (uint8_t i = 0; i < 2; i++) {
-                // This is the bpsk, so waveform[0] is 0 degrees out of phase but waveform[1] is 180 degrees, bpsk
-		waveform[i] = malloc(FILTER_SIZE * sizeof(float));
+		// This is the bpsk, so waveform[0] is 0 degrees out of phase but waveform[1] is 180 degrees, bpsk
 		for (uint16_t j = 0; j < FILTER_SIZE; j++) {
 			waveform[i][j] = i ?
 				+waveform_biphase[j] : -waveform_biphase[j];
 		}
 	}
-}
-
-void exit_rds_objects() {
-	free(rds->sample_buffer);
-	free(rds->bit_buffer);
-	free(rds);
-
-	for (uint8_t i = 0; i < 2; i++) {
-		free(waveform[i]);
-	}
-
-	free(waveform);
 }
 
 /* Get an RDS sample. This generates the envelope of the waveform using
@@ -43,40 +25,39 @@ float get_rds_sample() {
 	uint16_t idx;
 	float *cur_waveform;
 	float sample;
-
-	if (rds->sample_count == SAMPLES_PER_BIT) {
+	if (rds.sample_count == SAMPLES_PER_BIT) {
 		// New Sample
-		if (rds->bit_pos == BITS_PER_GROUP) {
+		if (rds.bit_pos == BITS_PER_GROUP) {
 			// New bit stream
-			get_rds_bits(rds->bit_buffer);
-			rds->bit_pos = 0;
+			get_rds_bits(rds.bit_buffer);
+			rds.bit_pos = 0;
 		}
 
 		// Differentially encode, so 1111 becomes 1000 and 0001 becomes 0001
-		rds->cur_bit = rds->bit_buffer[rds->bit_pos++];
-		rds->prev_output = rds->cur_output;
-		rds->cur_output = rds->prev_output ^ rds->cur_bit;
+		rds.cur_bit = rds.bit_buffer[rds.bit_pos++];
+		rds.prev_output = rds.cur_output;
+		rds.cur_output = rds.prev_output ^ rds.cur_bit;
 
-		idx = rds->in_sample_index;
-		cur_waveform = waveform[rds->cur_output]; // get the waveform, this is the biphase in a 0/180 degree phase shift
+		idx = rds.in_sample_index;
+		cur_waveform = waveform[rds.cur_output]; // get the waveform, this is the biphase in a 0/180 degree phase shift
 
 		for (uint16_t i = 0; i < FILTER_SIZE; i++) {
-			rds->sample_buffer[idx++] += *cur_waveform++;
+			rds.sample_buffer[idx++] += *cur_waveform++;
 			if (idx == SAMPLE_BUFFER_SIZE) idx = 0;
 		}
 
-		rds->in_sample_index += SAMPLES_PER_BIT;
-		if (rds->in_sample_index == SAMPLE_BUFFER_SIZE)
-			rds->in_sample_index = 0;
+		rds.in_sample_index += SAMPLES_PER_BIT;
+		if (rds.in_sample_index == SAMPLE_BUFFER_SIZE)
+			rds.in_sample_index = 0;
 
-		rds->sample_count = 0;
+		rds.sample_count = 0;
 	}
-	rds->sample_count++;
+	rds.sample_count++;
 
-	sample = rds->sample_buffer[rds->out_sample_index];
+	sample = rds.sample_buffer[rds.out_sample_index];
 
-	rds->sample_buffer[rds->out_sample_index++] = 0;
-	if (rds->out_sample_index == SAMPLE_BUFFER_SIZE)
-			rds->out_sample_index = 0;
+	rds.sample_buffer[rds.out_sample_index++] = 0;
+	if (rds.out_sample_index == SAMPLE_BUFFER_SIZE)
+			rds.out_sample_index = 0;
 	return sample;
 }

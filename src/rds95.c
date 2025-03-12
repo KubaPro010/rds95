@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
 
 	int pulse_error;
 
-	float mpx_buffer[NUM_MPX_FRAMES];
+	static float mpx_buffer[NUM_MPX_FRAMES];
 
 	while(!stop_rds) {
 		for (size_t i = 0; i < NUM_MPX_FRAMES; i++) {
@@ -227,7 +227,6 @@ exit:
 	}
 
 	pthread_attr_destroy(&attr);
-	exit_rds_encoder();
 	pa_simple_free(device);
 
 	return 0;

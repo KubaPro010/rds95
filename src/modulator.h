@@ -1,8 +1,8 @@
 /* RDS signal context */
 typedef struct rds_t {
-	uint8_t *bit_buffer; /* BITS_PER_GROUP */
+	uint8_t bit_buffer[BITS_PER_GROUP];
 	uint8_t bit_pos;
-	float *sample_buffer; /* SAMPLE_BUFFER_SIZE */
+	float sample_buffer[SAMPLE_BUFFER_SIZE];
 	uint8_t prev_output;
 	uint8_t cur_output;
 	uint8_t cur_bit;
@@ -12,5 +12,3 @@ typedef struct rds_t {
 } rds_t;
 
 extern void init_rds_objects();
-extern void exit_rds_objects();
-

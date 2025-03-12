@@ -547,10 +547,6 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 	init_rds_objects();
 }
 
-void exit_rds_encoder() {
-	exit_rds_objects();
-}
-
 void set_rds_pi(uint16_t pi_code) {
 	rds_data.pi = pi_code;
 }
