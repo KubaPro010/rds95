@@ -1,6 +1,6 @@
 extern void msleep(unsigned long ms);
 
-extern size_t _strnlen(const char *s, size_t maxlen);
+extern int _strnlen(const char *s, int maxlen);
 extern int ustrcmp(const unsigned char *s1, const unsigned char *s2);
 
 extern uint8_t get_rtp_tag_id(char *rtp_tag_name);

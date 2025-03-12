@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
 	static float mpx_buffer[NUM_MPX_FRAMES];
 
 	while(!stop_rds) {
-		for (size_t i = 0; i < NUM_MPX_FRAMES; i++) {
+		for (uint16_t i = 0; i < NUM_MPX_FRAMES; i++) {
 			mpx_buffer[i] = get_rds_sample();
 		}
 

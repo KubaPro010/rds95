@@ -3,6 +3,9 @@
     "files.associations": {
         "ascii_cmd.h": "c",
         "time.h": "c",
-        "rds.h": "c"
+        "rds.h": "c",
+        "lib.h": "c",
+        "common.h": "c",
+        "modulator.h": "c"
     }
 }

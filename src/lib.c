@@ -12,8 +12,8 @@ void msleep(unsigned long ms) {
 }
 
 /* just like strlen */
-size_t _strnlen(const char *s, size_t maxlen) {
-	size_t len = 0;
+int _strnlen(const char *s, int maxlen) {
+	int len = 0;
 	while (s[len] != 0 && len < maxlen)
 		len++;
 	return len;
@@ -136,8 +136,7 @@ static uint16_t offset_words[] = {
 /* Calculate the checkword for each block and emit the bits */
 void add_checkwords(uint16_t *blocks, uint8_t *bits)
 {
-	size_t i, j;
-	uint8_t bit, msb;
+	uint8_t i, j, bit, msb;
 	uint16_t block, block_crc, check, offset_word;
 	bool group_type_b = false;
 	if (IS_TYPE_B(blocks))
