@@ -26,6 +26,10 @@ static void handle_afch(unsigned char *arg) {
     if (arg[0] == 'A' || arg[0] == 'B') {
         return;
     }
+    if(arg[0] == '\0') {
+        clear_rds_af();
+        return;
+    }
     
     clear_rds_af();
     uint8_t arg_count;
@@ -60,7 +64,6 @@ static void handle_afch(unsigned char *arg) {
 static void handle_tps(unsigned char *arg) {
     arg[PS_LENGTH * 2] = 0;
     set_rds_tps(xlat(arg));
-    set_rds_tpson(1);
 }
 
 static void handle_rt1(unsigned char *arg) {
@@ -146,6 +149,10 @@ static void handle_af(unsigned char *arg) {
     if (arg[0] == 'A' || arg[0] == 'B') {
         return;
     }
+    if(arg[0] == '\0') {
+        clear_rds_af();
+        return;
+    }
     
     clear_rds_af();
     uint8_t arg_count;
@@ -210,11 +217,6 @@ static void handle_clear_af(unsigned char *arg) {
     clear_rds_af();
 }
 
-static void handle_tps_off(unsigned char *arg) {
-    (void)arg;
-    set_rds_tpson(0);
-}
-
 // Command tables organized by delimiter position and command length
 static const command_handler_t commands_eq3[] = {
     {"PS", handle_ps, 2},
@@ -260,9 +262,6 @@ static const command_handler_t commands_eq7[] = {
 };
 
 static const command_handler_t commands_exact[] = {
-    {"AF=", handle_clear_af, 3},
-    {"TPS=", handle_tps_off, 4},
-    {"AFCH=", handle_clear_af, 5}
 };
 
 // Process a command using the appropriate command table
@@ -292,7 +291,7 @@ void process_ascii_cmd(unsigned char *str) {
     }
 
     // Process commands with = delimiter at position 2 (format: X=y...)
-    if (cmd_len > 2 && str[1] == '=') {
+    if (cmd_len > 1 && str[1] == '=') {
         cmd = str;
         cmd[1] = 0;
         arg = str + 2;
@@ -305,7 +304,7 @@ void process_ascii_cmd(unsigned char *str) {
     }
 
     // Process commands with = delimiter at position 3 (format: XX=y...)
-    if (cmd_len > 3 && str[2] == '=') {
+    if (cmd_len > 2 && str[2] == '=') {
         cmd = str;
         cmd[2] = 0;
         arg = str + 3;
@@ -318,7 +317,7 @@ void process_ascii_cmd(unsigned char *str) {
     }
 
     // Process commands with = delimiter at position 4 (format: XXX=y...)
-    if (cmd_len > 4 && str[3] == '=') {
+    if (cmd_len > 3 && str[3] == '=') {
         cmd = str;
         cmd[3] = 0;
         arg = str + 4;
@@ -331,7 +330,7 @@ void process_ascii_cmd(unsigned char *str) {
     }
 
     // Process commands with = delimiter at position 5 (format: XXXX=y...)
-    if (cmd_len > 5 && str[4] == '=') {
+    if (cmd_len > 4 && str[4] == '=') {
         cmd = str;
         cmd[4] = 0;
         arg = str + 5;
@@ -344,7 +343,7 @@ void process_ascii_cmd(unsigned char *str) {
     }
 
     // Process commands with = delimiter at position 6 (format: XXXXX=y...)
-    if (cmd_len > 6 && str[5] == '=') {
+    if (cmd_len > 5 && str[5] == '=') {
         cmd = str;
         cmd[5] = 0;
         arg = str + 6;
@@ -357,7 +356,7 @@ void process_ascii_cmd(unsigned char *str) {
     }
 
     // Process commands with = delimiter at position 7 (format: XXXXXX=y...)
-    if (cmd_len > 7 && str[6] == '=') {
+    if (cmd_len > 6 && str[6] == '=') {
         cmd = str;
         cmd[6] = 0;
         arg = str + 7;

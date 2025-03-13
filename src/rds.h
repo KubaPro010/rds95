@@ -271,7 +271,6 @@ extern void set_rds_pin(uint8_t day, uint8_t hour, uint8_t minute);
 extern void set_rds_rt1_enabled(uint8_t rt1en);
 extern void set_rds_rt1(unsigned char *rt1);
 extern void set_rds_ps(unsigned char *ps);
-extern void set_rds_tpson(uint8_t tpson);
 extern void set_rds_tps(unsigned char *ps);
 extern void set_rds_lps(unsigned char *lps);
 extern void set_rds_rtplus_flags(uint8_t flags);

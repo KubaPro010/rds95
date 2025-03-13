@@ -105,7 +105,7 @@ static void get_rds_ps_group(uint16_t *blocks) {
 	blocks[1] |= ((rds_data.di >> (3 - ps_csegment)) & INT8_0) << 2;
 	blocks[1] |= ps_csegment;
 	blocks[2] = get_next_af();
-	if(rds_data.ta && rds_data.traffic_ps_on) {
+	if(rds_data.ta && tps_text[0]) {
 		blocks[3] = tps_text[ps_csegment * 2] << 8 | tps_text[ps_csegment * 2 + 1];
 	} else {
 		/* TODO: Add DPS */
@@ -499,9 +499,6 @@ void set_rds_ps(unsigned char *ps) {
 	memset(rds_data.ps, ' ', PS_LENGTH);
 	while (*ps != 0 && len < PS_LENGTH)
 		rds_data.ps[len++] = *ps++;
-}
-void set_rds_tpson(uint8_t tpson) {
-	rds_data.traffic_ps_on = tpson & INT8_0;
 }
 void set_rds_tps(unsigned char *tps) {
 	uint8_t len = 0;
