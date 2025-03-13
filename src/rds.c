@@ -503,13 +503,12 @@ void set_rds_ps(unsigned char *ps) {
 void set_rds_tps(unsigned char *tps) {
 	uint8_t len = 0;
 
+	rds_state.tps_update = 1;
 	if(tps[0] == '\0') {
-		rds_state.tps_update = 1;
 		memset(rds_data.tps, 0, PS_LENGTH);
 		return;
 	}
 
-	rds_state.tps_update = 1;
 	memset(rds_data.tps, ' ', PS_LENGTH);
 	while (*tps != 0 && len < PS_LENGTH)
 		rds_data.tps[len++] = *tps++;
@@ -518,12 +517,11 @@ void set_rds_tps(unsigned char *tps) {
 void set_rds_lps(unsigned char *lps) {
 	uint8_t i = 0, len = 0;
 
+	rds_state.lps_update = 1;
 	if(lps[0] == '\0') {
-		rds_state.lps_update = 1;
 		memset(rds_data.lps, 0, LPS_LENGTH);
 		return;
 	}
-	rds_state.lps_update = 1;
 	memset(rds_data.lps, '\r', LPS_LENGTH);
 	while (*lps != 0 && len < LPS_LENGTH)
 		rds_data.lps[len++] = *lps++;
