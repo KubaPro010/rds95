@@ -2,27 +2,21 @@
 #include "ascii_cmd.h"
 #include "control_pipe.h"
 
-static int fd = -1;
+static int fd;
 static struct pollfd poller;
 
 /*
  * Opens a file (pipe) to be used to control the RDS coder.
- * Returns 0 on success, -1 on failure.
  */
 int open_control_pipe(char *filename) {
-    if (!filename) return -1;
-    
-    // Close existing pipe if open
-    if (fd >= 0) close(fd);
-    
-    fd = open(filename, O_RDONLY | O_NONBLOCK);
-    if (fd == -1) return -1;
+	fd = open(filename, O_RDONLY | O_NONBLOCK);
+	if (fd == -1) return -1;
 
-    /* setup the poller */
-    poller.fd = fd;
-    poller.events = POLLIN;
+	/* setup the poller */
+	poller.fd = fd;
+	poller.events = POLLIN;
 
-    return 0;
+	return 0;
 }
 
 /*
@@ -30,49 +24,43 @@ int open_control_pipe(char *filename) {
  * calls process_ascii_cmd.
  */
 void poll_control_pipe() {
-    static unsigned char pipe_buf[CTL_BUFFER_SIZE];
-    static unsigned char cmd_buf[CMD_BUFFER_SIZE];
-    char *token, *saveptr;
-    int read_bytes;
+	static unsigned char pipe_buf[CTL_BUFFER_SIZE];
+	static unsigned char cmd_buf[CMD_BUFFER_SIZE];
+	struct timeval timeout;
+	int ret;
+	fd_set set;
+	char *token;
 
-    // Return early if file descriptor is invalid
-    if (fd < 0) return;
+	FD_ZERO(&set);
+	FD_SET(fd, &set);
+	timeout.tv_sec = 0;
+	timeout.tv_usec = READ_TIMEOUT_MS * 1000;
 
-    // Check for new commands with a single poll call
-    if (poll(&poller, 1, READ_TIMEOUT_MS) <= 0) return;
+	/* check for new commands */
+	if (poll(&poller, 1, READ_TIMEOUT_MS) <= 0) return;
 
-    // Return early if there are no new commands
-    if (!(poller.revents & POLLIN)) return;
+	/* return early if there are no new commands */
+	if (poller.revents == 0) return;
 
-    // Clear buffer before reading
-    memset(pipe_buf, 0, CTL_BUFFER_SIZE);
-    
-    // Read data directly - select is redundant with poll already used above
-    read_bytes = read(fd, pipe_buf, CTL_BUFFER_SIZE - 1);
-    if (read_bytes <= 0) return;
-    
-    // Ensure null-termination
-    pipe_buf[read_bytes] = '\0';
+	memset(pipe_buf, 0, CTL_BUFFER_SIZE);
 
-    /* Process commands line by line */
-    token = strtok_r((char *)pipe_buf, "\n", &saveptr);
-    while (token != NULL) {
-        size_t cmd_len = strlen(token);
-        if (cmd_len > 0 && cmd_len < CMD_BUFFER_SIZE) {
-            memset(cmd_buf, 0, CMD_BUFFER_SIZE);
-            memcpy(cmd_buf, token, cmd_len);
-            process_ascii_cmd(cmd_buf);
-        }
-        token = strtok_r(NULL, "\n", &saveptr);
-    }
+	ret = select(fd + 1, &set, NULL, NULL, &timeout);
+	if (ret == -1 || ret == 0) {
+		return;
+	} else {
+		read(fd, pipe_buf, CTL_BUFFER_SIZE - 1);
+	}
+
+	/* handle commands per line this is really good because if were sending text commands very quick after eachother then we can get a rt of for example 'Now its 12:00RT Now its 12:01' */
+	token = strtok((char *)pipe_buf, "\n");
+	while (token != NULL) {
+		memset(cmd_buf, 0, CMD_BUFFER_SIZE);
+		memcpy(cmd_buf, token, CMD_BUFFER_SIZE - 1);
+		token = strtok(NULL, "\n");
+
+		process_ascii_cmd(cmd_buf);
+	}
 }
-
-/*
- * Closes the control pipe.
- */
 void close_control_pipe() {
-    if (fd >= 0) {
-        close(fd);
-        fd = -1;
-    }
+	if (fd > 0) close(fd);
 }
