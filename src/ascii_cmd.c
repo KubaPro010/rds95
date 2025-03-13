@@ -57,14 +57,6 @@ static void handle_afch(unsigned char *arg) {
     set_rds_af(new_af);
 }
 
-static void handle_udg1(unsigned char *arg) {
-	// TODO: implement
-}
-
-static void handle_udg2(unsigned char *arg) {
-	// TODO: implement	
-}
-
 static void handle_tps(unsigned char *arg) {
     arg[PS_LENGTH * 2] = 0;
     set_rds_tps(xlat(arg));
@@ -253,8 +245,6 @@ static const command_handler_t commands_eq5[] = {
     {"TEXT", handle_text, 4},
     {"PTYN", handle_ptyn, 4},
     {"AFCH", handle_afch, 4},
-	{"UDG1", handle_udg1, 4}
-	{"UDG2", handle_udg2, 4}
 };
 
 static const command_handler_t commands_eq2[] = {
@@ -296,7 +286,7 @@ void process_ascii_cmd(unsigned char *str) {
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
 
     // Process exact command matches first
-    for (int i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
+    for (size_t i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
         const command_handler_t *handler = &commands_exact[i];
         if (cmd_len == handler->cmd_length && 
             ustrcmp(str, (unsigned char *)handler->cmd) == 0) {
