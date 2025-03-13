@@ -24,7 +24,6 @@ static struct {
 	uint8_t ptyn_update;
 	uint8_t ptyn_ab;
 
-	uint8_t lps_on;
 	uint8_t lps_update;
 	uint8_t lps_segments;
 
@@ -333,7 +332,7 @@ static uint8_t get_rds_other_groups(uint16_t *blocks) {
 static uint8_t get_rds_long_text_groups(uint16_t *blocks) {
 	static uint8_t group_selector = 0;
 
-	if (group_selector == 4 && rds_data.lps[0] && rds_state.lps_on) {
+	if (group_selector == 4 && rds_data.lps[0]) {
 		get_rds_lps_group(blocks);
 		goto group_coded;
 	}
@@ -428,7 +427,6 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 	rds_state.ptyn_ab = 1;
 	set_rds_ptyn(rds_params.ptyn);
 	set_rds_lps(rds_params.lps);
-	set_rds_lpson(1);
 	set_rds_tp(rds_params.tp);
 	set_rds_ecc(rds_params.ecc);
 	set_rds_lic(rds_params.lic);
@@ -512,10 +510,6 @@ void set_rds_tps(unsigned char *tps) {
 	memset(rds_data.tps, ' ', PS_LENGTH);
 	while (*tps != 0 && len < PS_LENGTH)
 		rds_data.tps[len++] = *tps++;
-}
-
-void set_rds_lpson(uint8_t lpson) {
-	rds_state.lps_on = lpson & INT8_0;
 }
 
 void set_rds_lps(unsigned char *lps) {

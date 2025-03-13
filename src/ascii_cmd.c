@@ -100,7 +100,6 @@ static void handle_rtp(unsigned char *arg) {
 
 static void handle_lps(unsigned char *arg) {
     arg[LPS_LENGTH] = 0;
-    set_rds_lpson(1);
     set_rds_lps(arg);
 }
 
@@ -216,11 +215,6 @@ static void handle_tps_off(unsigned char *arg) {
     set_rds_tpson(0);
 }
 
-static void handle_lps_off(unsigned char *arg) {
-    (void)arg;
-    set_rds_lpson(0);
-}
-
 // Command tables organized by delimiter position and command length
 static const command_handler_t commands_eq3[] = {
     {"PS", handle_ps, 2},
@@ -268,7 +262,6 @@ static const command_handler_t commands_eq7[] = {
 static const command_handler_t commands_exact[] = {
     {"AF=", handle_clear_af, 3},
     {"TPS=", handle_tps_off, 4},
-    {"LPS=", handle_lps_off, 4},
     {"AFCH=", handle_clear_af, 5}
 };
 
