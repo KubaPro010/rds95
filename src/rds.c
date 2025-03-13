@@ -622,7 +622,7 @@ void set_rds_ct(uint8_t ct) {
 
 void set_rds_cg(uint16_t* blocks) {
 	rds_state.custom_group[0] = 1;
-	rds_state.custom_group[1] = blocks[1];
-	rds_state.custom_group[2] = blocks[2];
-	rds_state.custom_group[3] = blocks[3];
+	rds_state.custom_group[1] = blocks[0];
+	rds_state.custom_group[2] = blocks[1];
+	rds_state.custom_group[3] = blocks[2];
 }
