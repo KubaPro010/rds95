@@ -504,6 +504,7 @@ void set_rds_tps(unsigned char *tps) {
 	uint8_t len = 0;
 
 	if(tps[0] == '\0') {
+		rds_state.tps_update = 1;
 		memset(rds_data.tps, 0, PS_LENGTH);
 		return;
 	}
@@ -518,6 +519,7 @@ void set_rds_lps(unsigned char *lps) {
 	uint8_t i = 0, len = 0;
 
 	if(lps[0] == '\0') {
+		rds_state.lps_update = 1;
 		memset(rds_data.lps, 0, LPS_LENGTH);
 		return;
 	}
