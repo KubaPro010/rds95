@@ -212,11 +212,6 @@ static void handle_eccen(unsigned char *arg) {
     set_rds_ecclic_toggle(arg[0]);
 }
 
-static void handle_clear_af(unsigned char *arg) {
-    (void)arg;
-    clear_rds_af();
-}
-
 // Command tables organized by delimiter position and command length
 static const command_handler_t commands_eq3[] = {
     {"PS", handle_ps, 2},
@@ -261,9 +256,6 @@ static const command_handler_t commands_eq7[] = {
     {"RTPRUN", handle_rtprun, 6}
 };
 
-static const command_handler_t commands_exact[] = {
-};
-
 // Process a command using the appropriate command table
 static bool process_command_table(const command_handler_t *table, int table_size, 
                                  unsigned char *cmd, unsigned char *arg) {
@@ -279,16 +271,6 @@ static bool process_command_table(const command_handler_t *table, int table_size
 void process_ascii_cmd(unsigned char *str) {
     unsigned char *cmd, *arg;
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
-
-    // Process exact command matches first
-    for (size_t i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
-        const command_handler_t *handler = &commands_exact[i];
-        if (cmd_len == handler->cmd_length && 
-            ustrcmp(str, (unsigned char *)handler->cmd) == 0) {
-            handler->handler(NULL);
-            return;
-        }
-    }
 
     // Process commands with = delimiter at position 2 (format: X=y...)
     if (cmd_len > 1 && str[1] == '=') {
