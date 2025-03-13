@@ -73,8 +73,8 @@ def generate():
 
     # Slice the array like numpy would
     out = shapedSamples[offset-l*count:offset+l*count]
-    out = [i/(max(sf)+0.1) for i in out]
-    if max(out) > 1 or min(out) < -1: print("clipped")
+    out = [i/(max(out)) for i in out]
+    if max(out) > 1 or min(out) < -1: raise Exception("Clipped")
 
     if PLOT:
         # Plot the waveform
