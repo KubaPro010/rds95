@@ -207,14 +207,17 @@ static void handle_eccen(unsigned char *arg) {
 }
 
 static void handle_clear_af(unsigned char *arg) {
+    (void)arg;
     clear_rds_af();
 }
 
 static void handle_tps_off(unsigned char *arg) {
+    (void)arg;
     set_rds_tpson(0);
 }
 
 static void handle_lps_off(unsigned char *arg) {
+    (void)arg;
     set_rds_lpson(0);
 }
 
