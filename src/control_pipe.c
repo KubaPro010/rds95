@@ -9,14 +9,13 @@ static struct pollfd poller;
  * Opens a file (pipe) to be used to control the RDS coder.
  */
 int open_control_pipe(char *filename) {
-	fd = open(filename, O_RDONLY | O_NONBLOCK);
-	if (fd == -1) return -1;
-
-	/* setup the poller */
-	poller.fd = fd;
-	poller.events = POLLIN;
-
-	return 0;
+    fd = open(filename, O_RDONLY | O_NONBLOCK);
+    if (fd == -1) return -1;
+    
+    /* setup the poller */
+    poller.fd = fd;
+    poller.events = POLLIN;
+    return 0;
 }
 
 /*
@@ -24,43 +23,35 @@ int open_control_pipe(char *filename) {
  * calls process_ascii_cmd.
  */
 void poll_control_pipe() {
-	static unsigned char pipe_buf[CTL_BUFFER_SIZE];
-	static unsigned char cmd_buf[CMD_BUFFER_SIZE];
-	struct timeval timeout;
-	int ret;
-	fd_set set;
-	char *token;
-
-	FD_ZERO(&set);
-	FD_SET(fd, &set);
-	timeout.tv_sec = 0;
-	timeout.tv_usec = READ_TIMEOUT_MS * 1000;
-
-	/* check for new commands */
-	if (poll(&poller, 1, READ_TIMEOUT_MS) <= 0) return;
-
-	/* return early if there are no new commands */
-	if (poller.revents == 0) return;
-
-	memset(pipe_buf, 0, CTL_BUFFER_SIZE);
-
-	ret = select(fd + 1, &set, NULL, NULL, &timeout);
-	if (ret == -1 || ret == 0) {
-		return;
-	} else {
-		read(fd, pipe_buf, CTL_BUFFER_SIZE - 1);
-	}
-
-	/* handle commands per line this is really good because if were sending text commands very quick after eachother then we can get a rt of for example 'Now its 12:00RT Now its 12:01' */
-	token = strtok((char *)pipe_buf, "\n");
-	while (token != NULL) {
-		memset(cmd_buf, 0, CMD_BUFFER_SIZE);
-		memcpy(cmd_buf, token, CMD_BUFFER_SIZE - 1);
-		token = strtok(NULL, "\n");
-
-		process_ascii_cmd(cmd_buf);
-	}
+    static unsigned char pipe_buf[CTL_BUFFER_SIZE];
+    static unsigned char cmd_buf[CMD_BUFFER_SIZE];
+    int bytes_read;
+    char *token;
+    
+    /* check for new commands - return early if none */
+    if (poll(&poller, 1, READ_TIMEOUT_MS) <= 0) return;
+    if (!(poller.revents & POLLIN)) return;
+    
+    /* read data from pipe */
+    memset(pipe_buf, 0, CTL_BUFFER_SIZE);
+    bytes_read = read(fd, pipe_buf, CTL_BUFFER_SIZE - 1);
+    
+    if (bytes_read <= 0) return;
+    
+    /* process each command line */
+    token = strtok((char *)pipe_buf, "\n");
+    while (token != NULL) {
+        size_t cmd_len = strlen(token);
+        if (cmd_len > 0 && cmd_len < CMD_BUFFER_SIZE) {
+            memset(cmd_buf, 0, CMD_BUFFER_SIZE);
+            strncpy((char *)cmd_buf, token, CMD_BUFFER_SIZE - 1);
+            process_ascii_cmd(cmd_buf);
+        }
+        token = strtok(NULL, "\n");
+    }
 }
+
 void close_control_pipe() {
-	if (fd > 0) close(fd);
+    if (fd > 0) close(fd);
+    fd = -1;
 }
