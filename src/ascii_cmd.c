@@ -12,15 +12,6 @@ typedef struct {
 } command_handler_t;
 
 // Command handlers
-static void handle_cg(unsigned char *arg) {
-    uint16_t blocks[4];
-    int count = sscanf((const char*)arg, "%hX %hX %hX %hX",
-                        &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
-    if (count == 4) {
-        set_rds_cg(blocks);
-    }
-}
-
 static void handle_text(unsigned char *arg) {
     arg[RT_LENGTH * 2] = 0;
     set_rds_rt1(xlat(arg));
@@ -100,7 +91,6 @@ static void handle_lic(unsigned char *arg) {
     set_rds_lic(strtoul((char *)arg, NULL, 16));
 }
 
-#ifdef ODA_RTP
 static void handle_rtp(unsigned char *arg) {
     char tag_names[2][32];
     uint8_t tags[6];
@@ -115,7 +105,6 @@ static void handle_rtp(unsigned char *arg) {
         set_rds_rtplus_tags(tags);
     }
 }
-#endif
 
 static void handle_lps(unsigned char *arg) {
     arg[LPS_LENGTH] = 0;
@@ -195,9 +184,8 @@ static void handle_af(unsigned char *arg) {
 }
 
 static void handle_g(unsigned char *arg) {
-    uint16_t blocks[4];
-    blocks[0] = get_rds_pi();
-    int count = sscanf((char *)arg, "%4hx%4hx%4hx", &blocks[1], &blocks[2], &blocks[3]);
+    uint16_t blocks[3];
+    int count = sscanf((char *)arg, "%4hx%4hx%4hx", &blocks[0], &blocks[1], &blocks[2]);
     if (count == 3) {
         set_rds_cg(blocks);
     }
@@ -217,12 +205,10 @@ static void handle_ptynen(unsigned char *arg) {
     set_rds_ptyn_enabled(strtoul((char *)arg, NULL, 10));
 }
 
-#ifdef ODA_RTP
 static void handle_rtprun(unsigned char *arg) {
     arg[1] = 0;
     set_rds_rtplus_flags(strtoul((char *)arg, NULL, 10));
 }
-#endif
 
 static void handle_eccen(unsigned char *arg) {
     set_rds_ecclic_toggle(arg[0]);
@@ -241,10 +227,6 @@ static void handle_lps_off(unsigned char *arg) {
 }
 
 // Command tables organized by delimiter position and command length
-static const command_handler_t commands_space[] = {
-    {"CG", handle_cg, 2}
-};
-
 static const command_handler_t commands_eq3[] = {
     {"PS", handle_ps, 2},
     {"CT", handle_ct, 2},
@@ -262,9 +244,7 @@ static const command_handler_t commands_eq4[] = {
     {"PTY", handle_pty, 3},
     {"ECC", handle_ecc, 3},
     {"LIC", handle_lic, 3},
-#ifdef ODA_RTP
     {"RTP", handle_rtp, 3},
-#endif
     {"LPS", handle_lps, 3},
     {"PIN", handle_pin, 3}
 };
@@ -289,9 +269,7 @@ static const command_handler_t commands_eq6[] = {
 
 static const command_handler_t commands_eq7[] = {
     {"PTYNEN", handle_ptynen, 6},
-#ifdef ODA_RTP
     {"RTPRUN", handle_rtprun, 6}
-#endif
 };
 
 static const command_handler_t commands_exact[] = {
@@ -323,19 +301,6 @@ void process_ascii_cmd(unsigned char *str) {
         if (cmd_len == handler->cmd_length && 
             ustrcmp(str, (unsigned char *)handler->cmd) == 0) {
             handler->handler(NULL);
-            return;
-        }
-    }
-
-    // Process commands with space delimiter (format: XX y...)
-    if (cmd_len > 3 && str[2] == ' ') {
-        cmd = str;
-        cmd[2] = 0;
-        arg = str + 3;
-        
-        if (process_command_table(commands_space, 
-                                  sizeof(commands_space) / sizeof(command_handler_t),
-                                  cmd, arg)) {
             return;
         }
     }

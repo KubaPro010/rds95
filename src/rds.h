@@ -238,7 +238,6 @@ typedef struct rds_params_t {
 
 #define IS_TYPE_B(a)	(a[1] & INT16_11)
 
-#ifdef ODA
 /*
  * RDS ODA ID group
  *
@@ -260,7 +259,6 @@ typedef struct rds_oda_t {
  * Extensive list: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
  */
 #define	ODA_AID_RTPLUS	0x4bd7
-#endif
 
 extern void init_rds_encoder(struct rds_params_t rds_params);
 extern void get_rds_bits(uint8_t *bits);
@@ -277,10 +275,8 @@ extern void set_rds_tpson(uint8_t tpson);
 extern void set_rds_tps(unsigned char *ps);
 extern void set_rds_lpson(uint8_t lpson);
 extern void set_rds_lps(unsigned char *lps);
-#ifdef ODA_RTP
 extern void set_rds_rtplus_flags(uint8_t flags);
 extern void set_rds_rtplus_tags(uint8_t *tags);
-#endif
 extern void set_rds_ta(uint8_t ta);
 extern void set_rds_pty(uint8_t pty);
 extern void set_rds_ptyn_enabled(uint8_t enabled);
@@ -292,7 +288,6 @@ extern void set_rds_ms(uint8_t ms);
 extern void set_rds_ct(uint8_t ct);
 extern void set_rds_di(uint8_t di);
 extern float get_rds_sample();
-extern uint16_t get_rds_pi();
 extern void set_rds_cg(uint16_t* blocks);
 
 #endif /* RDS_H */

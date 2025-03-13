@@ -6,51 +6,38 @@
 
 static struct rds_params_t rds_data;
 
-/* RDS data controls */
+// #region Struct Defs
 static struct {
-	/* Slow Labeling Codes */
 	uint8_t ecclic_enabled;
 	uint8_t ecc_or_lic;
-	/* Program Item Number */
 	uint8_t pin_enabled;
 
-	/* Program Service */
 	uint8_t ps_update;
 	uint8_t tps_update;
 
-	/* Radio Text*/
 	uint8_t rt1_enabled;
 	uint8_t rt_update;
 	uint8_t rt_ab;
 	uint8_t rt_segments;
 
-	/* PTYN */
 	uint8_t ptyn_enabled;
 	uint8_t ptyn_update;
 	uint8_t ptyn_ab;
 
-	/* Long PS */
 	uint8_t lps_on;
 	uint8_t lps_update;
 	uint8_t lps_segments;
 
-	uint8_t custom_group_in;
 	uint16_t custom_group[GROUP_LENGTH];
-
-	/* TODO: add UDG */
 } rds_state;
 
-#ifdef ODA
-/* ODA */
+// #region ODA
 static struct rds_oda_t odas[MAX_ODAS];
 static struct {
 	uint8_t current;
 	uint8_t count;
 } oda_state;
-#endif
 
-#ifdef ODA_RTP
-/* RT+ */
 static struct {
 	uint8_t group;
 	uint8_t enabled;
@@ -60,22 +47,19 @@ static struct {
 	uint8_t start[2];
 	uint8_t len[2];
 } rtplus_cfg;
-#endif
+// #endregion
+// #endregion
 
-#ifdef ODA
+// #region Helper funcs
 static void register_oda(uint8_t group, uint16_t aid, uint16_t scb) {
-
-	if (oda_state.count >= MAX_ODAS) return; /* can't accept more ODAs */
+	if (oda_state.count >= MAX_ODAS) return;
 
 	odas[oda_state.count].group = group;
 	odas[oda_state.count].aid = aid;
 	odas[oda_state.count].scb = scb;
 	oda_state.count++;
 }
-#endif
 
-/* Get the next AF entry
- */
 static uint16_t get_next_af() {
 	static uint8_t af_state;
 	uint16_t out;
@@ -100,8 +84,9 @@ static uint16_t get_next_af() {
 
 	return out;
 }
+// #endregion
 
-/* PS group (0A) */
+// #region Group encoding
 static void get_rds_ps_group(uint16_t *blocks) {
 	static unsigned char ps_text[PS_LENGTH];
 	static unsigned char tps_text[PS_LENGTH];
@@ -109,41 +94,28 @@ static void get_rds_ps_group(uint16_t *blocks) {
 
 	if (ps_csegment == 0 && rds_state.ps_update) {
 		memcpy(ps_text, rds_data.ps, PS_LENGTH);
-		rds_state.ps_update = 0; /* rewind */
+		rds_state.ps_update = 0;
 	}
 	if(ps_csegment == 0 && rds_state.tps_update) {
 		memcpy(tps_text, rds_data.tps, PS_LENGTH);
-		rds_state.tps_update = 0; /* rewind */
+		rds_state.tps_update = 0;
 	}
 
-	/* TA */
 	blocks[1] |= rds_data.ta << 4;
-
-	/* MS */
 	blocks[1] |= rds_data.ms << 3;
-
-	/* DI */
-	blocks[1] |= ((rds_data.di >> (3 - ps_csegment)) & INT8_0) << 2; /* DI  is a 4 bit number, we also have 4 segments, so we send a bit of the di number depending on the segment, so 0b0101 would be like: 0 1 0 1*/
-
-	/* PS segment address */
+	blocks[1] |= ((rds_data.di >> (3 - ps_csegment)) & INT8_0) << 2;
 	blocks[1] |= ps_csegment;
-
-	/* AF */
 	blocks[2] = get_next_af();
-
-	/* PS */
 	if(rds_data.ta && rds_data.traffic_ps_on) {
 		blocks[3] = tps_text[ps_csegment * 2] << 8 | tps_text[ps_csegment * 2 + 1];
 	} else {
 		/* TODO: Add DPS */
 		blocks[3] =  ps_text[ps_csegment * 2] << 8 |  ps_text[ps_csegment * 2 + 1];
 	}
-
 	ps_csegment++;
 	if (ps_csegment >= 4) ps_csegment = 0;
 }
 
-/* RT group (2A) */
 static uint8_t get_rds_rt_group(uint16_t *blocks) {
 	static unsigned char rt_text[RT_LENGTH];
 	static uint8_t rt_state;
@@ -152,11 +124,10 @@ static uint8_t get_rds_rt_group(uint16_t *blocks) {
 		memcpy(rt_text, rds_data.rt1, RT_LENGTH);
 		rds_state.rt_ab ^= 1;
 		rds_state.rt_update = 0;
-		rt_state = 0; /* rewind when new RT arrives */
+		rt_state = 0;
 	}
 
-	if(rt_text[0] == '\r' || !rds_state.rt1_enabled) {
-		/* RT strings lesser than 64 in size should have been ended with a \r if a return is on [0] then that means that our string is empty and thus we can not generate this group*/
+	if(!rds_state.rt1_enabled) {
 		return 0;
 	}
 
@@ -173,18 +144,12 @@ static uint8_t get_rds_rt_group(uint16_t *blocks) {
 	return 1;
 }
 
-/* ODA group (3A)
- */
-#ifdef ODA
 static void get_rds_oda_group(uint16_t *blocks) {
-	/* select ODA */
 	struct rds_oda_t this_oda = odas[oda_state.current];
 
-	#ifdef ODA_RTP
 	if(this_oda.aid == ODA_AID_RTPLUS && rtplus_cfg.enabled == 0) {
 		return;
 	}
-	#endif
 
 	blocks[1] |= 3 << 12;
 
@@ -196,7 +161,6 @@ static void get_rds_oda_group(uint16_t *blocks) {
 	oda_state.current++;
 	if (oda_state.current >= oda_state.count) oda_state.current = 0;
 }
-#endif
 
 static uint8_t get_rds_ct_group(uint16_t *blocks) {
 	static uint8_t latest_minutes;
@@ -206,12 +170,10 @@ static uint8_t get_rds_ct_group(uint16_t *blocks) {
 	uint32_t mjd;
 	int16_t offset;
 
-	/* Check time */
 	now = time(NULL);
 	utc = gmtime(&now);
 
 	if (utc->tm_min != latest_minutes) {
-		/* Generate CT group */
 		latest_minutes = utc->tm_min;
 
 		l = utc->tm_mon <= 1 ? 1 : 0;
@@ -223,13 +185,11 @@ static uint8_t get_rds_ct_group(uint16_t *blocks) {
 		blocks[2] = (mjd << 1) | (utc->tm_hour >> 4);
 		blocks[3] = (utc->tm_hour & INT16_L4) << 12 | utc->tm_min << 6;
 
-		/* get local time (for the offset) */
 		local_time = localtime(&now);
 
-		/* tm_gmtoff doesn't exist in POSIX but __tm_gmtoff does */
-		offset = local_time->__tm_gmtoff / (30 * 60); /*__tm_gmtoff is time in seconds from utc, so utc + __tm_gmtoff = local time*/
-		if (offset < 0) blocks[3] |= 1 << 5; /* if less than 0 then set the flag*/
-		blocks[3] |= abs(offset); /* offset should be halfs of a hour, so offset 1 = 30 minutes, 2 = 1 hour*/
+		offset = local_time->__tm_gmtoff / (30 * 60);
+		if (offset < 0) blocks[3] |= 1 << 5;
+		blocks[3] |= abs(offset);
 
 		return 1;
 	}
@@ -237,7 +197,6 @@ static uint8_t get_rds_ct_group(uint16_t *blocks) {
 	return 0;
 }
 
-/* PTYN group (10A) */
 static void get_rds_ptyn_group(uint16_t *blocks) {
 	static unsigned char ptyn_text[PTYN_LENGTH];
 	static uint8_t ptyn_state;
@@ -249,7 +208,7 @@ static void get_rds_ptyn_group(uint16_t *blocks) {
 	}
 
 	blocks[1] |= 10 << 12 | ptyn_state;
-	blocks[1] |= rds_state.ptyn_ab << 4; /* no one knew about ptyn's ab until i saw sdr++'s decoder, it had decoded ptyn but not show it? it also did decode the ab flag */
+	blocks[1] |= rds_state.ptyn_ab << 4;
 	blocks[2] =  ptyn_text[ptyn_state * 4 + 0] << 8;
 	blocks[2] |= ptyn_text[ptyn_state * 4 + 1];
 	blocks[3] =  ptyn_text[ptyn_state * 4 + 2] << 8;
@@ -259,7 +218,6 @@ static void get_rds_ptyn_group(uint16_t *blocks) {
 	if (ptyn_state == 2) ptyn_state = 0;
 }
 
-/* Long PS group (15A) */
 static void get_rds_lps_group(uint16_t *blocks) {
 	static unsigned char lps_text[LPS_LENGTH];
 	static uint8_t lps_state;
@@ -270,7 +228,6 @@ static void get_rds_lps_group(uint16_t *blocks) {
 	}
 
 	blocks[1] |= 15 << 12 | lps_state;
-	/* does lps have an ab? */
 	blocks[2] =  lps_text[lps_state * 4    ] << 8;
 	blocks[2] |= lps_text[lps_state * 4 + 1];
 	blocks[3] =  lps_text[lps_state * 4 + 2] << 8;
@@ -287,40 +244,26 @@ static void get_rds_ecc_group(uint16_t *blocks) {
 	}
 
 	if(rds_state.pin_enabled) {
-		blocks[3] = rds_data.pin_day << 11; /* first 5 bits */
-		blocks[3] |= rds_data.pin_hour << 6; /* 5-10 bits from start */
-		blocks[3] |= rds_data.pin_minute; /* 10-16 bits from start */
-	}
-}
-
-static void get_rds_lic_group(uint16_t *blocks) {
-	blocks[1] |= 1 << 12;
-	if(rds_state.ecclic_enabled) {
-		blocks[2] = 0x3000; /* 0b0011000000000000 first 1 bit is the linkage actuator, the 3 after are variant codes which is 3 in this case after theres space for data */
-		blocks[2] |= rds_data.lic;
-	}
-
-	if(rds_state.pin_enabled) {
-		/* pin is also in lic as it also is a 1a group*/
 		blocks[3] = rds_data.pin_day << 11;
 		blocks[3] |= rds_data.pin_hour << 6;
 		blocks[3] |= rds_data.pin_minute;
 	}
 }
 
-/* RT+ */
-#ifdef ODA_RTP
-static void init_rtplus(uint8_t group) {
-	register_oda(group, ODA_AID_RTPLUS, 0);
-	rtplus_cfg.group = group;
-	rtplus_cfg.enabled = 1;
-}
-#endif
+static void get_rds_lic_group(uint16_t *blocks) {
+	blocks[1] |= 1 << 12;
+	if(rds_state.ecclic_enabled) {
+		blocks[2] = 0x3000; // 0b0011000000000000
+		blocks[2] |= rds_data.lic;
+	}
 
-#ifdef ODA_RTP
-/* RT+ group */
+	if(rds_state.pin_enabled) {
+		blocks[3] = rds_data.pin_day << 11;
+		blocks[3] |= rds_data.pin_hour << 6;
+		blocks[3] |= rds_data.pin_minute;
+	}
+}
 static void get_rds_rtplus_group(uint16_t *blocks) {
-	/* RT+ block format */
 	blocks[1] |= GET_GROUP_TYPE(rtplus_cfg.group) << 12;
 	blocks[1] |= GET_GROUP_VER(rtplus_cfg.group) << 11;
 	blocks[1] |= rtplus_cfg.toggle << 4 | rtplus_cfg.running << 3;
@@ -335,14 +278,11 @@ static void get_rds_rtplus_group(uint16_t *blocks) {
 	blocks[3] |= (rtplus_cfg.start[1] & INT8_L6) << 5;
 	blocks[3] |= rtplus_cfg.len[1] & INT8_L5;
 }
-#endif
+// #endregion
 
-/* Lower priority groups are placed in a subsequence
- */
 static uint8_t get_rds_other_groups(uint16_t *blocks) {
 	static uint8_t group_counter[GROUP_15B];
 
-	/* Type 1A groups */
 	if (rds_data.ecc || rds_data.lic) {
 		if (++group_counter[GROUP_1A] >= 22) {
 			group_counter[GROUP_1A] = 0;
@@ -362,8 +302,6 @@ static uint8_t get_rds_other_groups(uint16_t *blocks) {
 		}
 	}
 
-	/* Type 3A groups */
-	#ifdef ODA
 	if (oda_state.count) {
 		if (++group_counter[GROUP_3A] >= 25) {
 			group_counter[GROUP_3A] = 0;
@@ -371,20 +309,15 @@ static uint8_t get_rds_other_groups(uint16_t *blocks) {
 			return 1;
 		}
 	}
-	#endif
 
-	/* Type 10A groups */
 	if (rds_state.ptyn_enabled && rds_data.ptyn[0]) {
 		if (++group_counter[GROUP_10A] >= 13) {
 			group_counter[GROUP_10A] = 0;
-			/* Do not generate a 10A group if PTYN is off */
 			get_rds_ptyn_group(blocks);
 			return 1;
 		}
 	}
 
-	/* RT+ groups */
-	#ifdef ODA_RTP
 	if (++group_counter[rtplus_cfg.group] >= 30) {
 		group_counter[rtplus_cfg.group] = 0;
 		if(rtplus_cfg.enabled == 0) {
@@ -393,40 +326,18 @@ static uint8_t get_rds_other_groups(uint16_t *blocks) {
 		get_rds_rtplus_group(blocks);
 		return 1;
 	}
-	#endif
 
 	return 0;
 }
 
-/*
- * Codes a group once every 3 groups
- * Ex: 0A, 2A, 0A, 12A, 2A, 0A, 2A, 12A, etc
- */
 static uint8_t get_rds_long_text_groups(uint16_t *blocks) {
 	static uint8_t group_selector = 0;
-	static uint8_t group_slot_counter = 0;
 
-	/* exit early until the 4th call */
-	if (++group_slot_counter < 4)
-		return 0;
-
-	/* reset the slot counter */
-	group_slot_counter = 0;
-
-	/* 3:1 ratio */
-	switch (group_selector) {
-	case 0:
-	case 1:
-	case 2:
-	case 3: /* Long PS */
-		if (rds_data.lps[0] && rds_state.lps_on) {
-			get_rds_lps_group(blocks);
-			goto group_coded;
-		}
-		break;
+	if (group_selector == 4 && rds_data.lps[0] && rds_state.lps_on) {
+		get_rds_lps_group(blocks);
+		goto group_coded;
 	}
 
-	/* if no group was coded */
 	if (++group_selector >= 8) group_selector = 0;
 	return 0;
 
@@ -435,11 +346,10 @@ group_coded:
 	return 1;
 }
 
-/* Get a custom group if there is one*/
 static uint8_t get_rds_custom_groups(uint16_t *blocks) {
-	if(rds_state.custom_group_in) {
-		rds_state.custom_group_in = 0;
-		blocks[0] = rds_state.custom_group[0];
+	if(rds_state.custom_group[0] == 1) {
+		rds_state.custom_group[0] = 0;
+		blocks[0] = rds_data.pi;
 		blocks[1] = rds_state.custom_group[1];
 		blocks[2] = rds_state.custom_group[2];
 		blocks[3] = rds_state.custom_group[3];
@@ -448,50 +358,35 @@ static uint8_t get_rds_custom_groups(uint16_t *blocks) {
 	return 0;
 }
 
-/* Creates an RDS group.
- * This generates sequences of the form 0A, 2A, 0A, 2A, 0A, 2A, etc.
- */
 static void get_rds_group(uint16_t *blocks) {
 	static uint8_t state;
 
-	/* Basic block data */
 	blocks[0] = rds_data.pi;
 	blocks[1] = rds_data.tp << 10;
 	blocks[1] |= rds_data.pty << 5;
 	blocks[2] = 0;
 	blocks[3] = 0;
 
-	/* Generate block content */
-
-	/* CT (clock time) has priority over other group types */
 	if (rds_data.ct && get_rds_ct_group(blocks)) {
 		goto group_coded;
 	}
 
-	/* Next to top priority, if want top then just disable CT i guess */
 	if(get_rds_custom_groups(blocks)) {
 		goto group_coded;
 	}
 
-	/* Longer text groups get medium priority */
 	if (get_rds_long_text_groups(blocks)) {
 		goto group_coded;
 	}
-
-	/* Other groups */
 	if (get_rds_other_groups(blocks)) {
 		goto group_coded;
 	}
 
-	/* Standard group sequence
-	This group sequence is way better than the offcial one, official goes like: 0A 2A which is shitty here it is 0A 0A 0A 0A 2A 2A 2A 2A (2A) so we're in sequence and for example immiedietly get PS and quite fast get RT */
 	if(state < 6) {
-		/* 0A */
 		get_rds_ps_group(blocks);
 		state++;
 	} else if(state >= 6) {
-		/* 2A */
-		if(!get_rds_rt_group(blocks)) { /* try to generate 2A if can't generate 2A than that means our text is empty so we generate PS instead of wasting groups on nothing*/
+		if(!get_rds_rt_group(blocks)) {
 			get_rds_ps_group(blocks);
 		}
 		state++;
@@ -499,7 +394,6 @@ static void get_rds_group(uint16_t *blocks) {
 	if (state >= 12) state = 0;
 
 group_coded:
-	/* for version B groups. good for custom groups */
 	if (IS_TYPE_B(blocks)) {
 		blocks[2] = rds_data.pi;
 	}
@@ -509,6 +403,12 @@ void get_rds_bits(uint8_t *bits) {
 	static uint16_t out_blocks[GROUP_LENGTH];
 	get_rds_group(out_blocks);
 	add_checkwords(out_blocks, bits);
+}
+
+static void init_rtplus(uint8_t group) {
+	register_oda(group, ODA_AID_RTPLUS, 0);
+	rtplus_cfg.group = group;
+	rtplus_cfg.enabled = 0;
 }
 
 void init_rds_encoder(struct rds_params_t rds_params) {
@@ -538,12 +438,8 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 	set_rds_ms(1);
 	set_rds_di(DI_STEREO | DI_DPTY);
 
-	/* Assign the RT+ AID to group 11A */
-	#ifdef ODA_RTP
 	init_rtplus(GROUP_11A);
-	#endif
 
-	/* initialize modulator objects */
 	init_rds_objects();
 }
 
@@ -552,11 +448,11 @@ void set_rds_pi(uint16_t pi_code) {
 }
 
 void set_rds_ecc(uint8_t ecc) {
-	rds_data.ecc = ecc; /* ecc is 8 bits, so a byte */
+	rds_data.ecc = ecc;
 }
 
 void set_rds_lic(uint8_t lic) {
-	rds_data.lic = lic & INT16_L12; /* lic is 12 bits according to the docs, but the values can be less, for example english is 0x09 */
+	rds_data.lic = lic & INT16_L12;
 }
 
 void set_rds_ecclic_toggle(uint8_t toggle) {
@@ -587,18 +483,13 @@ void set_rds_rt1(unsigned char *rt1) {
 	if (len < RT_LENGTH) {
 		rds_state.rt_segments = 0;
 
-		/* Terminate RT with '\r' (carriage return) if RT
-		 * is < 64 characters long
-		 */
 		rds_data.rt1[len++] = '\r';
 
-		/* find out how many segments are needed */
 		while (i < len) {
 			i += 4;
 			rds_state.rt_segments++;
 		}
 	} else {
-		/* Default to 16 if RT is 64 characters long */
 		rds_state.rt_segments = 16;
 	}
 }
@@ -642,21 +533,17 @@ void set_rds_lps(unsigned char *lps) {
 	if (len < LPS_LENGTH) {
 		rds_state.lps_segments = 0;
 
-		/* increment to allow adding an '\r' in all cases */
 		len++;
 
-		/* find out how many segments are needed */
 		while (i < len) {
 			i += 4;
 			rds_state.lps_segments++;
 		}
 	} else {
-		/* default to 8 if LPS is 32 characters long */
 		rds_state.lps_segments = 8;
 	}
 }
 
-#ifdef ODA_RTP
 void set_rds_rtplus_flags(uint8_t flags) {
 	if(flags == 2) {
 		rtplus_cfg.enabled = 0;
@@ -676,8 +563,8 @@ void set_rds_rtplus_tags(uint8_t *tags) {
 
 	rtplus_cfg.toggle ^= 1;
 	rtplus_cfg.running = 1;
+	rtplus_cfg.enabled = 1;
 }
-#endif
 
 void set_rds_af(struct rds_af_t new_af_list) {
 	memcpy(&rds_data.af, &new_af_list, sizeof(struct rds_af_t));
@@ -729,15 +616,9 @@ void set_rds_ct(uint8_t ct) {
 	rds_data.ct = ct & INT8_0;
 }
 
-uint16_t get_rds_pi() {
-	/* this is for custom groups, specifically 'G=' */
-	return rds_data.pi;
-}
-
 void set_rds_cg(uint16_t* blocks) {
-	rds_state.custom_group[0] = blocks[0];
+	rds_state.custom_group[0] = 1;
 	rds_state.custom_group[1] = blocks[1];
 	rds_state.custom_group[2] = blocks[2];
 	rds_state.custom_group[3] = blocks[3];
-	rds_state.custom_group_in = 1;
 }

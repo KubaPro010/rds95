@@ -33,7 +33,6 @@ int ustrcmp(const unsigned char *s1, const unsigned char *s2) {
 	return c1 - c2;
 }
 
-#ifdef ODA_RTP
 static char *rtp_content_types[64] = {
 	/* dummy */
 	"DUMMY_CLASS",
@@ -124,7 +123,7 @@ char *get_rtp_tag_name(uint8_t rtp_tag) {
 	if (rtp_tag > 63) rtp_tag = 0;
 	return rtp_content_types[rtp_tag];
 }
-#endif
+
 static uint16_t offset_words[] = {
 	0x0FC, /*  A  */
 	0x198, /*  B  */
