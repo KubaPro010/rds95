@@ -105,7 +105,7 @@ static void get_rds_ps_group(uint16_t *blocks) {
 	blocks[1] |= ((rds_data.di >> (3 - ps_csegment)) & INT8_0) << 2;
 	blocks[1] |= ps_csegment;
 	blocks[2] = get_next_af();
-	if(rds_data.ta && tps_text[0]) {
+	if(rds_data.ta && tps_text[0] != "\0") {
 		blocks[3] = tps_text[ps_csegment * 2] << 8 | tps_text[ps_csegment * 2 + 1];
 	} else {
 		/* TODO: Add DPS */
