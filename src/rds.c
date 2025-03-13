@@ -474,6 +474,14 @@ void set_rds_rt1(unsigned char *rt1) {
 	uint8_t i = 0, len = 0;
 
 	rds_state.rt_update = 1;
+
+	if(rt1[0] == '\0') {
+		rds_state.rt1_enabled = 0;
+		return;
+	} else {
+		rds_state.rt1_enabled = 1;
+	}
+
 	memset(rds_data.rt1, ' ', RT_LENGTH);
 	while (*rt1 != 0 && len < RT_LENGTH)
 		rds_data.rt1[len++] = *rt1++;
