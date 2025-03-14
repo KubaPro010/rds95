@@ -623,11 +623,15 @@ void set_rds_grpseq(unsigned char* grpseq) {
 }
 
 void set_rds_udg1(uint8_t len, uint16_t (*groups)[3]) {
-	rds_data.udg1_len = len;
-	memcpy(&rds_data.udg1, &groups, sizeof(groups));
+    rds_data.udg1_len = len;
+    if (len > 0 && groups != NULL) {
+        memcpy(rds_data.udg1, groups, len * sizeof(uint16_t[3]));
+    }
 }
 
 void set_rds_udg2(uint8_t len, uint16_t (*groups)[3]) {
-	rds_data.udg2_len = len;
-	memcpy(&rds_data.udg2, &groups, sizeof(groups));
+    rds_data.udg2_len = len;
+    if (len > 0 && groups != NULL) {
+        memcpy(rds_data.udg2, groups, len * sizeof(uint16_t[3]));
+    }
 }
