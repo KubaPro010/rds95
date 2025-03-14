@@ -36,9 +36,9 @@ int fileExists(const char *filename) {
 static void register_oda(RDSEncoder* enc, uint8_t group, uint16_t aid, uint16_t scb) {
 	if (enc->oda_state[enc->program].count >= MAX_ODAS) return;
 
-	enc->odas[enc->program][oda_state.count].group = group;
-	enc->odas[enc->program][oda_state.count].aid = aid;
-	enc->odas[enc->program][oda_state.count].scb = scb;
+	enc->odas[enc->program][enc->oda_state[enc->program].count].group = group;
+	enc->odas[enc->program][enc->oda_state[enc->program].count].aid = aid;
+	enc->odas[enc->program][enc->oda_state[enc->program].count].scb = scb;
 	enc->oda_state[enc->program].count++;
 }
 
