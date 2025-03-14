@@ -316,9 +316,10 @@ static void get_rds_group(uint16_t *blocks) {
 		if(grp == 'F' && rds_data.lps[0] != '\0') good_group = 1;
 
 		if(!good_group) cant_find_group++;
-		if(cant_find_group == 23) {
+		else cant_find_group = 0;
+		if(!good_group && cant_find_group == 23) {
 			cant_find_group = 0;
-			goto group_coded;
+			grp = '0';
 			break;
 		}
 	}
@@ -340,7 +341,7 @@ static void get_rds_group(uint16_t *blocks) {
 			}
 			rds_state.ecc_or_lic ^= 1;
 			goto group_coded;
-		case'2':
+		case '2':
 			get_rds_rt_group(blocks);
 			goto group_coded;
 		case 'A':
