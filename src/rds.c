@@ -296,6 +296,7 @@ static void get_rds_group(uint16_t *blocks) {
 	}
 
 	uint8_t good_group = 0;
+	uint8_t cant_find_group = 0;
 	char grp;
 
 	while(good_group == 0) {
@@ -313,6 +314,13 @@ static void get_rds_group(uint16_t *blocks) {
 		if(grp == 'R' && rtplus_cfg.enabled) good_group = 1;
 		if(grp == '3' && oda_state.count != 0) good_group = 1;
 		if(grp == 'F' && rds_data.lps[0] != '\0') good_group = 1;
+
+		if(!good_group) cant_find_group++;
+		if(cant_find_group == 23) {
+			cant_find_group = 0;
+			goto group_coded;
+			break;
+		}
 	}
 
 	switch (grp)
