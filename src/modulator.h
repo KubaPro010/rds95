@@ -12,3 +12,4 @@ typedef struct rds_t {
 } rds_t;
 
 extern void init_rds_objects();
+extern void set_rds_level(float _level);

@@ -14,7 +14,6 @@ static struct {
 	uint8_t ps_update;
 	uint8_t tps_update;
 
-	uint8_t rt1_enabled;
 	uint8_t rt_update;
 	uint8_t rt_ab;
 	uint8_t rt_segments;
@@ -311,7 +310,7 @@ static void get_rds_group(uint16_t *blocks) {
 
 		if(grp == '0') good_group = 1;
 		if(grp == '1' && rds_state.ecclic_enabled) good_group = 1;
-		if(grp == '2' && rds_state.rt1_enabled) good_group = 1;
+		if(grp == '2' && rds_data.rt1_enabled) good_group = 1;
 		if(grp == 'A' && rds_state.ptyn_enabled) good_group = 1;
 		if(grp == 'X' && rds_data.udg1_len != 0) good_group = 1;
 		if(grp == 'Y' && rds_data.udg2_len != 0) good_group = 1;
@@ -418,7 +417,8 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 	set_rds_pi(rds_params.pi);
 	set_rds_ps(rds_params.ps);
 	rds_state.rt_ab = 1;
-	set_rds_rt1_enabled(1);
+	set_rds_shortrt(rds_params.shortrt)
+	set_rds_rt1_enabled(rds_params.rt1_enabled);
 	set_rds_rt1(rds_params.rt1);
 	set_rds_pty(rds_params.pty);
 	rds_state.ptyn_ab = 1;
@@ -467,8 +467,11 @@ void set_rds_pin(uint8_t day, uint8_t hour, uint8_t minute) {
 	rds_data.pin[3] = (minute & INT8_L6);
 }
 
+void set_rds_shortrt(uint8_t shortrt) {
+	rds_data.shortrt = shortrt & INT8_0;
+}
 void set_rds_rt1_enabled(uint8_t rt1en) {
-	rds_state.rt1_enabled = rt1en & INT8_0;
+	rds_data.rt1_enabled = rt1en & INT8_0;
 }
 void set_rds_rt1(unsigned char *rt1) {
 	uint8_t i = 0, len = 0;
@@ -479,7 +482,7 @@ void set_rds_rt1(unsigned char *rt1) {
 	while (*rt1 != 0 && len < RT_LENGTH)
 		rds_data.rt1[len++] = *rt1++;
 
-	if (len < RT_LENGTH) {
+	if (len < RT_LENGTH && rds_data.shortrt) {
 		rds_state.rt_segments = 0;
 
 		rds_data.rt1[len++] = '\r';

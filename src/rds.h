@@ -46,6 +46,8 @@ typedef struct rds_params_t {
 	unsigned char ps[PS_LENGTH];
 	unsigned char tps[PS_LENGTH];
 
+	uint8_t shortrt;
+	uint8_t rt1_enabled;
 	unsigned char rt1[RT_LENGTH];
 
 	unsigned char ptyn[PTYN_LENGTH];
@@ -242,6 +244,7 @@ extern void set_rds_lic(uint8_t lic);
 extern void set_rds_ecclic_toggle(uint8_t toggle);
 extern void set_rds_pin_enabled(uint8_t enabled);
 extern void set_rds_pin(uint8_t day, uint8_t hour, uint8_t minute);
+extern void set_rds_shortrt(uint8_t shortrt);
 extern void set_rds_rt1_enabled(uint8_t rt1en);
 extern void set_rds_rt1(unsigned char *rt1);
 extern void set_rds_ps(unsigned char *ps);

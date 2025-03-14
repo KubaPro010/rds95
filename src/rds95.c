@@ -68,7 +68,9 @@ int main(int argc, char **argv) {
 		.pi = 0x305F,
 		.ecc = 0xE2,
 		.lps = "radio95 - Radio Nowotomyskie",
-		.grp_sqc = "00012222FFR"
+		.grp_sqc = "00012222FFR",
+		.shortrt = 1,
+		.rt1_enabled = 1
 	};
 	/* PASIMPLE */
 	pa_simple *device;

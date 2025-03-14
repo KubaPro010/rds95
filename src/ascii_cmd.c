@@ -1,5 +1,6 @@
 #include "common.h"
 #include "rds.h"
+#include "modulator.h"
 #include "lib.h"
 #include "ascii_cmd.h"
 
@@ -207,8 +208,16 @@ static void handle_eccen(unsigned char *arg) {
     set_rds_ecclic_toggle(arg[0]);
 }
 
+static void handle_shortrt(unsigned char *arg) {
+    set_rds_shortrt(arg[0]);
+}
+
 static void handle_grpseq(unsigned char *arg) {
     set_rds_grpseq(arg);
+}
+
+static void handle_level(unsigned char *arg) {
+    set_rds_level(strtoul((char *)arg, NULL, 10)/255.0f);
 }
 
 static void handle_udg1(unsigned char *arg) {
@@ -307,13 +316,18 @@ static const command_handler_t commands_eq2[] = {
 static const command_handler_t commands_eq6[] = {
     {"PINEN", handle_pinen, 5},
     {"RT1EN", handle_rt1en, 5},
-    {"ECCEN", handle_eccen, 5}
+    {"ECCEN", handle_eccen, 5},
+    {"LEVEL", handle_level, 5}
 };
 
 static const command_handler_t commands_eq7[] = {
     {"PTYNEN", handle_ptynen, 6},
     {"RTPRUN", handle_rtprun, 6},
     {"GRPSEQ", handle_grpseq, 6}
+};
+
+static const command_handler_t commands_eq7[] = {
+    {"SHORTRT", handle_shortrt, 7}
 };
 
 // Process a command using the appropriate command table
@@ -397,7 +411,6 @@ void process_ascii_cmd(unsigned char *str) {
         }
     }
 
-    // Process commands with = delimiter at position 7 (format: XXXXXX=y...)
     if (cmd_len > 6 && str[6] == '=') {
         cmd = str;
         cmd[6] = 0;
@@ -406,6 +419,18 @@ void process_ascii_cmd(unsigned char *str) {
         if (process_command_table(commands_eq7,
                                   sizeof(commands_eq7) / sizeof(command_handler_t),
                                   cmd, arg)) {
+            return;
+        }
+    }
+
+    if (cmd_len > 7 && str[7] == '=') {
+        cmd = str;
+        cmd[7] = 0;
+        arg = str + 8;
+        
+        if (process_command_table(commands_eq8,
+                                    sizeof(commands_eq8) / sizeof(command_handler_t),
+                                    cmd, arg)) {
             return;
         }
     }
