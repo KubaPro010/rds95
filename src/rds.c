@@ -319,7 +319,7 @@ static void get_rds_group(uint16_t *blocks) {
 		else cant_find_group = 0;
 		if(!good_group && cant_find_group == 23) {
 			cant_find_group = 0;
-			grp = '0';
+			return;
 			break;
 		}
 	}
