@@ -431,7 +431,7 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 	set_rds_di(DI_STEREO | DI_DPTY);
 	set_rds_grpseq(rds_params.grp_sqc);
 	set_rds_udg1(rds_params.udg1);
-	set_rds_udg1(rds_params.udg2);
+	set_rds_udg2(rds_params.udg2);
 
 	init_rtplus(GROUP_11A);
 
@@ -621,10 +621,10 @@ void set_rds_grpseq(unsigned char* grpseq) {
 		rds_data.grp_sqc[len++] = *grpseq++;
 }
 
-void set_rds_udg1(uint16_t* groups) {
+void set_rds_udg1(uint16_t** groups) {
 	memcpy(&rds_data.udg1, &groups, sizeof(groups));
 }
 
-void set_rds_udg2(uint16_t* groups) {
+void set_rds_udg2(uint16_t** groups) {
 	memcpy(&rds_data.udg2, &groups, sizeof(groups));
 }
