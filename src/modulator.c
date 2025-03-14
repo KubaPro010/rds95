@@ -11,6 +11,7 @@ static uint8_t rdsgen;
 
 void init_rds_objects() {
 	level = 1.0f;
+	rdsgen = 1;
 
 	memset(&rds, 0, sizeof(rds));
 
@@ -27,7 +28,7 @@ void set_rds_level(float _level) {
 	level = fminf(1.0f, fmaxf(0.0f, _level));
 }
 void set_rds_gen(uint8_t rdsgen) {
-	rdsgen = rdsgen > 1 ? 1 : rdsgen;
+	rdsgen = rdsgen & 1;
 }
 
 /* Get an RDS sample. This generates the envelope of the waveform using
@@ -71,6 +72,5 @@ float get_rds_sample() {
 	rds.sample_buffer[rds.out_sample_index++] = 0;
 	if (rds.out_sample_index == SAMPLE_BUFFER_SIZE)
 			rds.out_sample_index = 0;
-	if(rdsgen == 0) sample = 0.0f;
-	return sample*level;
+	return sample*level*rdsgen;
 }
