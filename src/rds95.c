@@ -67,7 +67,8 @@ int main(int argc, char **argv) {
 		.rt1 = "",
 		.pi = 0x305F,
 		.ecc = 0xE2,
-		.lps = "radio95 - Radio Nowotomyskie"
+		.lps = "radio95 - Radio Nowotomyskie",
+		.grp_sqc = "00012222FFR"
 	};
 	/* PASIMPLE */
 	pa_simple *device;
@@ -184,11 +185,9 @@ int main(int argc, char **argv) {
 		goto exit;
 	}
 
-	/* Initialize the control pipe reader */
 	if (control_pipe[0]) {
 		if (open_control_pipe(control_pipe) == 0) {
 			fprintf(stderr, "Reading control commands on %s.\n", control_pipe);
-			/* Create control pipe polling worker */
 			int r;
 			r = pthread_create(&control_pipe_thread, &attr, control_pipe_worker, NULL);
 			if (r < 0) {
@@ -221,7 +220,6 @@ int main(int argc, char **argv) {
 
 exit:
 	if (control_pipe[0]) {
-		/* shut down threads */
 		fprintf(stderr, "Waiting for pipe thread to shut down.\n");
 		pthread_join(control_pipe_thread, NULL);
 	}
