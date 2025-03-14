@@ -357,10 +357,12 @@ static void get_rds_group(uint16_t *blocks) {
 			goto group_coded;
 		// TODO: Add EON
 		case 'X':
-			for(int i = 0; i < 3; i++) blocks_udg[i] = rds_data.udg1[rds_state.udg_idxs[0]++][i];;
+			for(int i = 0; i < 3; i++) blocks[i] = rds_data.udg1[rds_state.udg_idxs[0]++][i];;
+			if(rds_state.udg_idxs[0] == 8) rds_state.udg_idxs[0] = 0;
 			goto group_coded;
 		case 'Y':
 			for(int i = 0; i < 3; i++) blocks[i+1] = rds_data.udg2[rds_state.udg_idxs[1]++][i];
+			if(rds_state.udg_idxs[1] == 8) rds_state.udg_idxs[1] = 0;
 			goto group_coded;
 		case 'R':
 			if(rds_state.rtp_oda == 0) {
