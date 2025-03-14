@@ -1,6 +1,8 @@
 #include "common.h"
 #include "ascii_cmd.h"
 #include "control_pipe.h"
+#include "rds.h"
+#include "modulator.h"
 
 static int fd;
 static struct pollfd poller;
@@ -22,7 +24,7 @@ int open_control_pipe(char *filename) {
  * Polls the control file (pipe), and if a command is received,
  * calls process_ascii_cmd.
  */
-void poll_control_pipe() {
+void poll_control_pipe(RDSModulator* enc) {
     static unsigned char pipe_buf[CTL_BUFFER_SIZE];
     static unsigned char cmd_buf[CMD_BUFFER_SIZE];
     int bytes_read;
@@ -45,7 +47,7 @@ void poll_control_pipe() {
         if (cmd_len > 0 && cmd_len < CMD_BUFFER_SIZE) {
             memset(cmd_buf, 0, CMD_BUFFER_SIZE);
             strncpy((char *)cmd_buf, token, CMD_BUFFER_SIZE - 1);
-            process_ascii_cmd(cmd_buf);
+            process_ascii_cmd(enc, cmd_buf);
         }
         token = strtok(NULL, "\n");
     }

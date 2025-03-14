@@ -6,6 +6,7 @@
 #include <pulse/error.h>
 
 #include "rds.h"
+#include "modulator.h"
 #include "control_pipe.h"
 #include "lib.h"
 #include "ascii_cmd.h"
@@ -20,9 +21,10 @@ static void stop() {
 }
 
 /* threads */
-static void *control_pipe_worker() {
+static void *control_pipe_worker(void* encoder) {
+	RDSModulator *enc = (RDSModulator*)encoder;
 	while (!stop_rds) {
-		poll_control_pipe();
+		poll_control_pipe(enc);
 		msleep(READ_TIMEOUT_MS);
 	}
 
@@ -36,22 +38,6 @@ static void show_help(char *name) {
 		"\n"
 		"Usage: %s [options]\n"
 		"\n"
-		"    -i,--pi           Program Identification code\n"
-		"                        [default: 305F]\n"
-		"    -s,--ps           Program Service name\n"
-		"                        [default: \"radio95\"]\n"
-		"    -r,--rt1           Radio Text 1\n"
-		"                        [default: (nothing)]\n"
-		"    -p,--pty          Program Type\n"
-		"                        [default: 0]\n"
-		"    -T,--tp           Traffic Program\n"
-		"                        [default: 0]\n"
-		"    -A,--af           Alternative Frequency (FM/LF/MF)\n"
-		"                        (more than one AF may be passed)\n"
-		"    -P,--ptyn         Program Type Name\n"
-		"    -l,--lps          Long PS\n"
-		"    -e,--ecc          ECC code\n"
-		"    -d,--di           DI code\n"
 		"    -C,--ctl          FIFO control pipe\n"
 		"    -h,--help         Show this help text and exit\n"
 		"\n",
@@ -62,16 +48,6 @@ static void show_help(char *name) {
 
 int main(int argc, char **argv) {
 	char control_pipe[51] = "\0";
-	struct rds_params_t rds_params = {
-		.ps = "radio95",
-		.rt1 = "",
-		.pi = 0x305F,
-		.ecc = 0xE2,
-		.lps = "radio95 - Radio Nowotomyskie",
-		.grp_sqc = "00012222FFR",
-		.shortrt = 1,
-		.rt1_enabled = 1
-	};
 	/* PASIMPLE */
 	pa_simple *device;
 	pa_sample_spec format;
@@ -80,22 +56,10 @@ int main(int argc, char **argv) {
 	pthread_attr_t attr;
 	pthread_t control_pipe_thread;
 
-	const char	*short_opt = "R:i:s:r:p:T:A:P:l:e:L:d:C:h";
+	const char	*short_opt = "C:h";
 
 	struct option	long_opt[] =
 	{
-		{"rds",		required_argument, NULL, 'R'},
-		{"pi",		required_argument, NULL, 'i'},
-		{"ps",		required_argument, NULL, 's'},
-		{"rt1",		required_argument, NULL, 'r'},
-		{"pty",		required_argument, NULL, 'p'},
-		{"tp",		required_argument, NULL, 'T'},
-		{"af",		required_argument, NULL, 'A'},
-		{"ptyn",	required_argument, NULL, 'P'},
-		{"lps",    	required_argument, NULL, 'l'},
-		{"ecc",    	required_argument, NULL, 'e'},
-		{"lic",    	required_argument, NULL, 'L'},
-		{"di",    	required_argument, NULL, 'd'},
 		{"ctl",		required_argument, NULL, 'C'},
 
 		{"help",	no_argument, NULL, 'h'},
@@ -105,46 +69,6 @@ int main(int argc, char **argv) {
 	int opt;
 	while((opt = getopt_long(argc, argv, short_opt, long_opt, NULL)) != -1) {
 		switch (opt) {
-			case 'i': /* pi */
-				rds_params.pi = strtoul(optarg, NULL, 16);
-				break;
-
-			case 's': /* ps */
-				memcpy(rds_params.ps, xlat((unsigned char *)optarg), PS_LENGTH);
-				break;
-
-			case 'r': /* rt1 */
-				memcpy(rds_params.rt1, xlat((unsigned char *)optarg), RT_LENGTH);
-				break;
-
-			case 'p': /* pty */
-				rds_params.pty = strtoul(optarg, NULL, 10);
-				break;
-
-			case 'T': /* tp */
-				rds_params.tp = strtoul(optarg, NULL, 10);
-				break;
-
-			case 'A': /* af */
-				if (add_rds_af(&rds_params.af, strtof(optarg, NULL)) == 1) return 1;
-				break;
-
-			case 'P': /* ptyn */
-				memcpy(rds_params.ptyn, xlat((unsigned char *)optarg), PTYN_LENGTH);
-				break;
-
-			case 'l': /* lps */
-				memcpy(rds_params.lps, (unsigned char *)optarg, LPS_LENGTH);
-				break;
-
-			case 'e': /* ecc */
-				rds_params.ecc = strtoul(optarg, NULL, 16);
-				break;
-
-			case 'L': /* lic */
-				rds_params.lic = strtoul(optarg, NULL, 16);
-				break;
-
 			case 'C': /* ctl */
 				memcpy(control_pipe, optarg, 50);
 				break;
@@ -162,9 +86,6 @@ int main(int argc, char **argv) {
 	/* Gracefully stop the encoder on SIGINT or SIGTERM */
 	signal(SIGINT, stop);
 	signal(SIGTERM, stop);
-
-	/* Initialize the RDS modulator */
-	init_rds_encoder(rds_params);
 
 	/* PASIMPLE format */
 	format.format = PA_SAMPLE_FLOAT32NE;
@@ -187,11 +108,16 @@ int main(int argc, char **argv) {
 		goto exit;
 	}
 
+	RDSEncoder rdsEncoder;
+	RDSModulator rdsModulator;
+	init_rds_encoder(&rdsEncoder);
+	init_rds_modulator(&rdsModulator, &rdsEncoder);
+
 	if (control_pipe[0]) {
 		if (open_control_pipe(control_pipe) == 0) {
 			fprintf(stderr, "Reading control commands on %s.\n", control_pipe);
 			int r;
-			r = pthread_create(&control_pipe_thread, &attr, control_pipe_worker, NULL);
+			r = pthread_create(&control_pipe_thread, &attr, control_pipe_worker, (void*)&rdsModulator);
 			if (r < 0) {
 				fprintf(stderr, "Could not create control pipe thread.\n");
 				control_pipe[0] = 0;
@@ -211,7 +137,7 @@ int main(int argc, char **argv) {
 
 	while(!stop_rds) {
 		for (uint16_t i = 0; i < NUM_MPX_FRAMES; i++) {
-			mpx_buffer[i] = get_rds_sample();
+			mpx_buffer[i] = get_rds_sample(&rdsModulator);
 		}
 
 		if (pa_simple_write(device, mpx_buffer, sizeof(mpx_buffer), &pulse_error) != 0) {

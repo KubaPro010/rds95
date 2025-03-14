@@ -22,21 +22,26 @@
 
 #define MAX_AFS 25
 
-typedef struct rds_af_t {
+typedef struct {
 	uint8_t num_entries;
 	uint8_t num_afs;
 	uint8_t afs[MAX_AFS];
-} rds_af_t;
+} RDSAFs;
 
 #define AF_CODE_FILLER		205
 #define AF_CODE_NO_AF		224
 #define AF_CODE_NUM_AFS_BASE	AF_CODE_NO_AF
 #define AF_CODE_LFMF_FOLLOWS	250
 
-typedef struct rds_params_t {
+#define PROGRAMS 1
+
+typedef struct {
 	uint16_t pi;
+
+	uint8_t ecclic_enabled;
 	uint16_t lic;
 	uint8_t ecc;
+
 	uint8_t ta;
 	uint8_t pty;
 	uint8_t tp;
@@ -52,21 +57,81 @@ typedef struct rds_params_t {
 
 	unsigned char ptyn[PTYN_LENGTH];
 
-	struct rds_af_t af;
+	RDSAFs af;
 
 	uint8_t ct;
 
 	unsigned char lps[LPS_LENGTH];
 
+	// Enabled, day, hour, minute
 	uint8_t pin[4];
 
 	unsigned char grp_sqc[24];
 
 	uint8_t udg1_len;
 	uint8_t udg2_len;
+
 	uint16_t udg1[8][3];
 	uint16_t udg2[8][3];
-} rds_params_t;
+} RDSData;
+typedef struct {
+	uint8_t ecc_or_lic;
+
+	uint8_t ps_update;
+	uint8_t tps_update;
+
+	uint8_t rt_update;
+	uint8_t rt_ab;
+	uint8_t rt_segments;
+
+	uint8_t ptyn_enabled;
+	uint8_t ptyn_update;
+	uint8_t ptyn_ab;
+
+	uint8_t lps_update;
+	uint8_t lps_segments;
+
+	uint16_t custom_group[GROUP_LENGTH];
+
+	uint8_t rtp_oda;
+	uint8_t grp_seq_idx[2];
+	uint8_t udg_idxs[2];
+} RDSState;
+
+#define MAX_ODAS	8
+
+// List of ODAs: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
+#define	ODA_AID_RTPLUS	0x4bd7
+typedef struct rds_oda_t {
+	uint8_t group;
+	uint16_t aid;
+	uint16_t scb;
+} RDSODA;
+
+typedef struct {
+	uint8_t current;
+	uint8_t count;
+} RDSODAState;
+
+typedef struct {
+	uint8_t group;
+	uint8_t enabled;
+	uint8_t running;
+	uint8_t toggle;
+	uint8_t type[2];
+	uint8_t start[2];
+	uint8_t len[2];
+} RDSRTPlusData;
+
+typedef struct
+{
+	RDSData data[PROGRAMS];
+	RDSState state[PROGRAMS];
+	RDSODA odas[PROGRAMS][MAX_ODAS];
+	RDSODAState oda_state[PROGRAMS];
+	RDSRTPlusData rtpData[PROGRAMS];
+	uint8_t program;
+} RDSEncoder;
 
 #define GROUP_TYPE_0	( 0 << 4)
 #define GROUP_TYPE_1	( 1 << 4)
@@ -214,58 +279,14 @@ typedef struct rds_params_t {
 
 #define IS_TYPE_B(a)	(a[1] & INT16_11)
 
-/*
- * RDS ODA ID group
- *
- * This struct is for defining ODAs that will be transmitted
- *
- * Can signal version A or B data groups
- */
-typedef struct rds_oda_t {
-	uint8_t group;
-	uint16_t aid;
-	uint16_t scb;
-} rds_oda_t;
-
-#define MAX_ODAS	8
-
-/*
- * ODA AID
- *
- * Extensive list: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
- */
-#define	ODA_AID_RTPLUS	0x4bd7
-
-extern void init_rds_encoder(struct rds_params_t rds_params);
-extern void get_rds_bits(uint8_t *bits);
-extern void set_rds_pi(uint16_t pi_code);
-extern void set_rds_ecc(uint8_t ecc);
-extern void set_rds_lic(uint8_t lic);
-extern void set_rds_ecclic_toggle(uint8_t toggle);
-extern void set_rds_pin_enabled(uint8_t enabled);
-extern void set_rds_pin(uint8_t day, uint8_t hour, uint8_t minute);
-extern void set_rds_shortrt(uint8_t shortrt);
-extern void set_rds_rt1_enabled(uint8_t rt1en);
-extern void set_rds_rt1(unsigned char *rt1);
-extern void set_rds_ps(unsigned char *ps);
-extern void set_rds_tps(unsigned char *ps);
-extern void set_rds_lps(unsigned char *lps);
-extern void set_rds_rtplus_flags(uint8_t flags);
-extern void set_rds_rtplus_tags(uint8_t *tags);
-extern void set_rds_ta(uint8_t ta);
-extern void set_rds_pty(uint8_t pty);
-extern void set_rds_ptyn_enabled(uint8_t enabled);
-extern void set_rds_ptyn(unsigned char *ptyn);
-extern void set_rds_af(struct rds_af_t new_af_list);
-extern void clear_rds_af();
-extern void set_rds_tp(uint8_t tp);
-extern void set_rds_ms(uint8_t ms);
-extern void set_rds_ct(uint8_t ct);
-extern void set_rds_di(uint8_t di);
-extern float get_rds_sample();
-extern void set_rds_cg(uint16_t* blocks);
-extern void set_rds_grpseq(unsigned char* grpseq);
-extern void set_rds_udg1(uint8_t len, uint16_t (*groups)[3]);
-extern void set_rds_udg2(uint8_t len, uint16_t (*groups)[3]);
+void init_rds_encoder(RDSEncoder* enc);
+void get_rds_bits(RDSEncoder* enc, uint8_t *bits);
+void set_rds_rt1(RDSEncoder* enc, unsigned char *rt1);
+void set_rds_ps(RDSEncoder* enc, unsigned char *ps);
+void set_rds_tps(RDSEncoder* enc, unsigned char *tps);
+void set_rds_lps(RDSEncoder* enc, unsigned char *lps);
+void set_rds_rtplus_flags(RDSEncoder* enc, uint8_t flags);
+void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags);
+void set_rds_ptyn(RDSEncoder* enc, unsigned char *ptyn);
 
 #endif /* RDS_H */

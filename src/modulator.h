@@ -1,5 +1,8 @@
-/* RDS signal context */
-typedef struct rds_t {
+#include "common.h"
+#include "rds.h"
+#include "waveforms.h"
+
+typedef struct {
 	uint8_t bit_buffer[BITS_PER_GROUP];
 	uint8_t bit_pos;
 	float sample_buffer[SAMPLE_BUFFER_SIZE];
@@ -9,8 +12,10 @@ typedef struct rds_t {
 	uint8_t sample_count;
 	uint16_t in_sample_index;
 	uint16_t out_sample_index;
-} rds_t;
+	float level;
+	uint8_t rdsgen;
+	RDSEncoder* enc;
+} RDSModulator;
 
-extern void init_rds_objects();
-extern void set_rds_level(float _level);
-extern void set_rds_gen(uint8_t _rdsgen);
+void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc);
+float get_rds_sample(RDSModulator* rdsMod);

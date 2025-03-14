@@ -6,6 +6,7 @@
         "rds.h": "c",
         "lib.h": "c",
         "common.h": "c",
-        "modulator.h": "c"
+        "modulator.h": "c",
+        "control_pipe.h": "c"
     }
 }

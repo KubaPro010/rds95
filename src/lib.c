@@ -170,7 +170,7 @@ void add_checkwords(uint16_t *blocks, uint8_t *bits)
 /*
  * AF stuff
  */
-uint8_t add_rds_af(struct rds_af_t *af_list, float freq) {
+uint8_t add_rds_af(RDSAFs *af_list, float freq) {
 	uint16_t af;
 	uint8_t entries_reqd = 1; /* default for FM */
 
@@ -212,41 +212,6 @@ uint8_t add_rds_af(struct rds_af_t *af_list, float freq) {
 	af_list->num_afs++;
 
 	return 0;
-}
-
-char *show_af_list(struct rds_af_t af_list) {
-	float freq;
-	bool is_lfmf = false;
-	static char outstr[255];
-	uint8_t outstrlen = 0;
-
-	outstrlen += sprintf(outstr, "AF: %u,", af_list.num_afs);
-
-	for (uint8_t i = 0; i < af_list.num_entries; i++) {
-		if (af_list.afs[i] == AF_CODE_LFMF_FOLLOWS) {
-			/* The next AF will be for LF/MF */
-			is_lfmf = true;
-			continue;
-		}
-
-		if (is_lfmf) {
-			if (af_list.afs[i] >= 1 && af_list.afs[i] <= 15) { /* LF */
-				freq = 153.0f + ((float)(af_list.afs[i] -  1) * 9.0f);
-				outstrlen += sprintf(outstr + outstrlen, " (LF)%.0f", freq);
-			} else { /*if (af_list.afs[i] >= 16 && af_list.afs[i] <= 135) {*/ /* MF */
-				freq = 531.0f + ((float)(af_list.afs[i] - 16) * 9.0f);
-				outstrlen += sprintf(outstr + outstrlen, " (MF)%.0f", freq);
-			}
-			is_lfmf = false;
-			continue;
-		}
-
-		/* FM */
-		freq = (float)((uint16_t)af_list.afs[i] + 875) / 10.0f;
-		outstrlen += sprintf(outstr + outstrlen, " %.1f", freq);
-	}
-
-	return outstr;
 }
 
 /*
