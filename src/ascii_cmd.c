@@ -23,11 +23,11 @@ static void handle_afch(unsigned char *arg, RDSModulator* enc) {
         return;
     }
     if(arg[0] == '\0') {
-        memset(enc->enc->data->af, 0, sizeof(enc->enc->data->af));
+        memset(&(enc->enc->data->af), 0, sizeof(enc->enc->data->af));
         return;
     }
     
-    memset(enc->enc->data->af, 0, sizeof(enc->enc->data->af));
+    memset(&(enc->enc->data->af), 0, sizeof(enc->enc->data->af));
     uint8_t arg_count;
     RDSAFs new_af;
     uint8_t af[MAX_AFS], *af_iter;
@@ -54,7 +54,7 @@ static void handle_afch(unsigned char *arg, RDSModulator* enc) {
         af_iter++;
     }
     
-    memcpy(enc->enc->data->af, &new_af, sizeof(enc->enc->data->af));
+    memcpy(&(enc->enc->data->af), &new_af, sizeof(enc->enc->data->af));
 }
 
 static void handle_tps(unsigned char *arg, RDSModulator* enc) {
@@ -152,11 +152,11 @@ static void handle_af(unsigned char *arg, RDSModulator* enc) {
         return;
     }
     if(arg[0] == '\0') {
-        memset(enc->enc->data->af, 0, sizeof(enc->enc->data->af));
+        memset(&(enc->enc->data->af), 0, sizeof(enc->enc->data->af)); 
         return;
     }
     
-    memset(enc->enc->data->af, 0, sizeof(enc->enc->data->af));
+    memset(&(enc->enc->data->af), 0, sizeof(enc->enc->data->af));
     uint8_t arg_count;
     RDSAFs new_af;
     float af[MAX_AFS], *af_iter;
@@ -180,7 +180,7 @@ static void handle_af(unsigned char *arg, RDSModulator* enc) {
         add_rds_af(&new_af, *af_iter++);
     }
     
-    memcpy(enc->enc->data->af, &new_af, sizeof(enc->enc->data->af));
+    memcpy(&(enc->enc->data->af), &new_af, sizeof(enc->enc->data->af));
 }
 
 static void handle_g(unsigned char *arg, RDSModulator* enc) {
@@ -225,8 +225,8 @@ static void handle_shortrt(unsigned char *arg, RDSModulator* enc) {
 }
 
 static void handle_grpseq(unsigned char *arg, RDSModulator* enc) {
-    memset(enc->enc->data->grp_sqc, 0, 24);
-    memcpy(enc->enc->data->grp_sqc, arg, 24);
+    memset(&(enc->enc->data->grp_sqc), 0, 24);
+    memcpy(&(enc->enc->data->grp_sqc), arg, 24);
 }
 
 static void handle_level(unsigned char *arg, RDSModulator* enc) {
@@ -234,7 +234,7 @@ static void handle_level(unsigned char *arg, RDSModulator* enc) {
 }
 
 static void handle_rdsgen(unsigned char *arg, RDSModulator* enc) {
-    enc->rdsgen =  strtoul((char *)arg, NULL, 10);
+    enc->rdsgen = strtoul((char *)arg, NULL, 10);
 }
 
 static void handle_udg1(unsigned char *arg, RDSModulator* enc) {
@@ -263,8 +263,8 @@ static void handle_udg1(unsigned char *arg, RDSModulator* enc) {
         }
     }
     
-    memcpy(enc->enc->data->udg2, &blocks, sets * sizeof(uint16_t[3]));
-    enc->enc->data->udg2_len = sets;
+    memcpy(&(enc->enc->data->udg1), &blocks, sets * sizeof(uint16_t[3]));
+    enc->enc->data->udg1_len = sets;
 }
 static void handle_udg2(unsigned char *arg, RDSModulator* enc) {
     uint16_t blocks[8][3];  // Up to 8 sets of 3 blocks each
@@ -293,7 +293,7 @@ static void handle_udg2(unsigned char *arg, RDSModulator* enc) {
         }
     }
     
-    memcpy(enc->enc->data->udg2, &blocks, sets * sizeof(uint16_t[3]));
+    memcpy(&(enc->enc->data->udg2), &blocks, sets * sizeof(uint16_t[3]));
     enc->enc->data->udg2_len = sets;
 }
 
