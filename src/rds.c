@@ -320,6 +320,7 @@ static void get_rds_group(uint16_t *blocks) {
 		default:
 		case '0':
 			if(rds_data.grp_sqc[1] != 3) rds_data.grp_sqc[0]--;
+			else rds_data.grp_sqc[1] = 0;
 			rds_data.grp_sqc[1]++;
 			get_rds_ps_group(blocks);
 			goto group_coded;
