@@ -7,6 +7,7 @@ static struct rds_t rds;
 static float waveform[2][FILTER_SIZE];
 
 static float level;
+static uint8_t rdsgen;
 
 void init_rds_objects() {
 	level = 1.0f;
@@ -24,6 +25,9 @@ void init_rds_objects() {
 
 void set_rds_level(float _level) {
 	level = fminf(1.0f, fmaxf(0.0f, _level));
+}
+void set_rds_gen(uint8_t rdsgen) {
+	rdsgen = min(1, max(0, rdsgen)); // No RDS2
 }
 
 /* Get an RDS sample. This generates the envelope of the waveform using
@@ -67,5 +71,6 @@ float get_rds_sample() {
 	rds.sample_buffer[rds.out_sample_index++] = 0;
 	if (rds.out_sample_index == SAMPLE_BUFFER_SIZE)
 			rds.out_sample_index = 0;
+	if(rdsgen == 0) sample = 0.0f;
 	return sample*level;
 }

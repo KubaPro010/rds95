@@ -220,6 +220,10 @@ static void handle_level(unsigned char *arg) {
     set_rds_level(strtoul((char *)arg, NULL, 10)/255.0f);
 }
 
+static void handle_rdsgen(unsigned char *arg) {
+    set_rds_gen(strtoul((char *)arg, NULL, 10));
+}
+
 static void handle_udg1(unsigned char *arg) {
     uint16_t blocks[8][3];
     int sets = 0;
@@ -323,7 +327,8 @@ static const command_handler_t commands_eq6[] = {
 static const command_handler_t commands_eq7[] = {
     {"PTYNEN", handle_ptynen, 6},
     {"RTPRUN", handle_rtprun, 6},
-    {"GRPSEQ", handle_grpseq, 6}
+    {"GRPSEQ", handle_grpseq, 6},
+    {"RDSGEN", handle_rdsgen, 6}
 };
 
 static const command_handler_t commands_eq8[] = {
