@@ -334,12 +334,18 @@ static void get_rds_group(uint16_t *blocks) {
 			get_rds_ps_group(blocks);
 			goto group_coded;
 		case '1':
-			if(rds_state.ecc_or_lic == 0) {
-				get_rds_ecc_group(blocks);
-			} else {
+			if(rds_data.ecc && rds_data.lic) {
+				if(rds_state.ecc_or_lic == 0) {
+					get_rds_ecc_group(blocks);
+				} else {
+					get_rds_lic_group(blocks);
+				}
+				rds_state.ecc_or_lic ^= 1;
+			} else if(rds_data.lic) {
 				get_rds_lic_group(blocks);
+			} else {
+				get_rds_ecc_group(blocks);
 			}
-			rds_state.ecc_or_lic ^= 1;
 			goto group_coded;
 		case '2':
 			get_rds_rt_group(blocks);
