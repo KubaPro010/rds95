@@ -23,7 +23,7 @@ void init_rds_objects() {
 }
 
 void set_rds_level(float _level) {
-	level = _level;
+	level = fminf(1.0f, fmaxf(0.0f, _level));
 }
 
 /* Get an RDS sample. This generates the envelope of the waveform using
