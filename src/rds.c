@@ -74,13 +74,13 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 	static unsigned char tps_text[PS_LENGTH];
 	static uint8_t ps_csegment;
 
-	if (ps_csegment == 0 && enc->state[enc->program][enc->program].ps_update) {
+	if (ps_csegment == 0 && enc->state[enc->program].ps_update) {
 		memcpy(ps_text, enc->data[enc->program].ps, PS_LENGTH);
 		enc->state[enc->program][enc->program].ps_update = 0;
 	}
-	if(ps_csegment == 0 && enc->state[enc->program][enc->program].tps_update) {
+	if(ps_csegment == 0 && enc->state[enc->program].tps_update) {
 		memcpy(tps_text, enc->data[enc->program].tps, PS_LENGTH);
-		enc->state[enc->program][enc->program].tps_update = 0;
+		enc->state[enc->program].tps_update = 0;
 	}
 
 	blocks[1] |= enc->data[enc->program].ta << 4;
