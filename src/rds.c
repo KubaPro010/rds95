@@ -404,9 +404,9 @@ void init_rds_encoder(RDSEncoder* enc) {
 	init_rtplus(GROUP_11A);
 
 	if(fileExists("~/.rdsEncoder")) {
-		loadFromFile("~/.rdsEncoder", &enc);
+		loadFromFile("~/.rdsEncoder", enc);
 	} else {
-		saveToFile("~/.rdsEncoder")
+		saveToFile("~/.rdsEncoder");
 	}
 
 	init_rds_objects();
