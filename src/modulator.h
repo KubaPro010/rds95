@@ -13,4 +13,4 @@ typedef struct rds_t {
 
 extern void init_rds_objects();
 extern void set_rds_level(float _level);
-extern void set_rds_gen(uint8_t rdsgen);
+extern void set_rds_gen(uint8_t _rdsgen);

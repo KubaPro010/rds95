@@ -27,8 +27,8 @@ void init_rds_objects() {
 void set_rds_level(float _level) {
 	level = fminf(1.0f, fmaxf(0.0f, _level));
 }
-void set_rds_gen(uint8_t rdsgen) {
-	rdsgen = rdsgen & 1;
+void set_rds_gen(uint8_t _rdsgen) {
+	rdsgen = _rdsgen & 1;
 }
 
 /* Get an RDS sample. This generates the envelope of the waveform using
