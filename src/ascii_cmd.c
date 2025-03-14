@@ -8,7 +8,7 @@
 
 typedef struct {
     const char *cmd;
-    void (*handler)(unsigned char *arg);
+    void (*handler)(unsigned char *arg, RDSModulator* enc);
     uint8_t cmd_length;
 } command_handler_t;
 
