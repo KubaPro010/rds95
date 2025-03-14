@@ -3,6 +3,13 @@
 #include "waveforms.h"
 #include "modulator.h"
 
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
 static struct rds_t rds;
 static float waveform[2][FILTER_SIZE];
 
