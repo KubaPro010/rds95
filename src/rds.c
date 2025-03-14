@@ -199,10 +199,6 @@ static void get_rds_ptyn_group(uint16_t *blocks) {
 		rds_state.ptyn_update = 0;
 	}
 
-	if(!rds_state.ptyn_enabled) {
-		return 0;
-	}
-
 	blocks[1] |= 10 << 12 | ptyn_state;
 	blocks[1] |= rds_state.ptyn_ab << 4;
 	blocks[2] =  ptyn_text[ptyn_state * 4 + 0] << 8;
@@ -403,7 +399,7 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 	set_rds_ct(1);
 	set_rds_ms(1);
 	set_rds_di(DI_STEREO | DI_DPTY);
-	set_rds_grpseq("00012222FF");
+	set_rds_grpseq((unsigned char*)"00012222FF");
 
 	init_rtplus(GROUP_11A);
 
