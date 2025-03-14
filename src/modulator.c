@@ -24,7 +24,7 @@ float get_rds_sample(RDSModulator* rdsMod) {
 	if (rdsMod->sample_count == SAMPLES_PER_BIT) {
 		if (rdsMod->bit_pos == BITS_PER_GROUP) {
 			get_rds_bits(rdsMod->enc, rdsMod->bit_buffer);
-			rds.bit_pos = 0;
+			rdsMod->bit_pos = 0;
 		}
 
 		rdsMod->cur_bit = rdsMod->bit_buffer[rdsMod->bit_pos++];
