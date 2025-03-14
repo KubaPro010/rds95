@@ -10,7 +10,6 @@ static struct rds_params_t rds_data;
 static struct {
 	uint8_t ecclic_enabled;
 	uint8_t ecc_or_lic;
-	uint8_t pin_enabled;
 
 	uint8_t ps_update;
 	uint8_t tps_update;
@@ -28,6 +27,8 @@ static struct {
 	uint8_t lps_segments;
 
 	uint16_t custom_group[GROUP_LENGTH];
+
+	uint8_t rtp_oda;
 } rds_state;
 
 // #region ODA
@@ -126,10 +127,6 @@ static uint8_t get_rds_rt_group(uint16_t *blocks) {
 		rt_state = 0;
 	}
 
-	if(!rds_state.rt1_enabled) {
-		return 0;
-	}
-
 	blocks[1] |= 2 << 12;
 	blocks[1] |= rds_state.rt_ab << 4;
 	blocks[1] |= rt_state;
@@ -145,10 +142,6 @@ static uint8_t get_rds_rt_group(uint16_t *blocks) {
 
 static void get_rds_oda_group(uint16_t *blocks) {
 	struct rds_oda_t this_oda = odas[oda_state.current];
-
-	if(this_oda.aid == ODA_AID_RTPLUS && rtplus_cfg.enabled == 0) {
-		return;
-	}
 
 	blocks[1] |= 3 << 12;
 
@@ -206,6 +199,10 @@ static void get_rds_ptyn_group(uint16_t *blocks) {
 		rds_state.ptyn_update = 0;
 	}
 
+	if(!rds_state.ptyn_enabled) {
+		return 0;
+	}
+
 	blocks[1] |= 10 << 12 | ptyn_state;
 	blocks[1] |= rds_state.ptyn_ab << 4;
 	blocks[2] =  ptyn_text[ptyn_state * 4 + 0] << 8;
@@ -238,28 +235,24 @@ static void get_rds_lps_group(uint16_t *blocks) {
 
 static void get_rds_ecc_group(uint16_t *blocks) {
 	blocks[1] |= 1 << 12;
-	if(rds_state.ecclic_enabled) {
-		blocks[2] = rds_data.ecc;
-	}
+	blocks[2] = rds_data.ecc;
 
-	if(rds_state.pin_enabled) {
-		blocks[3] = rds_data.pin_day << 11;
-		blocks[3] |= rds_data.pin_hour << 6;
-		blocks[3] |= rds_data.pin_minute;
+	if(rds_data.pin[0]) {
+		blocks[3] = rds_data.pin[1] << 11; // day
+		blocks[3] |= rds_data.pin[2] << 6; // hour
+		blocks[3] |= rds_data.pin[3]; // minute
 	}
 }
 
 static void get_rds_lic_group(uint16_t *blocks) {
 	blocks[1] |= 1 << 12;
-	if(rds_state.ecclic_enabled) {
-		blocks[2] = 0x3000; // 0b0011000000000000
-		blocks[2] |= rds_data.lic;
-	}
+	blocks[2] = 0x3000; // 0b0011000000000000
+	blocks[2] |= rds_data.lic;
 
-	if(rds_state.pin_enabled) {
-		blocks[3] = rds_data.pin_day << 11;
-		blocks[3] |= rds_data.pin_hour << 6;
-		blocks[3] |= rds_data.pin_minute;
+	if(rds_data.pin[0]) {
+		blocks[3] = rds_data.pin[1] << 11; // day
+		blocks[3] |= rds_data.pin[2] << 6; // hour
+		blocks[3] |= rds_data.pin[3]; // minute
 	}
 }
 static void get_rds_rtplus_group(uint16_t *blocks) {
@@ -329,22 +322,6 @@ static uint8_t get_rds_other_groups(uint16_t *blocks) {
 	return 0;
 }
 
-static uint8_t get_rds_long_text_groups(uint16_t *blocks) {
-	static uint8_t group_selector = 0;
-
-	if (group_selector == 4 && rds_data.lps[0]) {
-		get_rds_lps_group(blocks);
-		goto group_coded;
-	}
-
-	if (++group_selector >= 8) group_selector = 0;
-	return 0;
-
-group_coded:
-	if (++group_selector >= 8) group_selector = 0;
-	return 1;
-}
-
 static uint8_t get_rds_custom_groups(uint16_t *blocks) {
 	if(rds_state.custom_group[0] == 1) {
 		rds_state.custom_group[0] = 0;
@@ -374,23 +351,66 @@ static void get_rds_group(uint16_t *blocks) {
 		goto group_coded;
 	}
 
-	if (get_rds_long_text_groups(blocks)) {
-		goto group_coded;
-	}
-	if (get_rds_other_groups(blocks)) {
-		goto group_coded;
+	uint8_t good_group = 0;
+	char grp;
+
+	while(good_group == 0) {
+		uint8_t grp_sqc_idx = rds_data.grp_sqc[0]++;
+		if(rds_data.grp_sqc[grp_sqc_idx+1] == '\0') {
+			rds_data.grp_sqc[0] = 0;
+			grp_sqc_idx = 0;
+		}
+		grp = rds_data.grp_sqc[grp_sqc_idx+1];
+
+		if(grp == '0') good_group = 1;
+		if(grp == '1' && rds_state.ecclic_enabled) good_group = 1;
+		if(grp == '2' && rds_state.rt1_enabled) good_group = 1;
+		if(grp == 'A' && rds_state.ptyn_enabled) good_group = 1;
+		if(grp == 'R' && rtplus_cfg.enabled) good_group = 1;
+		if(grp == '3' && oda_state.count != 0) good_group = 1;
+		if(grp == 'F' && rds_data.lps[0] != '\0') good_group = 1;
 	}
 
-	if(state < 6) {
-		get_rds_ps_group(blocks);
-		state++;
-	} else if(state >= 6) {
-		if(!get_rds_rt_group(blocks)) {
-			get_rds_ps_group(blocks);
-		}
-		state++;
+	switch (grp)
+	{
+		default:
+		case '0':
+			if(rds_data.grp_sqc[1] != 3) rds_data.grp_sqc[0]--;
+			rds_data.grp_sqc[1]++;
+			get_rds_ps_group();
+			goto group_coded;
+		case '1':
+			if(rds_state.ecc_or_lic == 0) {
+				get_rds_ecc_group(blocks);
+			} else {
+				get_rds_lic_group(blocks);
+			}
+			rds_state.ecc_or_lic ^= 1;
+			goto group_coded;
+		case'2':
+			get_rds_rt_group(blocks);
+			goto group_coded;
+		case 'A':
+			get_rds_ptyn_group(blocks);
+			goto group_coded;
+		// TODO: Add EON and UDG
+		case 'R':
+			if(rds_state.rtp_oda == 0) {
+				get_rds_rtplus_group(blocks);
+			} else {
+				get_rds_oda_group(blocks);
+			}
+			rds_state.rtp_oda ^= 1;
+			goto group_coded;
+		// TODO: add uecp
+		case '3':
+			get_rds_oda_group(blocks);
+			goto group_coded;
+		case 'F':
+			get_rds_lps_group(blocks);
+			goto group_coded;
 	}
-	if (state >= 12) state = 0;
+
 
 group_coded:
 	if (IS_TYPE_B(blocks)) {
@@ -435,6 +455,7 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 	set_rds_ct(1);
 	set_rds_ms(1);
 	set_rds_di(DI_STEREO | DI_DPTY);
+	set_rds_grpseq("00012222FF");
 
 	init_rtplus(GROUP_11A);
 
@@ -458,13 +479,13 @@ void set_rds_ecclic_toggle(uint8_t toggle) {
 }
 
 void set_rds_pin_enabled(uint8_t enabled) {
-	rds_state.pin_enabled = enabled & INT8_0;
+	rds_data.pin[0] = enabled & 1;
 }
 
 void set_rds_pin(uint8_t day, uint8_t hour, uint8_t minute) {
-	rds_data.pin_day = (day & INT8_L5);
-	rds_data.pin_hour = (hour & INT8_L5);
-	rds_data.pin_minute = (minute & INT8_L6);
+	rds_data.pin[1] = (day & INT8_L5);
+	rds_data.pin[2] = (hour & INT8_L5);
+	rds_data.pin[3] = (minute & INT8_L6);
 }
 
 void set_rds_rt1_enabled(uint8_t rt1en) {
@@ -472,13 +493,6 @@ void set_rds_rt1_enabled(uint8_t rt1en) {
 }
 void set_rds_rt1(unsigned char *rt1) {
 	uint8_t i = 0, len = 0;
-
-	if(rt1[0] == '\0') {
-		rds_state.rt1_enabled = 0;
-		return;
-	} else {
-		rds_state.rt1_enabled = 1;
-	}
 
 	rds_state.rt_update = 1;
 
@@ -549,11 +563,7 @@ void set_rds_lps(unsigned char *lps) {
 }
 
 void set_rds_rtplus_flags(uint8_t flags) {
-	if(flags == 2) {
-		rtplus_cfg.enabled = 0;
-	} else {
-		rtplus_cfg.enabled = 1;
-	}
+	rtplus_cfg.enabled = (flags==2);
 	rtplus_cfg.running	= flags & INT8_0;
 }
 
@@ -579,22 +589,23 @@ void clear_rds_af() {
 }
 
 void set_rds_pty(uint8_t pty) {
-	rds_data.pty = pty & INT8_L5;
+	rds_data.pty = pty & 31;
 }
 
 void set_rds_ptyn_enabled(uint8_t enabled) {
-	rds_state.ptyn_enabled = enabled & INT8_0;
+	rds_state.ptyn_enabled = enabled & 1;
 }
 
 void set_rds_ptyn(unsigned char *ptyn) {
 	uint8_t len = 0;
 
-	if (!ptyn[0]) {
+	rds_state.ptyn_update = 1;
+
+	if(ptyn[0] == '\0') {
 		memset(rds_data.ptyn, 0, PTYN_LENGTH);
 		return;
 	}
 
-	rds_state.ptyn_update = 1;
 	memset(rds_data.ptyn, ' ', PTYN_LENGTH);
 	while (*ptyn != 0 && len < PTYN_LENGTH)
 		rds_data.ptyn[len++] = *ptyn++;
@@ -625,4 +636,11 @@ void set_rds_cg(uint16_t* blocks) {
 	rds_state.custom_group[1] = blocks[0];
 	rds_state.custom_group[2] = blocks[1];
 	rds_state.custom_group[3] = blocks[2];
+}
+
+void set_rds_grpseq(unsigned char* grpseq) {
+	uint8_t len;
+	memset(rds_data.grp_sqc+2, ' ', 24);
+	while (*grpseq != 0 && len < 24)
+		rds_data.grp_sqc[2+len++] = *grpseq++;
 }

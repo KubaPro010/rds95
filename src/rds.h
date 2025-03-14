@@ -15,17 +15,11 @@
 #define FILTER_SIZE	 24
 #define SAMPLE_BUFFER_SIZE	(SAMPLES_PER_BIT + FILTER_SIZE)
 
-/* Text items
- *
- */
 #define RT_LENGTH	64
 #define PS_LENGTH	8
 #define PTYN_LENGTH	8
 #define LPS_LENGTH	32
 
-/* AF list size
- *
- */
 #define MAX_AFS 25
 
 typedef struct rds_af_t {
@@ -34,56 +28,39 @@ typedef struct rds_af_t {
 	uint8_t afs[MAX_AFS];
 } rds_af_t;
 
-/* AF codes */
 #define AF_CODE_FILLER		205
 #define AF_CODE_NO_AF		224
 #define AF_CODE_NUM_AFS_BASE	AF_CODE_NO_AF
 #define AF_CODE_LFMF_FOLLOWS	250
 
 typedef struct rds_params_t {
-	uint16_t pi; /*Program Identification*/
-	uint16_t lic; /* Language Identification code. lic should have 12 bits, 16 is the closest */
-	uint8_t ecc; /* Extended Country Code*/
-	uint8_t ta; /* Traffic Annoucement*/
-	uint8_t pty; /* Program Type */
-	uint8_t tp; /* Traffic Program */
-	uint8_t ms; /* Music/Speech */
-	uint8_t di; /* Decoder ID */
+	uint16_t pi;
+	uint16_t lic;
+	uint8_t ecc;
+	uint8_t ta;
+	uint8_t pty;
+	uint8_t tp;
+	uint8_t ms;
+	uint8_t di;
 
-	/* Program Service */
 	unsigned char ps[PS_LENGTH];
-	/* Traffic PS */
 	unsigned char tps[PS_LENGTH];
 
-	/* Radio Text */
 	unsigned char rt1[RT_LENGTH];
 
-	/* Program Type Name */
 	unsigned char ptyn[PTYN_LENGTH];
 
-	/* Alternative Frequencies */
 	struct rds_af_t af;
 
-	/* Clock-time */
 	uint8_t ct;
 
-	/* Long PS */
 	unsigned char lps[LPS_LENGTH];
 
-	/* Program Item Number */
-	uint8_t pin_day;
-	uint8_t pin_hour;
-	uint8_t pin_minute;
-} rds_params_t;
-/* Here, the first member of the struct must be a scalar to avoid a
-   warning on -Wmissing-braces with GCC < 4.8.3
-   (bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119)
-*/
+	uint8_t pin[4];
 
-/* Group type
- *
- * 0-15
- */
+	unsigned char grp_sqc[26];
+} rds_params_t;
+
 #define GROUP_TYPE_0	( 0 << 4)
 #define GROUP_TYPE_1	( 1 << 4)
 #define GROUP_TYPE_2	( 2 << 4)
@@ -101,15 +78,9 @@ typedef struct rds_params_t {
 #define GROUP_TYPE_14	(14 << 4)
 #define GROUP_TYPE_15	(15 << 4)
 
-/* Group versions
- *
- * The first 4 bits are the group number and the remaining 4 are
- * the group version
- */
 #define GROUP_VER_A	0
 #define GROUP_VER_B	1
 
-/* Version A groups */
 #define GROUP_0A	(GROUP_TYPE_0  | GROUP_VER_A)
 #define GROUP_1A	(GROUP_TYPE_1  | GROUP_VER_A)
 #define GROUP_2A	(GROUP_TYPE_2  | GROUP_VER_A)
@@ -127,7 +98,6 @@ typedef struct rds_params_t {
 #define GROUP_14A	(GROUP_TYPE_14 | GROUP_VER_A)
 #define GROUP_15A	(GROUP_TYPE_15 | GROUP_VER_A)
 
-/* Version B groups */
 #define GROUP_0B	(GROUP_TYPE_0  | GROUP_VER_B)
 #define GROUP_1B	(GROUP_TYPE_1  | GROUP_VER_B)
 #define GROUP_2B	(GROUP_TYPE_2  | GROUP_VER_B)
@@ -148,10 +118,10 @@ typedef struct rds_params_t {
 #define GET_GROUP_TYPE(x)	((x >> 4) & 15)
 #define GET_GROUP_VER(x)	(x & 1) /* only check bit 0 */
 
-#define DI_STEREO	(1 << 0) /* 1 - Stereo */
-#define DI_AH		(1 << 1) /* 2 - Artificial Head */
-#define DI_COMPRESSED	(1 << 2) /* 4 - Compressed */
-#define DI_DPTY		(1 << 3) /* 8 - Dynamic PTY */
+#define DI_STEREO	(1 << 0)
+#define DI_AH		(1 << 1)
+#define DI_COMPRESSED	(1 << 2)
+#define DI_DPTY		(1 << 3)
 
 /* Bit mask */
 
@@ -286,5 +256,6 @@ extern void set_rds_ct(uint8_t ct);
 extern void set_rds_di(uint8_t di);
 extern float get_rds_sample();
 extern void set_rds_cg(uint16_t* blocks);
+extern void set_rds_grpseq(unsigned char* grpseq);
 
 #endif /* RDS_H */

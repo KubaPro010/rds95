@@ -12,11 +12,6 @@ typedef struct {
 } command_handler_t;
 
 // Command handlers
-static void handle_text(unsigned char *arg) {
-    arg[RT_LENGTH * 2] = 0;
-    set_rds_rt1(xlat(arg));
-}
-
 static void handle_ptyn(unsigned char *arg) {
     arg[PTYN_LENGTH] = 0;
     set_rds_ptyn(xlat(arg));
@@ -212,6 +207,9 @@ static void handle_eccen(unsigned char *arg) {
     set_rds_ecclic_toggle(arg[0]);
 }
 
+static void handle_grpseq(unsigned char *arg) {
+    
+}
 // Command tables organized by delimiter position and command length
 static const command_handler_t commands_eq3[] = {
     {"PS", handle_ps, 2},
@@ -236,7 +234,7 @@ static const command_handler_t commands_eq4[] = {
 };
 
 static const command_handler_t commands_eq5[] = {
-    {"TEXT", handle_text, 4},
+    {"TEXT", handle_rt1, 4},
     {"PTYN", handle_ptyn, 4},
     {"AFCH", handle_afch, 4},
 };
@@ -253,7 +251,8 @@ static const command_handler_t commands_eq6[] = {
 
 static const command_handler_t commands_eq7[] = {
     {"PTYNEN", handle_ptynen, 6},
-    {"RTPRUN", handle_rtprun, 6}
+    {"RTPRUN", handle_rtprun, 6},
+    {"GRPSEQ", handle_grpseq, 6}
 };
 
 // Process a command using the appropriate command table
