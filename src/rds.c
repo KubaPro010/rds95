@@ -285,8 +285,6 @@ static uint8_t get_rds_custom_groups(uint16_t *blocks) {
 }
 
 static void get_rds_group(uint16_t *blocks) {
-	static uint8_t state;
-
 	blocks[0] = rds_data.pi;
 	blocks[1] = rds_data.tp << 10;
 	blocks[1] |= rds_data.pty << 5;
@@ -327,7 +325,7 @@ static void get_rds_group(uint16_t *blocks) {
 		case '0':
 			if(rds_data.grp_sqc[1] != 3) rds_data.grp_sqc[0]--;
 			rds_data.grp_sqc[1]++;
-			get_rds_ps_group();
+			get_rds_ps_group(blocks);
 			goto group_coded;
 		case '1':
 			if(rds_state.ecc_or_lic == 0) {
