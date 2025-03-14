@@ -3,13 +3,6 @@
 #include "waveforms.h"
 #include "modulator.h"
 
-#ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-#ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
-
 static struct rds_t rds;
 static float waveform[2][FILTER_SIZE];
 
@@ -34,7 +27,7 @@ void set_rds_level(float _level) {
 	level = fminf(1.0f, fmaxf(0.0f, _level));
 }
 void set_rds_gen(uint8_t rdsgen) {
-	rdsgen = min(1U, max(0U, rdsgen));
+	rdsgen = rdsgen > 1 ? 1 : rdsgen;
 }
 
 /* Get an RDS sample. This generates the envelope of the waveform using
