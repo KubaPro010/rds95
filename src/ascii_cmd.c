@@ -45,7 +45,7 @@ static void handle_afch(unsigned char *arg, RDSModulator* enc) {
         &af[20], &af[21], &af[22], &af[23], &af[24]);
     
     af_iter = af;
-    memset(&new_af, 0, sizeof(struct rds_af_t));
+    memset(&new_af, 0, sizeof(RDSAFs));
     
     while (arg_count-- != 0) {
         uint8_t current_value = *af_iter;
