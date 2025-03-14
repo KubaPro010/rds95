@@ -272,56 +272,6 @@ static void get_rds_rtplus_group(uint16_t *blocks) {
 }
 // #endregion
 
-static uint8_t get_rds_other_groups(uint16_t *blocks) {
-	static uint8_t group_counter[GROUP_15B];
-
-	if (rds_data.ecc || rds_data.lic) {
-		if (++group_counter[GROUP_1A] >= 22) {
-			group_counter[GROUP_1A] = 0;
-			if(rds_data.ecc && rds_data.lic) {
-				if(rds_state.ecc_or_lic == 0) {
-					get_rds_ecc_group(blocks);
-				} else {
-					get_rds_lic_group(blocks);
-				}
-				rds_state.ecc_or_lic ^= 1;
-			} else if(rds_data.ecc) {
-				get_rds_ecc_group(blocks);
-			} else if(rds_data.ecc) {
-				get_rds_lic_group(blocks);
-			}
-			return 1;
-		}
-	}
-
-	if (oda_state.count) {
-		if (++group_counter[GROUP_3A] >= 25) {
-			group_counter[GROUP_3A] = 0;
-			get_rds_oda_group(blocks);
-			return 1;
-		}
-	}
-
-	if (rds_state.ptyn_enabled && rds_data.ptyn[0]) {
-		if (++group_counter[GROUP_10A] >= 13) {
-			group_counter[GROUP_10A] = 0;
-			get_rds_ptyn_group(blocks);
-			return 1;
-		}
-	}
-
-	if (++group_counter[rtplus_cfg.group] >= 30) {
-		group_counter[rtplus_cfg.group] = 0;
-		if(rtplus_cfg.enabled == 0) {
-			return 0;
-		}
-		get_rds_rtplus_group(blocks);
-		return 1;
-	}
-
-	return 0;
-}
-
 static uint8_t get_rds_custom_groups(uint16_t *blocks) {
 	if(rds_state.custom_group[0] == 1) {
 		rds_state.custom_group[0] = 0;
