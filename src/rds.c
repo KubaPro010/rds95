@@ -587,7 +587,7 @@ void set_rds_cg(uint16_t* blocks) {
 }
 
 void set_rds_grpseq(unsigned char* grpseq) {
-	uint8_t len;
+	uint8_t len = 0;
 	memset(rds_data.grp_sqc+2, ' ', 24);
 	while (*grpseq != 0 && len < 24)
 		rds_data.grp_sqc[2+len++] = *grpseq++;
