@@ -137,6 +137,7 @@ static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks) {
 }
 
 static uint8_t get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
+	(void)enc;
 	static uint8_t latest_minutes;
 	struct tm *utc, *local_time;
 	time_t now;
@@ -401,7 +402,7 @@ void init_rds_encoder(RDSEncoder* enc) {
 	enc->state[enc->program].rt_ab = 1;
 	enc->state[enc->program].ptyn_ab = 1;
 
-	init_rtplus(GROUP_11A);
+	init_rtplus(enc, GROUP_11A);
 
 	if(fileExists("~/.rdsEncoder")) {
 		loadFromFile("~/.rdsEncoder", enc);
