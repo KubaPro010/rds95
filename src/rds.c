@@ -407,7 +407,7 @@ void init_rds_encoder(RDSEncoder* enc) {
 	if(fileExists("~/.rdsEncoder")) {
 		loadFromFile("~/.rdsEncoder", enc);
 	} else {
-		saveToFile("~/.rdsEncoder");
+		saveToFile("~/.rdsEncoder", enc);
 	}
 
 	init_rds_objects();
