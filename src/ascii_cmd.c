@@ -366,7 +366,11 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
     unsigned char *cmd, *arg;
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
 
-    // Process commands with = delimiter at position 2 (format: X=y...)
+    if (str[0] == '*') {
+        saveToFile(enc->enc);
+        return;
+    }
+
     if (cmd_len > 1 && str[1] == '=') {
         cmd = str;
         cmd[1] = 0;

@@ -4,8 +4,10 @@
 #include "lib.h"
 #include <time.h>
 
-void saveToFile(const char *filename, RDSEncoder *emp) {
-    FILE *file = fopen(filename, "wb");
+void saveToFile(RDSEncoder *emp) {
+	char encoderPath[256];
+	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
+    FILE *file = fopen(encoderPath, "wb");
     if (file == NULL) {
         perror("Error opening file");
         return;
@@ -14,8 +16,10 @@ void saveToFile(const char *filename, RDSEncoder *emp) {
     fclose(file);
 }
 
-void loadFromFile(const char *filename, RDSEncoder *emp) {
-    FILE *file = fopen(filename, "rb");
+void loadFromFile(RDSEncoder *emp) {
+	char encoderPath[256];
+	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
+    FILE *file = fopen(encoderPath, "rb");
     if (file == NULL) {
         perror("Error opening file");
         return;
@@ -24,8 +28,10 @@ void loadFromFile(const char *filename, RDSEncoder *emp) {
     fclose(file);
 }
 
-int fileExists(const char *filename) {
-    FILE *file = fopen(filename, "rb");
+int rdssaved() {
+	char encoderPath[256];
+	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
+    FILE *file = fopen(encoderPath, "rb");
     if (file) {
         fclose(file);
         return 1;
@@ -404,13 +410,10 @@ void init_rds_encoder(RDSEncoder* enc) {
 
 	init_rtplus(enc, GROUP_11A);
 
-	char encoderPath[256];
-	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
-
-	if (fileExists(encoderPath)) {
-		loadFromFile(encoderPath, enc);
+	if (rdssaved()) {
+		loadFromFile(enc);
 	} else {
-		saveToFile(encoderPath, enc);
+		saveToFile(enc);
 	}
 }
 

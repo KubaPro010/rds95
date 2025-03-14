@@ -279,6 +279,10 @@ typedef struct
 
 #define IS_TYPE_B(a)	(a[1] & INT16_11)
 
+void saveToFile(RDSEncoder *emp);
+void loadFromFile(RDSEncoder *emp);
+int rdssaved();
+
 void init_rds_encoder(RDSEncoder* enc);
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits);
 void set_rds_rt1(RDSEncoder* enc, unsigned char *rt1);
