@@ -404,6 +404,7 @@ void init_rds_encoder(RDSEncoder* enc) {
 	enc->data[enc->program].pi = 0xFFFF;
 	strcpy((char *)enc->data[enc->program].ps, "* RDS *");
 	enc->data[enc->program].rt1_enabled = 1;
+	enc->data[enc->program].pty = 0;
 
 	enc->state[enc->program].rt_ab = 1;
 	enc->state[enc->program].ptyn_ab = 1;
