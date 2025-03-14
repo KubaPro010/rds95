@@ -400,7 +400,7 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 	set_rds_ct(1);
 	set_rds_ms(1);
 	set_rds_di(DI_STEREO | DI_DPTY);
-	set_rds_grpseq((unsigned char*)"00012222FF");
+	set_rds_grpseq((unsigned char*)"00012222FFR");
 
 	init_rtplus(GROUP_11A);
 
