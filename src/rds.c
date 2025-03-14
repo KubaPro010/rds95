@@ -123,7 +123,7 @@ static uint8_t get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
 }
 
 static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks) {
-	RDSODA this_oda = enc->odas[enc->oda_state[enc->program].current];
+	RDSODA this_oda = enc->odas[enc->program][enc->oda_state[enc->program].current];
 
 	blocks[1] |= 3 << 12;
 
