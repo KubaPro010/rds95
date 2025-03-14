@@ -621,10 +621,10 @@ void set_rds_grpseq(unsigned char* grpseq) {
 		rds_data.grp_sqc[len++] = *grpseq++;
 }
 
-void set_rds_udg1(uint16_t** groups) {
+void set_rds_udg1(uint16_t (*groups)[3]) {
 	memcpy(&rds_data.udg1, &groups, sizeof(groups));
 }
 
-void set_rds_udg2(uint16_t** groups) {
+void set_rds_udg1(uint16_t (*groups)[3]) {
 	memcpy(&rds_data.udg2, &groups, sizeof(groups));
 }

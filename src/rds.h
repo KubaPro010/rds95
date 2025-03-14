@@ -260,7 +260,7 @@ extern void set_rds_di(uint8_t di);
 extern float get_rds_sample();
 extern void set_rds_cg(uint16_t* blocks);
 extern void set_rds_grpseq(unsigned char* grpseq);
-extern void set_rds_udg1(uint16_t** groups);
-extern void set_rds_udg2(uint16_t** groups);
+extern void set_rds_udg1(uint16_t (*groups)[3]);
+extern void set_rds_udg2(uint16_t (*groups)[3]);
 
 #endif /* RDS_H */
