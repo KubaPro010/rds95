@@ -208,20 +208,7 @@ static void handle_eccen(unsigned char *arg) {
 }
 
 static void handle_grpseq(unsigned char *arg) {
-    unsigned char grps[24];
-    int count = 0;
-    
-    while (*arg && count < 24) {
-        unsigned int value;
-        if (sscanf((char *)arg, "%1X", &value) == 1) {
-            grps[count++] = (unsigned char)value;
-            arg++; // Move to the next character
-        } else {
-            break; // Stop if input is invalid
-        }
-    }
-    
-    set_rds_grpseq(grps);
+    set_rds_grpseq(arg);
 }
 
 // Command tables organized by delimiter position and command length
