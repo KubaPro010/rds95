@@ -29,6 +29,7 @@ static struct {
 	uint16_t custom_group[GROUP_LENGTH];
 
 	uint8_t rtp_oda;
+	uint8_t grp_seq_idx[2];
 } rds_state;
 
 // #region ODA
@@ -300,12 +301,12 @@ static void get_rds_group(uint16_t *blocks) {
 	char grp;
 
 	while(good_group == 0) {
-		uint8_t grp_sqc_idx = rds_data.grp_sqc[0]++;
-		if(rds_data.grp_sqc[grp_sqc_idx+2] == '\0') {
-			rds_data.grp_sqc[0] = 0;
+		uint8_t grp_sqc_idx = rds_state.grp_seq_idx[0]++;
+		if(rds_data.grp_sqc[grp_sqc_idx] == '\0') {
+			rds_state.grp_seq_idx[0] = 0;
 			grp_sqc_idx = 0;
 		}
-		grp = rds_data.grp_sqc[grp_sqc_idx+2];
+		grp = rds_data.grp_sqc[grp_sqc_idx];
 
 		if(grp == '0') good_group = 1;
 		if(grp == '1' && rds_state.ecclic_enabled) good_group = 1;
@@ -328,9 +329,9 @@ static void get_rds_group(uint16_t *blocks) {
 	{
 		default:
 		case '0':
-			if(rds_data.grp_sqc[1] != 3) rds_data.grp_sqc[0]--;
-			else rds_data.grp_sqc[1] = 0;
-			rds_data.grp_sqc[1]++;
+			if(rds_state.grp_seq_idx[1] != 3) rds_state.grp_seq_idx[0]--;
+			else rds_state.grp_seq_idx[1] = 0;
+			rds_state.grp_seq_idx[1]++;
 			get_rds_ps_group(blocks);
 			goto group_coded;
 		case '1':
@@ -600,7 +601,7 @@ void set_rds_cg(uint16_t* blocks) {
 
 void set_rds_grpseq(unsigned char* grpseq) {
 	uint8_t len = 0;
-	memset(rds_data.grp_sqc+2, ' ', 24);
+	memset(rds_data.grp_sqc, ' ', 24);
 	while (*grpseq != 0 && len < 24)
-		rds_data.grp_sqc[2+len++] = *grpseq++;
+		rds_data.grp_sqc[len++] = *grpseq++;
 }

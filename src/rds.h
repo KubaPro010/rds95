@@ -58,7 +58,7 @@ typedef struct rds_params_t {
 
 	uint8_t pin[4];
 
-	unsigned char grp_sqc[26];
+	unsigned char grp_sqc[24];
 } rds_params_t;
 
 #define GROUP_TYPE_0	( 0 << 4)
