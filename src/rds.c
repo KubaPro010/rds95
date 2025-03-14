@@ -404,10 +404,13 @@ void init_rds_encoder(RDSEncoder* enc) {
 
 	init_rtplus(enc, GROUP_11A);
 
-	if(fileExists(getenv("HOME")+"/.rdsEncoder")) {
-		loadFromFile(getenv("HOME")+"/.rdsEncoder", enc);
+	char encoderPath[256];
+	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
+
+	if (fileExists(encoderPath)) {
+		loadFromFile(encoderPath, enc);
 	} else {
-		saveToFile(getenv("HOME")+"/.rdsEncoder", enc);
+		saveToFile(encoderPath, enc);
 	}
 }
 
