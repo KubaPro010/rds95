@@ -15,7 +15,7 @@ typedef struct {
 // Command handlers
 static void handle_ptyn(unsigned char *arg, RDSModulator* enc) {
     arg[PTYN_LENGTH] = 0;
-    set_rds_ptyn(enc, xlat(arg));
+    set_rds_ptyn(enc->enc, xlat(arg));
 }
 
 static void handle_afch(unsigned char *arg, RDSModulator* enc) {
@@ -59,12 +59,12 @@ static void handle_afch(unsigned char *arg, RDSModulator* enc) {
 
 static void handle_tps(unsigned char *arg, RDSModulator* enc) {
     arg[PS_LENGTH * 2] = 0;
-    set_rds_tps(enc, xlat(arg));
+    set_rds_tps(enc->enc, xlat(arg));
 }
 
 static void handle_rt1(unsigned char *arg, RDSModulator* enc) {
     arg[RT_LENGTH * 2] = 0;
-    set_rds_rt1(enc, xlat(arg));
+    set_rds_rt1(enc->enc, xlat(arg));
 }
 
 static void handle_pty(unsigned char *arg, RDSModulator* enc) {
@@ -88,18 +88,18 @@ static void handle_rtp(unsigned char *arg, RDSModulator* enc) {
     
     if (sscanf((char *)arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu",
         &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
-        set_rds_rtplus_tags(enc, tags);
+        set_rds_rtplus_tags(enc->enc, tags);
     } else if (sscanf((char *)arg, "%31[^,],%hhu,%hhu,%31[^,],%hhu,%hhu",
         tag_names[0], &tags[1], &tags[2], tag_names[1], &tags[4], &tags[5]) == 6) {
         tags[0] = get_rtp_tag_id(tag_names[0]);
         tags[3] = get_rtp_tag_id(tag_names[1]);
-        set_rds_rtplus_tags(enc, tags);
+        set_rds_rtplus_tags(enc->enc, tags);
     }
 }
 
 static void handle_lps(unsigned char *arg, RDSModulator* enc) {
     arg[LPS_LENGTH] = 0;
-    set_rds_lps(enc, arg);
+    set_rds_lps(enc->enc, arg);
 }
 
 static void handle_pin(unsigned char *arg, RDSModulator* enc) {
@@ -114,7 +114,7 @@ static void handle_pin(unsigned char *arg, RDSModulator* enc) {
 static void handle_ps(unsigned char *arg, RDSModulator* enc) {
     if (arg[0] == '\0') arg[0] = ' '; // Fix for strings that start with a space
     arg[PS_LENGTH * 2] = 0;
-    set_rds_ps(enc, xlat(arg));
+    set_rds_ps(enc->enc, xlat(arg));
 }
 
 static void handle_ct(unsigned char *arg, RDSModulator* enc) {
@@ -206,7 +206,7 @@ static void handle_rt1en(unsigned char *arg, RDSModulator* enc) {
 
 static void handle_ptynen(unsigned char *arg, RDSModulator* enc) {
     arg[1] = 0;
-    set_rds_ptyn_enabled(enc->enc, strtoul((char *)arg, NULL, 10));
+    enc->enc->state->ptyn_enabled = strtoul((char *)arg, NULL, 10);
 }
 
 static void handle_rtprun(unsigned char *arg, RDSModulator* enc) {
