@@ -30,6 +30,7 @@ static struct {
 
 	uint8_t rtp_oda;
 	uint8_t grp_seq_idx[2];
+	uint8_t udg_idxs[2];
 } rds_state;
 
 // #region ODA
@@ -354,7 +355,19 @@ static void get_rds_group(uint16_t *blocks) {
 		case 'A':
 			get_rds_ptyn_group(blocks);
 			goto group_coded;
-		// TODO: Add EON and UDG
+		// TODO: Add EON
+		case 'X':
+			uint16_t blocks[3] = rds_data.udg1[rds_state.udg_idxs[0]++];
+			blocks[1] |= blocks[0];
+			blocks[2] = blocks[2];
+			blocks[3] = blocks[3];
+			goto group_coded;
+		case 'Y':
+			uint16_t blocks[3] = rds_data.udg2[rds_state.udg_idxs[1]++];
+			blocks[1] |= blocks[0];
+			blocks[2] = blocks[2];
+			blocks[3] = blocks[3];
+			goto group_coded;
 		case 'R':
 			if(rds_state.rtp_oda == 0) {
 				get_rds_rtplus_group(blocks);
@@ -604,4 +617,12 @@ void set_rds_grpseq(unsigned char* grpseq) {
 	memset(rds_data.grp_sqc, ' ', 24);
 	while (*grpseq != 0 && len < 24)
 		rds_data.grp_sqc[len++] = *grpseq++;
+}
+
+void set_rds_udg1(uint16_t* groups) {
+	memcpy(&rds_data.udg1, &groups, sizeof(groups));
+}
+
+void set_rds_udg2(uint16_t* groups) {
+	memcpy(&rds_data.udg2, &groups, sizeof(groups));
 }

@@ -59,6 +59,9 @@ typedef struct rds_params_t {
 	uint8_t pin[4];
 
 	unsigned char grp_sqc[24];
+
+	uint16_t udg1[8][3];
+	uint16_t udg2[8][3];
 } rds_params_t;
 
 #define GROUP_TYPE_0	( 0 << 4)
@@ -257,5 +260,7 @@ extern void set_rds_di(uint8_t di);
 extern float get_rds_sample();
 extern void set_rds_cg(uint16_t* blocks);
 extern void set_rds_grpseq(unsigned char* grpseq);
+extern void set_rds_udg1(uint16_t* groups);
+extern void set_rds_udg2(uint16_t* groups);
 
 #endif /* RDS_H */

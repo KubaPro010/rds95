@@ -211,6 +211,64 @@ static void handle_grpseq(unsigned char *arg) {
     set_rds_grpseq(arg);
 }
 
+static void handle_udg1(unsigned char *arg) {
+    uint16_t blocks[8][3];
+    int sets = 0;
+    unsigned char *ptr = arg;
+    
+    while (sets < 8) {
+        int count = sscanf((char *)ptr, "%4hx%4hx%4hx", 
+                          &blocks[sets][0], &blocks[sets][1], &blocks[sets][2]);
+        
+        if (count != 3) {
+            break;
+        }
+        
+        sets++;
+        
+        while (*ptr && *ptr != ',') {
+            ptr++;
+        }
+        
+        if (*ptr == ',') {
+            ptr++;
+        } else {
+            break;
+        }
+    }
+    
+    set_rds_udg1(blocks);
+}
+static void handle_udg2(unsigned char *arg) {
+    uint16_t blocks[8][3];  // Up to 8 sets of 3 blocks each
+    int sets = 0;
+    unsigned char *ptr = arg;
+    
+    while (sets < 8) {
+        int count = sscanf((char *)ptr, "%4hx%4hx%4hx", 
+                          &blocks[sets][0], &blocks[sets][1], &blocks[sets][2]);
+        
+        if (count != 3) {
+            break;  // Couldn't parse a complete set of 3 blocks
+        }
+        
+        sets++;
+        
+        // Look for the comma separator
+        while (*ptr && *ptr != ',') {
+            ptr++;
+        }
+        
+        if (*ptr == ',') {
+            ptr++;  // Skip over the comma
+        } else {
+            break;  // No more separators
+        }
+    }
+    
+    set_rds_udg2(blocks);
+}
+
 // Command tables organized by delimiter position and command length
 static const command_handler_t commands_eq3[] = {
     {"PS", handle_ps, 2},
@@ -238,6 +296,8 @@ static const command_handler_t commands_eq5[] = {
     {"TEXT", handle_rt1, 4},
     {"PTYN", handle_ptyn, 4},
     {"AFCH", handle_afch, 4},
+    {"UDG1", handle_udg1, 4},
+    {"UDG2", handle_udg2, 4},
 };
 
 static const command_handler_t commands_eq2[] = {
