@@ -76,7 +76,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 
 	if (ps_csegment == 0 && enc->state[enc->program].ps_update) {
 		memcpy(ps_text, enc->data[enc->program].ps, PS_LENGTH);
-		enc->state[enc->program][enc->program].ps_update = 0;
+		enc->state[enc->program].ps_update = 0;
 	}
 	if(ps_csegment == 0 && enc->state[enc->program].tps_update) {
 		memcpy(tps_text, enc->data[enc->program].tps, PS_LENGTH);
@@ -393,10 +393,10 @@ void init_rds_encoder(RDSEncoder* enc) {
 	enc->data[enc->program].ct = 1;
 	enc->data[enc->program].di = 1;
 	enc->data[enc->program].ecclic_enabled = 1;
-	enc->data[enc->program].grp_sqc = (unsigned char*)"002222\0";
+	strcpy((char *)enc->data[enc->program].grp_sqc, "002222");
 	enc->data[enc->program].ms = 1;
 	enc->data[enc->program].pi = 0xFFFF;
-	enc->data[enc->program].ps = (unsigned char*)"* RDS *";
+	strcpy((char *)enc->data[enc->program].ps, "* RDS *");
 	enc->data[enc->program].rt1_enabled = 1;
 
 	enc->state[enc->program].rt_ab = 1;
