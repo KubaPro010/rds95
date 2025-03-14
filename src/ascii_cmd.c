@@ -326,7 +326,7 @@ static const command_handler_t commands_eq7[] = {
     {"GRPSEQ", handle_grpseq, 6}
 };
 
-static const command_handler_t commands_eq7[] = {
+static const command_handler_t commands_eq8[] = {
     {"SHORTRT", handle_shortrt, 7}
 };
 
