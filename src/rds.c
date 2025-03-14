@@ -313,6 +313,8 @@ static void get_rds_group(uint16_t *blocks) {
 		if(grp == '1' && rds_state.ecclic_enabled) good_group = 1;
 		if(grp == '2' && rds_state.rt1_enabled) good_group = 1;
 		if(grp == 'A' && rds_state.ptyn_enabled) good_group = 1;
+		if(grp == 'X' && rds_data.udg1_len != 0) good_group = 1;
+		if(grp == 'Y' && rds_data.udg2_len != 0) good_group = 1;
 		if(grp == 'R' && rtplus_cfg.enabled) good_group = 1;
 		if(grp == '3' && oda_state.count != 0) good_group = 1;
 		if(grp == 'F' && rds_data.lps[0] != '\0') good_group = 1;
@@ -358,11 +360,11 @@ static void get_rds_group(uint16_t *blocks) {
 		// TODO: Add EON
 		case 'X':
 			for(int i = 0; i < 3; i++) blocks[i] = rds_data.udg1[rds_state.udg_idxs[0]++][i];;
-			if(rds_state.udg_idxs[0] == 8) rds_state.udg_idxs[0] = 0;
+			if(rds_state.udg_idxs[0] == rds_data.udg1_len) rds_state.udg_idxs[0] = 0;
 			goto group_coded;
 		case 'Y':
 			for(int i = 0; i < 3; i++) blocks[i+1] = rds_data.udg2[rds_state.udg_idxs[1]++][i];
-			if(rds_state.udg_idxs[1] == 8) rds_state.udg_idxs[1] = 0;
+			if(rds_state.udg_idxs[1] == rds_data.udg2_len) rds_state.udg_idxs[1] = 0;
 			goto group_coded;
 		case 'R':
 			if(rds_state.rtp_oda == 0) {
@@ -426,8 +428,8 @@ void init_rds_encoder(struct rds_params_t rds_params) {
 	set_rds_ms(1);
 	set_rds_di(DI_STEREO | DI_DPTY);
 	set_rds_grpseq(rds_params.grp_sqc);
-	set_rds_udg1(rds_params.udg1);
-	set_rds_udg2(rds_params.udg2);
+	set_rds_udg1(rds_params.udg1_len, rds_params.udg1);
+	set_rds_udg2(rds_params.udg2_len, rds_params.udg2);
 
 	init_rtplus(GROUP_11A);
 
@@ -617,10 +619,12 @@ void set_rds_grpseq(unsigned char* grpseq) {
 		rds_data.grp_sqc[len++] = *grpseq++;
 }
 
-void set_rds_udg1(uint16_t (*groups)[3]) {
+void set_rds_udg1(uint8_t len, uint16_t (*groups)[3]) {
+	rds_data.udg1_len = len;
 	memcpy(&rds_data.udg1, &groups, sizeof(groups));
 }
 
-void set_rds_udg2(uint16_t (*groups)[3]) {
+void set_rds_udg2(uint8_t len, uint16_t (*groups)[3]) {
+	rds_data.udg2_len = len;
 	memcpy(&rds_data.udg2, &groups, sizeof(groups));
 }

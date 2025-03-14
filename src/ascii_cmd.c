@@ -237,7 +237,7 @@ static void handle_udg1(unsigned char *arg) {
         }
     }
     
-    set_rds_udg1(blocks);
+    set_rds_udg1(sets, blocks);
 }
 static void handle_udg2(unsigned char *arg) {
     uint16_t blocks[8][3];  // Up to 8 sets of 3 blocks each
@@ -266,7 +266,7 @@ static void handle_udg2(unsigned char *arg) {
         }
     }
     
-    set_rds_udg2(blocks);
+    set_rds_udg2(sets, blocks);
 }
 
 // Command tables organized by delimiter position and command length
