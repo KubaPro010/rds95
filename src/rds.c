@@ -300,11 +300,11 @@ static void get_rds_group(uint16_t *blocks) {
 
 	while(good_group == 0) {
 		uint8_t grp_sqc_idx = rds_data.grp_sqc[0]++;
-		if(rds_data.grp_sqc[grp_sqc_idx+1] == '\0') {
+		if(rds_data.grp_sqc[grp_sqc_idx+2] == '\0') {
 			rds_data.grp_sqc[0] = 0;
 			grp_sqc_idx = 0;
 		}
-		grp = rds_data.grp_sqc[grp_sqc_idx+1];
+		grp = rds_data.grp_sqc[grp_sqc_idx+2];
 
 		if(grp == '0') good_group = 1;
 		if(grp == '1' && rds_state.ecclic_enabled) good_group = 1;
