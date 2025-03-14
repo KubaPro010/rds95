@@ -409,8 +409,6 @@ void init_rds_encoder(RDSEncoder* enc) {
 	} else {
 		saveToFile("~/.rdsEncoder", enc);
 	}
-
-	init_rds_objects();
 }
 
 void set_rds_rt1(RDSEncoder* enc, unsigned char *rt1) {
