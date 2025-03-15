@@ -481,8 +481,8 @@ void init_rds_encoder(RDSEncoder* enc) {
 		strcpy((char *)enc->data[enc->program].ps, "* RDS * ");
 		enc->data[enc->program].rt1_enabled = 1;
 
-		memset(enc->data[enc->program]->rt1, ' ', 64);
-		enc->data[enc->program]->rt1[0] = '\r';
+		memset(enc->data[enc->program].rt1, ' ', 64);
+		enc->data[enc->program].rt1[0] = '\r';
 
 		enc->state[enc->program].rt_ab = 1;
 		enc->state[enc->program].ptyn_ab = 1;
