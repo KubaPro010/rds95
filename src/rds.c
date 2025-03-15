@@ -90,6 +90,8 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		tempEncoder.data[emp->program].rt1_enabled = emp->data[emp->program].rt1_enabled;
 	} else if(strcmp(option, "PINEN") == 0) {
 		tempEncoder.data[emp->program].pin[0] = emp->data[emp->program].pin[0];
+	} else if(strcmp(option, "PROGRAM") == 0) {
+        tempEncoder.program = emp->program;
 	} else if (strcmp(option, "ALL") == 0) {
         memcpy(&(tempEncoder.data[emp->program]), &(emp->data[emp->program]), sizeof(RDSData));
         memcpy(&(tempEncoder.rtpData[emp->program]), &(emp->rtpData[emp->program]), sizeof(RDSRTPlusData));
