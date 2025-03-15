@@ -80,15 +80,24 @@ typedef struct {
 
 	uint8_t ps_update;
 	uint8_t tps_update;
+	unsigned char ps_text[PS_LENGTH];
+	unsigned char tps_text[PS_LENGTH];
+	uint8_t ps_csegment
 
+	unsigned char rt_text[RT_LENGTH];
+	uint8_t rt_state;
 	uint8_t rt_update;
 	uint8_t rt_ab;
 	uint8_t rt_segments;
 
+	unsigned char ptyn_text[RT_LENGTH];
+	uint8_t ptyn_state;
 	uint8_t ptyn_enabled;
 	uint8_t ptyn_update;
 	uint8_t ptyn_ab;
 
+	unsigned char lps_text[RT_LENGTH];
+	uint8_t lps_state;
 	uint8_t lps_update;
 	uint8_t lps_segments;
 
@@ -97,6 +106,8 @@ typedef struct {
 	uint8_t rtp_oda;
 	uint8_t grp_seq_idx[2];
 	uint8_t udg_idxs[2];
+
+	uint8_t last_ct_minute;
 } RDSState;
 
 #define MAX_ODAS	8

@@ -157,55 +157,48 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 
 // #region Group encoding
 static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
-	static unsigned char ps_text[PS_LENGTH];
-	static unsigned char tps_text[PS_LENGTH];
-	static uint8_t ps_csegment;
-
-	if (ps_csegment == 0 && enc->state[enc->program].ps_update) {
-		memcpy(ps_text, enc->data[enc->program].ps, PS_LENGTH);
+	if (enc->state[enc->program].ps_csegment == 0 && enc->state[enc->program].ps_update) {
+		memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
 		enc->state[enc->program].ps_update = 0;
 	}
-	if(ps_csegment == 0 && enc->state[enc->program].tps_update) {
-		memcpy(tps_text, enc->data[enc->program].tps, PS_LENGTH);
+	if(enc->state[enc->program].ps_csegment == 0 && enc->state[enc->program].tps_update) {
+		memcpy(enc->state[enc->program].tps_text, enc->data[enc->program].tps, PS_LENGTH);
 		enc->state[enc->program].tps_update = 0;
 	}
 
 	blocks[1] |= enc->data[enc->program].ta << 4;
 	blocks[1] |= enc->data[enc->program].ms << 3;
 	blocks[1] |= ((enc->data[enc->program].di >> (3 - ps_csegment)) & INT8_0) << 2;
-	blocks[1] |= ps_csegment;
+	blocks[1] |= enc->state[enc->program].ps_csegment;
 	blocks[2] = get_next_af(enc);
 	if(enc->data[enc->program].ta && tps_text[0] != '\0') {
-		blocks[3] = tps_text[ps_csegment * 2] << 8 | tps_text[ps_csegment * 2 + 1];
+		blocks[3] = enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2] << 8 | enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2 + 1];
 	} else {
 		/* TODO: Add DPS */
-		blocks[3] =  ps_text[ps_csegment * 2] << 8 |  ps_text[ps_csegment * 2 + 1];
+		blocks[3] =  enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2] << 8 |  enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2 + 1];
 	}
-	ps_csegment++;
-	if (ps_csegment >= 4) ps_csegment = 0;
+	enc->state[enc->program].ps_csegment++;
+	if (enc->state[enc->program].ps_csegment >= 4) enc->state[enc->program].ps_csegment = 0;
 }
 
 static uint8_t get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
-	static unsigned char rt_text[RT_LENGTH];
-	static uint8_t rt_state;
-
 	if (enc->state[enc->program].rt_update) {
-		memcpy(rt_text, enc->data[enc->program].rt1, RT_LENGTH);
+		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
 		enc->state[enc->program].rt_ab ^= 1;
 		enc->state[enc->program].rt_update = 0;
-		rt_state = 0;
+		enc->state[enc->program].rt_state = 0;
 	}
 
 	blocks[1] |= 2 << 12;
 	blocks[1] |= enc->state[enc->program].rt_ab << 4;
-	blocks[1] |= rt_state;
-	blocks[2] =  rt_text[rt_state * 4    ] << 8;
-	blocks[2] |= rt_text[rt_state * 4 + 1];
-	blocks[3] =  rt_text[rt_state * 4 + 2] << 8;
-	blocks[3] |= rt_text[rt_state * 4 + 3];
+	blocks[1] |= enc->state[enc->program].rt_state;
+	blocks[2] =  enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4    ] << 8;
+	blocks[2] |= enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4 + 1];
+	blocks[3] =  enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4 + 2] << 8;
+	blocks[3] |= enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4 + 3];
 
-	rt_state++;
-	if (rt_state >= enc->state[enc->program].rt_segments) rt_state = 0;
+	enc->state[enc->program].rt_state++;
+	if (enc->state[enc->program].rt_state >= enc->state[enc->program].rt_segments) enc->state[enc->program].rt_state = 0;
 	return 1;
 }
 
@@ -224,8 +217,6 @@ static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks) {
 }
 
 static uint8_t get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
-	(void)enc;
-	static uint8_t latest_minutes;
 	struct tm *utc, *local_time;
 	time_t now;
 	uint8_t l;
@@ -235,8 +226,8 @@ static uint8_t get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
 	now = time(NULL);
 	utc = gmtime(&now);
 
-	if (utc->tm_min != latest_minutes) {
-		latest_minutes = utc->tm_min;
+	if (utc->tm_min != enc->state[enc->program].last_ct_minute) {
+		enc->state[enc->program].last_ct_minute = utc->tm_min;
 
 		l = utc->tm_mon <= 1 ? 1 : 0;
 		mjd = 14956 + utc->tm_mday +
@@ -260,43 +251,37 @@ static uint8_t get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
 }
 
 static void get_rds_ptyn_group(RDSEncoder* enc, uint16_t *blocks) {
-	static unsigned char ptyn_text[PTYN_LENGTH];
-	static uint8_t ptyn_state;
-
-	if (ptyn_state == 0 && enc->state[enc->program].ptyn_update) {
-		memcpy(ptyn_text, enc->data[enc->program].ptyn, PTYN_LENGTH);
+	if (enc->state[enc->program].ptyn_state == 0 && enc->state[enc->program].ptyn_update) {
+		memcpy(enc->state[enc->program].ptyn_text, enc->data[enc->program].ptyn, PTYN_LENGTH);
 		enc->state[enc->program].ptyn_ab ^= 1;
 		enc->state[enc->program].ptyn_update = 0;
 	}
 
-	blocks[1] |= 10 << 12 | ptyn_state;
+	blocks[1] |= 10 << 12 | enc->state[enc->program].ptyn_state;
 	blocks[1] |= enc->state[enc->program].ptyn_ab << 4;
-	blocks[2] =  ptyn_text[ptyn_state * 4 + 0] << 8;
-	blocks[2] |= ptyn_text[ptyn_state * 4 + 1];
-	blocks[3] =  ptyn_text[ptyn_state * 4 + 2] << 8;
-	blocks[3] |= ptyn_text[ptyn_state * 4 + 3];
+	blocks[2] =  enc->state[enc->program].ptyn_text[enc->state[enc->program].ptyn_state * 4 + 0] << 8;
+	blocks[2] |= enc->state[enc->program].ptyn_text[enc->state[enc->program].ptyn_state * 4 + 1];
+	blocks[3] =  enc->state[enc->program].ptyn_text[enc->state[enc->program].ptyn_state * 4 + 2] << 8;
+	blocks[3] |= enc->state[enc->program].ptyn_text[enc->state[enc->program].ptyn_state * 4 + 3];
 
-	ptyn_state++;
-	if (ptyn_state == 2) ptyn_state = 0;
+	enc->state[enc->program].ptyn_state++;
+	if (enc->state[enc->program].ptyn_state == 2) enc->state[enc->program].ptyn_state = 0;
 }
 
 static void get_rds_lps_group(RDSEncoder* enc, uint16_t *blocks) {
-	static unsigned char lps_text[LPS_LENGTH];
-	static uint8_t lps_state;
-
-	if (lps_state == 0 && enc->state[enc->program].lps_update) {
-		memcpy(lps_text, enc->data[enc->program].lps, LPS_LENGTH);
+	if (enc->state[enc->program].lps_state == 0 && enc->state[enc->program].lps_update) {
+		memcpy(enc->state[enc->program].lps_text, enc->data[enc->program].lps, LPS_LENGTH);
 		enc->state[enc->program].lps_update = 0;
 	}
 
-	blocks[1] |= 15 << 12 | lps_state;
-	blocks[2] =  lps_text[lps_state * 4    ] << 8;
-	blocks[2] |= lps_text[lps_state * 4 + 1];
-	blocks[3] =  lps_text[lps_state * 4 + 2] << 8;
-	blocks[3] |= lps_text[lps_state * 4 + 3];
+	blocks[1] |= 15 << 12 | enc->state[enc->program].lps_state;
+	blocks[2] =  enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4    ] << 8;
+	blocks[2] |= enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 1];
+	blocks[3] =  enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 2] << 8;
+	blocks[3] |= enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 3];
 
-	lps_state++;
-	if (lps_state == enc->state[enc->program].lps_segments) lps_state = 0;
+	enc->state[enc->program].lps_state++;
+	if (enc->state[enc->program].lps_state == enc->state[enc->program].lps_segments) enc->state[enc->program].lps_state = 0;
 }
 
 static void get_rds_ecc_group(RDSEncoder* enc, uint16_t *blocks) {
@@ -485,10 +470,11 @@ void init_rds_encoder(RDSEncoder* enc) {
 	enc->data[enc->program].pi = 0xFFFF;
 	strcpy((char *)enc->data[enc->program].ps, "* RDS *");
 	enc->data[enc->program].rt1_enabled = 1;
-	strcpy((char *)enc->data[enc->program].lps, "\0");
 
 	enc->state[enc->program].rt_ab = 1;
 	enc->state[enc->program].ptyn_ab = 1;
+	enc->state[enc->program].rt_update = 1;
+	enc->state[enc->program].ps_update = 1;
 
 	init_rtplus(enc, GROUP_11A);
 
