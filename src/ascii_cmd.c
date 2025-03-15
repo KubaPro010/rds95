@@ -366,16 +366,13 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
     unsigned char *cmd, *arg;
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
     uint8_t to_save = 0, cmd_reached = 0;
-    unsigned char *original_str = str; // Store the original string pointer
 
     if (str[0] == '*') {
         to_save = 1;
-        str++; // Skip the asterisk for command processing
+        str++;
     }
 
-    // Special case for save commands without '=' (like *ALL)
     if (to_save && !strchr((const char*)str, '=')) {
-        // Save without further processing
         char option[32] = {0};
         snprintf(option, sizeof(option), "%s", (const char*)str);
         saveToFile(enc->enc, option);
