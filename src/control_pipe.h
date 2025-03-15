@@ -4,4 +4,4 @@
 
 extern int open_control_pipe(char *filename);
 extern void close_control_pipe();
-extern void poll_control_pipe(RDSModulator* enc);
+extern void poll_control_pipe(RDSModulator* mod);

@@ -295,6 +295,7 @@ typedef struct
 void saveToFile(RDSEncoder *emp, const char *option);
 void loadFromFile(RDSEncoder *emp);
 int rdssaved();
+void removerds();
 
 void init_rds_encoder(RDSEncoder* enc);
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits);

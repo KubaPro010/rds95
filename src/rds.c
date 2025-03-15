@@ -119,6 +119,12 @@ int rdssaved() {
     }
     return 0;
 }
+void removerds() {
+    char encoderPath[256];
+    snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
+    remove(encoderPath)
+}
+
 
 static void register_oda(RDSEncoder* enc, uint8_t group, uint16_t aid, uint16_t scb) {
 	if (enc->oda_state[enc->program].count >= MAX_ODAS) return;
@@ -470,7 +476,7 @@ void init_rds_encoder(RDSEncoder* enc) {
 	enc->data[enc->program].pi = 0xFFFF;
 	strcpy((char *)enc->data[enc->program].ps, "* RDS * ");
 	enc->data[enc->program].rt1_enabled = 1;
-	
+
 	memset(enc->data->rt1, ' ', 64);
 	enc->data->rt1[0] = '\r';
 

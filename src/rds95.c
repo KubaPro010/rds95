@@ -21,10 +21,10 @@ static void stop() {
 }
 
 /* threads */
-static void *control_pipe_worker(void* encoder) {
-	RDSModulator *enc = (RDSModulator*)encoder;
+static void *control_pipe_worker(void* modulator) {
+	RDSModulator *mod = (RDSModulator*)modulator;
 	while (!stop_rds) {
-		poll_control_pipe(enc);
+		poll_control_pipe(mod);
 		msleep(READ_TIMEOUT_MS);
 	}
 

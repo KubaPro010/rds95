@@ -4,4 +4,4 @@
 #define CTL_BUFFER_SIZE	(CMD_BUFFER_SIZE * 2)
 #define READ_TIMEOUT_MS	100
 
-extern void process_ascii_cmd(RDSModulator* enc, unsigned char *str);
+extern void process_ascii_cmd(RDSModulator* mod, unsigned char *str);

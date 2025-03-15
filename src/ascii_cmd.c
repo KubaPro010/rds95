@@ -8,26 +8,26 @@
 
 typedef struct {
     const char *cmd;
-    void (*handler)(unsigned char *arg, RDSModulator* enc);
+    void (*handler)(unsigned char *arg, RDSModulator* mod);
     uint8_t cmd_length;
 } command_handler_t;
 
 // Command handlers
-static void handle_ptyn(unsigned char *arg, RDSModulator* enc) {
+static void handle_ptyn(unsigned char *arg, RDSModulator* mod) {
     arg[PTYN_LENGTH] = 0;
-    set_rds_ptyn(enc->enc, xlat(arg));
+    set_rds_ptyn(mod->enc, xlat(arg));
 }
 
-static void handle_afch(unsigned char *arg, RDSModulator* enc) {
+static void handle_afch(unsigned char *arg, RDSModulator* mod) {
     if (arg[0] == 'A' || arg[0] == 'B') {
         return;
     }
     if(arg[0] == '\0') {
-        memset(&(enc->enc->data->af), 0, sizeof(enc->enc->data->af));
+        memset(&(mod->enc->data->af), 0, sizeof(mod->enc->data->af));
         return;
     }
     
-    memset(&(enc->enc->data->af), 0, sizeof(enc->enc->data->af));
+    memset(&(mod->enc->data->af), 0, sizeof(mod->enc->data->af));
     uint8_t arg_count;
     RDSAFs new_af;
     uint8_t af[MAX_AFS], *af_iter;
@@ -54,109 +54,108 @@ static void handle_afch(unsigned char *arg, RDSModulator* enc) {
         af_iter++;
     }
     
-    memcpy(&(enc->enc->data->af), &new_af, sizeof(enc->enc->data->af));
+    memcpy(&(mod->enc->data->af), &new_af, sizeof(mod->enc->data->af));
 }
 
-static void handle_tps(unsigned char *arg, RDSModulator* enc) {
+static void handle_tps(unsigned char *arg, RDSModulator* mod) {
     arg[PS_LENGTH * 2] = 0;
-    set_rds_tps(enc->enc, xlat(arg));
+    set_rds_tps(mod->enc, xlat(arg));
 }
 
-static void handle_rt1(unsigned char *arg, RDSModulator* enc) {
+static void handle_rt1(unsigned char *arg, RDSModulator* mod) {
     arg[RT_LENGTH * 2] = 0;
-    set_rds_rt1(enc->enc, xlat(arg));
+    set_rds_rt1(mod->enc, xlat(arg));
 }
 
-static void handle_pty(unsigned char *arg, RDSModulator* enc) {
+static void handle_pty(unsigned char *arg, RDSModulator* mod) {
     arg[2] = 0;
-    enc->enc->data->pty = strtoul((char *)arg, NULL, 10);
+    mod->enc->data->pty = strtoul((char *)arg, NULL, 10);
 }
 
-static void handle_ecc(unsigned char *arg, RDSModulator* enc) {
+static void handle_ecc(unsigned char *arg, RDSModulator* mod) {
     arg[2] = 0;
-    enc->enc->data->ecc = strtoul((char *)arg, NULL, 16);
+    mod->enc->data->ecc = strtoul((char *)arg, NULL, 16);
 }
 
-static void handle_lic(unsigned char *arg, RDSModulator* enc) {
+static void handle_lic(unsigned char *arg, RDSModulator* mod) {
     arg[2] = 0;
-    enc->enc->data->lic = strtoul((char *)arg, NULL, 16);
+    mod->enc->data->lic = strtoul((char *)arg, NULL, 16);
 }
 
-static void handle_rtp(unsigned char *arg, RDSModulator* enc) {
+static void handle_rtp(unsigned char *arg, RDSModulator* mod) {
     char tag_names[2][32];
     uint8_t tags[6];
     
     if (sscanf((char *)arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu",
         &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
-        set_rds_rtplus_tags(enc->enc, tags);
+        set_rds_rtplus_tags(mod->enc, tags);
     } else if (sscanf((char *)arg, "%31[^,],%hhu,%hhu,%31[^,],%hhu,%hhu",
         tag_names[0], &tags[1], &tags[2], tag_names[1], &tags[4], &tags[5]) == 6) {
         tags[0] = get_rtp_tag_id(tag_names[0]);
         tags[3] = get_rtp_tag_id(tag_names[1]);
-        set_rds_rtplus_tags(enc->enc, tags);
+        set_rds_rtplus_tags(mod->enc, tags);
     }
 }
 
-static void handle_lps(unsigned char *arg, RDSModulator* enc) {
+static void handle_lps(unsigned char *arg, RDSModulator* mod) {
     arg[LPS_LENGTH] = 0;
-    set_rds_lps(enc->enc, arg);
+    set_rds_lps(mod->enc, arg);
 }
 
-static void handle_pin(unsigned char *arg, RDSModulator* enc) {
+static void handle_pin(unsigned char *arg, RDSModulator* mod) {
     uint8_t pin[3];
     if (sscanf((char *)arg, "%hhu,%hhu,%hhu", &pin[0], &pin[1], &pin[2]) == 3) {
         for (int i = 0; i < 3; i++) {
-            enc->enc->data->pin[i+1] = pin[i];
+            mod->enc->data->pin[i+1] = pin[i];
         }
     }
 }
 
-static void handle_ps(unsigned char *arg, RDSModulator* enc) {
-    if (arg[0] == '\0') arg[0] = ' '; // Fix for strings that start with a space
+static void handle_ps(unsigned char *arg, RDSModulator* mod) {
     arg[PS_LENGTH * 2] = 0;
-    set_rds_ps(enc->enc, xlat(arg));
+    set_rds_ps(mod->enc, xlat(arg));
 }
 
-static void handle_ct(unsigned char *arg, RDSModulator* enc) {
+static void handle_ct(unsigned char *arg, RDSModulator* mod) {
     arg[2] = 1;
-    enc->enc->data->ct = arg[0];
+    mod->enc->data->ct = arg[0];
 }
 
-static void handle_di(unsigned char *arg, RDSModulator* enc) {
+static void handle_di(unsigned char *arg, RDSModulator* mod) {
     arg[2] = 0;
-    enc->enc->data->di = arg[0];
+    mod->enc->data->di = arg[0];
 }
 
-static void handle_tp(unsigned char *arg, RDSModulator* enc) {
+static void handle_tp(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    enc->enc->data->tp = arg[0];
+    mod->enc->data->tp = arg[0];
 }
 
-static void handle_ta(unsigned char *arg, RDSModulator* enc) {
+static void handle_ta(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    enc->enc->data->ta = arg[0];
+    mod->enc->data->ta = arg[0];
 }
 
-static void handle_ms(unsigned char *arg, RDSModulator* enc) {
+static void handle_ms(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    enc->enc->data->ms = arg[0];
+    mod->enc->data->ms = arg[0];
 }
 
-static void handle_pi(unsigned char *arg, RDSModulator* enc) {
+static void handle_pi(unsigned char *arg, RDSModulator* mod) {
     arg[4] = 0;
-    enc->enc->data->pi = strtoul((char *)arg, NULL, 16);
+    mod->enc->data->pi = strtoul((char *)arg, NULL, 16);
 }
 
-static void handle_af(unsigned char *arg, RDSModulator* enc) {
+static void handle_af(unsigned char *arg, RDSModulator* mod) {
     if (arg[0] == 'A' || arg[0] == 'B') {
         return;
     }
     if(arg[0] == '\0') {
-        memset(&(enc->enc->data->af), 0, sizeof(enc->enc->data->af)); 
+        memset(&(mod->enc->data->af), 0, sizeof(mod->enc->data->af)); 
         return;
     }
     
-    memset(&(enc->enc->data->af), 0, sizeof(enc->enc->data->af));
+    memset(&(mod->enc->data->af), 0, sizeof(mod->enc->data->af));
     uint8_t arg_count;
     RDSAFs new_af;
     float af[MAX_AFS], *af_iter;
@@ -180,64 +179,71 @@ static void handle_af(unsigned char *arg, RDSModulator* enc) {
         add_rds_af(&new_af, *af_iter++);
     }
     
-    memcpy(&(enc->enc->data->af), &new_af, sizeof(enc->enc->data->af));
+    memcpy(&(mod->enc->data->af), &new_af, sizeof(mod->enc->data->af));
 }
 
-static void handle_g(unsigned char *arg, RDSModulator* enc) {
+static void handle_g(unsigned char *arg, RDSModulator* mod) {
     uint16_t blocks[3];
     int count = sscanf((char *)arg, "%4hx%4hx%4hx", &blocks[0], &blocks[1], &blocks[2]);
     if (count == 3) {
-        enc->enc->state->custom_group[0] = 1;
-        enc->enc->state->custom_group[1] = blocks[0];
-        enc->enc->state->custom_group[2] = blocks[1];
-        enc->enc->state->custom_group[3] = blocks[2];
+        mod->enc->state->custom_group[0] = 1;
+        mod->enc->state->custom_group[1] = blocks[0];
+        mod->enc->state->custom_group[2] = blocks[1];
+        mod->enc->state->custom_group[3] = blocks[2];
     }
 }
 
-static void handle_pinen(unsigned char *arg, RDSModulator* enc) {
+static void handle_pinen(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    enc->enc->data->pin[0] = arg[0];
+    mod->enc->data->pin[0] = arg[0];
 }
 
-static void handle_rt1en(unsigned char *arg, RDSModulator* enc) {
+static void handle_rt1en(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    enc->enc->data->rt1_enabled = arg[0];
+    mod->enc->data->rt1_enabled = arg[0];
 }
 
-static void handle_ptynen(unsigned char *arg, RDSModulator* enc) {
+static void handle_ptynen(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    enc->enc->state->ptyn_enabled = strtoul((char *)arg, NULL, 10);
+    mod->enc->state->ptyn_enabled = strtoul((char *)arg, NULL, 10);
 }
 
-static void handle_rtprun(unsigned char *arg, RDSModulator* enc) {
+static void handle_rtprun(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    set_rds_rtplus_flags(enc->enc, strtoul((char *)arg, NULL, 10));
+    set_rds_rtplus_flags(mod->enc, strtoul((char *)arg, NULL, 10));
 }
 
-static void handle_eccen(unsigned char *arg, RDSModulator* enc) {
+static void handle_eccen(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    enc->enc->data->ecclic_enabled = arg[0];
+    mod->enc->data->ecclic_enabled = arg[0];
 }
 
-static void handle_shortrt(unsigned char *arg, RDSModulator* enc) {
+static void handle_shortrt(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    enc->enc->data->shortrt = arg[0];
+    mod->enc->data->shortrt = arg[0];
 }
 
-static void handle_grpseq(unsigned char *arg, RDSModulator* enc) {
-    memset(&(enc->enc->data->grp_sqc), 0, 24);
-    memcpy(&(enc->enc->data->grp_sqc), arg, 24);
+static void handle_program(unsigned char *arg, RDSModulator* mod) {
+    int16_t program = strtol((char *)arg, NULL, 10)-1;
+    if(program >= PROGRAMS) program = (PROGRAMS-1);
+    if(program < 0) program = 0;
+    mod->enc->program = (uint8_t)program;
 }
 
-static void handle_level(unsigned char *arg, RDSModulator* enc) {
-    enc->level = strtoul((char *)arg, NULL, 10)/255.0f;
+static void handle_grpseq(unsigned char *arg, RDSModulator* mod) {
+    memset(&(mod->enc->data->grp_sqc), 0, 24);
+    memcpy(&(mod->enc->data->grp_sqc), arg, 24);
 }
 
-static void handle_rdsgen(unsigned char *arg, RDSModulator* enc) {
-    enc->rdsgen = strtoul((char *)arg, NULL, 10);
+static void handle_level(unsigned char *arg, RDSModulator* mod) {
+    mod->level = strtoul((char *)arg, NULL, 10)/255.0f;
 }
 
-static void handle_udg1(unsigned char *arg, RDSModulator* enc) {
+static void handle_rdsgen(unsigned char *arg, RDSModulator* mod) {
+    mod->rdsgen = strtoul((char *)arg, NULL, 10);
+}
+
+static void handle_udg1(unsigned char *arg, RDSModulator* mod) {
     uint16_t blocks[8][3];
     int sets = 0;
     unsigned char *ptr = arg;
@@ -263,10 +269,10 @@ static void handle_udg1(unsigned char *arg, RDSModulator* enc) {
         }
     }
     
-    memcpy(&(enc->enc->data->udg1), &blocks, sets * sizeof(uint16_t[3]));
-    enc->enc->data->udg1_len = sets;
+    memcpy(&(mod->enc->data->udg1), &blocks, sets * sizeof(uint16_t[3]));
+    mod->enc->data->udg1_len = sets;
 }
-static void handle_udg2(unsigned char *arg, RDSModulator* enc) {
+static void handle_udg2(unsigned char *arg, RDSModulator* mod) {
     uint16_t blocks[8][3];  // Up to 8 sets of 3 blocks each
     int sets = 0;
     unsigned char *ptr = arg;
@@ -293,8 +299,13 @@ static void handle_udg2(unsigned char *arg, RDSModulator* enc) {
         }
     }
     
-    memcpy(&(enc->enc->data->udg2), &blocks, sets * sizeof(uint16_t[3]));
-    enc->enc->data->udg2_len = sets;
+    memcpy(&(mod->enc->data->udg2), &blocks, sets * sizeof(uint16_t[3]));
+    mod->enc->data->udg2_len = sets;
+}
+
+static void handle_init(unsigned char *arg, RDSModulator* mod) {
+    removerds();
+    init_rds_encoder(mod->enc);
 }
 
 // Command tables organized by delimiter position and command length
@@ -348,29 +359,44 @@ static const command_handler_t commands_eq7[] = {
 
 static const command_handler_t commands_eq8[] = {
     {"SHORTRT", handle_shortrt, 7}
+    {"PROGRAM", handle_program, 7}
+};
+
+static const command_handler_t commands_exact[] = {
+    {"INIT", handle_init, 4}
+    // TODO: handle help, ver, status
 };
 
 // Process a command using the appropriate command table
 static bool process_command_table(const command_handler_t *table, int table_size, 
-                                 unsigned char *cmd, unsigned char *arg, RDSModulator* enc) {
+                                 unsigned char *cmd, unsigned char *arg, RDSModulator* mod) {
     for (int i = 0; i < table_size; i++) {
         if (ustrcmp(cmd, (unsigned char *)table[i].cmd) == 0) {
-            table[i].handler(arg, enc);
+            table[i].handler(arg, mod);
             return true;
         }
     }
     return false;
 }
 
-void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
+void process_ascii_cmd(RDSModulator* mod, unsigned char *str) {
     unsigned char *cmd, *arg;
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
+
+    for (int i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
+        const command_handler_t *handler = &commands_exact[i];
+        if (cmd_len == handler->cmd_length && 
+            ustrcmp(str, (unsigned char *)handler->cmd) == 0) {
+            handler->handler(mod, NULL);
+            return;
+        }
+    }
 
     if (str[0] == '*' && !strchr((const char*)str, '=')) {
         str++;
         char option[32] = {0};
         snprintf(option, sizeof(option), "%s", (const char*)str);
-        saveToFile(enc->enc, option);
+        saveToFile(mod->enc, option);
         return;
     }
 
@@ -381,7 +407,7 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         
         if (process_command_table(commands_eq2,
                                   sizeof(commands_eq2) / sizeof(command_handler_t),
-                                  cmd, arg, enc)) {
+                                  cmd, arg, mod)) {
         }
     }
 
@@ -393,7 +419,7 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         
         if (process_command_table(commands_eq3,
                                   sizeof(commands_eq3) / sizeof(command_handler_t),
-                                  cmd, arg, enc)) {
+                                  cmd, arg, mod)) {
         }
     }
 
@@ -405,7 +431,7 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         
         if (process_command_table(commands_eq4,
                                   sizeof(commands_eq4) / sizeof(command_handler_t),
-                                  cmd, arg, enc)) {
+                                  cmd, arg, mod)) {
         }
     }
 
@@ -417,7 +443,7 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         
         if (process_command_table(commands_eq5,
                                   sizeof(commands_eq5) / sizeof(command_handler_t),
-                                  cmd, arg, enc)) {
+                                  cmd, arg, mod)) {
         }
     }
 
@@ -429,7 +455,7 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         
         if (process_command_table(commands_eq6,
                                   sizeof(commands_eq6) / sizeof(command_handler_t),
-                                  cmd, arg, enc)) {
+                                  cmd, arg, mod)) {
         }
     }
 
@@ -440,7 +466,7 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         
         if (process_command_table(commands_eq7,
                                   sizeof(commands_eq7) / sizeof(command_handler_t),
-                                  cmd, arg, enc)) {
+                                  cmd, arg, mod)) {
         }
     }
 
@@ -451,7 +477,7 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         
         if (process_command_table(commands_eq8,
                                   sizeof(commands_eq8) / sizeof(command_handler_t),
-                                  cmd, arg, enc)) {
+                                  cmd, arg, mod)) {
         }
     }
 }
