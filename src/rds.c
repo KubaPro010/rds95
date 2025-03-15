@@ -476,7 +476,7 @@ static void init_rtplus(RDSEncoder* enc, uint8_t group) {
 }
 
 void init_rds_encoder(RDSEncoder* enc) {
-	memset(&enc, 0, sizeof(RDSEncoder));
+	memset(enc, 0, sizeof(RDSEncoder));
 	enc->data[enc->program].ct = 1;
 	enc->data[enc->program].di = 1;
 	enc->data[enc->program].ecclic_enabled = 1;
