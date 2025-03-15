@@ -304,6 +304,7 @@ static void handle_udg2(unsigned char *arg, RDSModulator* mod) {
 }
 
 static void handle_init(unsigned char *arg, RDSModulator* mod) {
+    (void)arg;
     removerds();
     init_rds_encoder(mod->enc);
 }
@@ -358,7 +359,7 @@ static const command_handler_t commands_eq7[] = {
 };
 
 static const command_handler_t commands_eq8[] = {
-    {"SHORTRT", handle_shortrt, 7}
+    {"SHORTRT", handle_shortrt, 7},
     {"PROGRAM", handle_program, 7}
 };
 
@@ -383,11 +384,11 @@ void process_ascii_cmd(RDSModulator* mod, unsigned char *str) {
     unsigned char *cmd, *arg;
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
 
-    for (int i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
+    for (size_t i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
         const command_handler_t *handler = &commands_exact[i];
         if (cmd_len == handler->cmd_length && 
             ustrcmp(str, (unsigned char *)handler->cmd) == 0) {
-            handler->handler(mod, NULL);
+            handler->handler(NULL, mod);
             return;
         }
     }
