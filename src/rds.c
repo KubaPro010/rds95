@@ -476,8 +476,7 @@ static void init_rtplus(RDSEncoder* enc, uint8_t group) {
 }
 
 void init_rds_encoder(RDSEncoder* enc) {
-	enc->program = 0;
-	memset(&enc->data[enc->program].af, 0, sizeof(RDSAFs));
+	memset(&enc, 0, sizeof(RDSEncoder));
 	enc->data[enc->program].ct = 1;
 	enc->data[enc->program].di = 1;
 	enc->data[enc->program].ecclic_enabled = 1;
@@ -486,12 +485,7 @@ void init_rds_encoder(RDSEncoder* enc) {
 	enc->data[enc->program].pi = 0xFFFF;
 	strcpy((char *)enc->data[enc->program].ps, "* RDS *");
 	enc->data[enc->program].rt1_enabled = 1;
-	enc->data[enc->program].pty = 0;
-	enc->data[enc->program].ecc = 0;
-	enc->data[enc->program].lic = 0;
 	strcpy((char *)enc->data[enc->program].lps, "\0");
-	enc->data[enc->program].tp = 0;
-	enc->data[enc->program].ta = 0;
 
 	enc->state[enc->program].rt_ab = 1;
 	enc->state[enc->program].ptyn_ab = 1;
