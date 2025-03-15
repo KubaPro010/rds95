@@ -478,8 +478,8 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	memset(enc->state[program].rt_text, ' ', 64);
 	enc->state[program].rt_text[0] = '\r';
 
-	enc->state[i].rt_ab = 1;
-	enc->state[i].ptyn_ab = 1;
+	enc->state[program].rt_ab = 1;
+	enc->state[program].ptyn_ab = 1;
 
 	init_rtplus(enc, GROUP_11A, program);
 }
