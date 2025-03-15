@@ -457,11 +457,11 @@ static void init_rtplus(RDSEncoder* enc, uint8_t group, uint8_t program) {
 }
 
 void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
-	memset(enc->data[program], 0, sizeof(RDSData));
-	memset(enc->state[program], 0, sizeof(RDSState));
-	memset(enc->oda_state[program], 0, sizeof(RDSODAState));
-	memset(enc->odas[program], 0, sizeof(RDSODA)*MAX_ODAS);
-	memset(enc->rtpData[program], 0, sizeof(RDSRTPlusData));
+	memset(&(enc->data[program]), 0, sizeof(RDSData));
+	memset(&(enc->state[program]), 0, sizeof(RDSState));
+	memset(&(enc->oda_state[program]), 0, sizeof(RDSODAState));
+	memset(&(enc->odas[program]), 0, sizeof(RDSODA)*MAX_ODAS);
+	memset(&(enc->rtpData[program]), 0, sizeof(RDSRTPlusData));
 
 	enc->data[program].ct = 1;
 	enc->data[program].di = 1;
