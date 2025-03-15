@@ -227,12 +227,19 @@ static void handle_program(unsigned char *arg, RDSModulator* mod) {
     int16_t program = strtol((char *)arg, NULL, 10)-1;
     if(program >= PROGRAMS) program = (PROGRAMS-1);
     if(program < 0) program = 0;
+    mod->enc->data[mod->enc->program].ta = 0;
+    mod->enc->data[(uint8_t)program].ta = 0;
     mod->enc->program = (uint8_t)program;
 }
 
 static void handle_grpseq(unsigned char *arg, RDSModulator* mod) {
-    memset(&(mod->enc->data[mod->enc->program].grp_sqc), 0, 24);
-    memcpy(&(mod->enc->data[mod->enc->program].grp_sqc), arg, 24);
+    if (arg[0] == '\0') {
+        memset(&(mod->enc->data[mod->enc->program].grp_sqc), 0, 24);
+        memcpy(&(mod->enc->data[mod->enc->program].grp_sqc), DEFAULT_GRPSQC, 24);
+    } else {
+        memset(&(mod->enc->data[mod->enc->program].grp_sqc), 0, 24);
+        memcpy(&(mod->enc->data[mod->enc->program].grp_sqc), arg, 24);
+    }
 }
 
 static void handle_level(unsigned char *arg, RDSModulator* mod) {
@@ -305,8 +312,7 @@ static void handle_udg2(unsigned char *arg, RDSModulator* mod) {
 
 static void handle_init(unsigned char *arg, RDSModulator* mod) {
     (void)arg;
-    removerds();
-    init_rds_encoder(mod->enc);
+    set_rds_defaults(mod->enc, mod->enc->program)
 }
 
 // Command tables organized by delimiter position and command length

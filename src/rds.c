@@ -9,17 +9,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
     snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
     FILE *file;
     
-    if (strcmp(option, "ALL") == 0) {
-        file = fopen(encoderPath, "wb");
-        if (file == NULL) {
-            perror("Error opening file");
-            return;
-        }
-        fwrite(emp, sizeof(RDSEncoder), 1, file);
-        fclose(file);
-        return;
-    }
-    
     RDSEncoder tempEncoder;
     file = fopen(encoderPath, "rb");
     if (file != NULL) {
@@ -86,6 +75,13 @@ void saveToFile(RDSEncoder *emp, const char *option) {
     } else if (strcmp(option, "UDG2") == 0) {
         memcpy(tempEncoder.data[emp->program].udg2, emp->data[emp->program].udg2, sizeof(emp->data[emp->program].udg2));
         tempEncoder.data[emp->program].udg2_len = emp->data[emp->program].udg2_len;
+	} else if (strcmp(option, "ALL") == 0) {
+        memcpy(emp->data[emp->program], tempEncoder.data[emp->program], sizeof(RDSData));
+        memcpy(emp->state[emp->program], tempEncoder.state[emp->program], sizeof(RDSState));
+        memcpy(emp->oda_state[emp->program], tempEncoder.oda_state[emp->program], sizeof(RDSODAState));
+        memcpy(emp->odas[emp->program], tempEncoder.odas[emp->program], sizeof(RDSODA)*MAX_ODAS);
+        memcpy(emp->rtpData[emp->program], tempEncoder.rtpData[emp->program], sizeof(RDSRTPlusData));
+        tempEncoder.program = emp->program
     }
     
     file = fopen(encoderPath, "wb");
@@ -119,12 +115,6 @@ int rdssaved() {
     }
     return 0;
 }
-void removerds() {
-    char encoderPath[256];
-    snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
-    remove(encoderPath);
-}
-
 
 static void register_oda(RDSEncoder* enc, uint8_t group, uint16_t aid, uint16_t scb) {
 	if (enc->oda_state[enc->program].count >= MAX_ODAS) return;
@@ -382,7 +372,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 		else cant_find_group = 0;
 		if(!good_group && cant_find_group == 23) {
 			cant_find_group = 0;
-			return;
+			get_rds_ps_group(enc, blocks);
 			break;
 		}
 	}
@@ -460,36 +450,42 @@ void get_rds_bits(RDSEncoder* enc, uint8_t *bits) {
 	add_checkwords(out_blocks, bits);
 }
 
-static void init_rtplus(RDSEncoder* enc, uint8_t group) {
+static void init_rtplus(RDSEncoder* enc, uint8_t group, uint8_t program) {
 	register_oda(enc, group, ODA_AID_RTPLUS, 0);
-	enc->rtpData[enc->program].group = group;
-	enc->rtpData[enc->program].enabled = 0;
+	enc->rtpData[program].group = group;
+	enc->rtpData[program].enabled = 0;
+}
+
+void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
+	memset(enc->data[program], 0, sizeof(RDSData));
+	memset(enc->state[program], 0, sizeof(RDSState));
+	memset(enc->oda_state[program], 0, sizeof(RDSODAState));
+	memset(enc->odas[program], 0, sizeof(RDSODA)*MAX_ODAS);
+	memset(enc->rtpData[program], 0, sizeof(RDSRTPlusData));
+
+	enc->data[program].ct = 1;
+	enc->data[program].di = 1;
+	enc->data[program].ecclic_enabled = 1;
+	strcpy((char *)enc->data[program].grp_sqc, DEFAULT_GRPSQC);
+	enc->data[program].ms = 1;
+	enc->data[program].pi = 0xFFFF;
+	strcpy((char *)enc->data[enc->program].ps, "* RDS * ");
+	enc->data[program].rt1_enabled = 1;
+
+	memset(enc->data[program].rt1, ' ', 64);
+	enc->data[program].rt1[0] = '\r';
+
+	enc->state[program].rt_ab = 1;
+	enc->state[program].ptyn_ab = 1;
+	enc->state[program].rt_update = 1;
+	enc->state[program].ps_update = 1;
+
+	init_rtplus(enc, GROUP_11A, program);
 }
 
 void init_rds_encoder(RDSEncoder* enc) {
-	memset(enc, 0, sizeof(RDSEncoder));
-	
 	for(int i = 0; i < PROGRAMS; i++) {
-		enc->program = i;
-
-		enc->data[enc->program].ct = 1;
-		enc->data[enc->program].di = 1;
-		enc->data[enc->program].ecclic_enabled = 1;
-		strcpy((char *)enc->data[enc->program].grp_sqc, "002222");
-		enc->data[enc->program].ms = 1;
-		enc->data[enc->program].pi = 0xFFFF;
-		strcpy((char *)enc->data[enc->program].ps, "* RDS * ");
-		enc->data[enc->program].rt1_enabled = 1;
-
-		memset(enc->data[enc->program].rt1, ' ', 64);
-		enc->data[enc->program].rt1[0] = '\r';
-
-		enc->state[enc->program].rt_ab = 1;
-		enc->state[enc->program].ptyn_ab = 1;
-		enc->state[enc->program].rt_update = 1;
-		enc->state[enc->program].ps_update = 1;
-
-		init_rtplus(enc, GROUP_11A);
+		set_rds_defaults(enc, i);
 	}
 
 	if (rdssaved()) {

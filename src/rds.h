@@ -19,14 +19,8 @@
 #define PS_LENGTH	8
 #define PTYN_LENGTH	8
 #define LPS_LENGTH	32
-
+#define DEFAULT_GRPSQC "022E1022EA022XYR"
 #define MAX_AFS 25
-
-typedef struct {
-	uint8_t num_entries;
-	uint8_t num_afs;
-	uint8_t afs[MAX_AFS];
-} RDSAFs;
 
 #define AF_CODE_FILLER		205
 #define AF_CODE_NO_AF		224
@@ -35,7 +29,25 @@ typedef struct {
 
 #define PROGRAMS 2
 
+#define MAX_ODAS	8
+// List of ODAs: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
+#define	ODA_AID_RTPLUS	0x4bd7
+
 #pragma pack(1)
+typedef struct {
+	uint8_t num_entries;
+	uint8_t num_afs;
+	uint8_t afs[MAX_AFS];
+} RDSAFs;
+typedef struct {
+	uint8_t enabled;
+	uint16_t pi;
+	uint8_t pin[4];
+	unsigned char ps[8];
+	uint8_t ta;
+	uint8_t tp;
+	RDSAFs af;
+} RDSEONs;
 typedef struct {
 	uint16_t pi;
 
@@ -75,6 +87,8 @@ typedef struct {
 
 	uint16_t udg1[8][3];
 	uint16_t udg2[8][3];
+
+	RDSEONs eon[4];
 } RDSData;
 typedef struct {
 	uint8_t ecc_or_lic;
@@ -109,22 +123,15 @@ typedef struct {
 
 	uint8_t last_ct_minute;
 } RDSState;
-
-#define MAX_ODAS	8
-
-// List of ODAs: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
-#define	ODA_AID_RTPLUS	0x4bd7
-typedef struct rds_oda_t {
+typedef struct {
 	uint8_t group;
 	uint16_t aid;
 	uint16_t scb;
 } RDSODA;
-
 typedef struct {
 	uint8_t current;
 	uint8_t count;
 } RDSODAState;
-
 typedef struct {
 	uint8_t group;
 	uint8_t enabled;
@@ -134,7 +141,6 @@ typedef struct {
 	uint8_t start[2];
 	uint8_t len[2];
 } RDSRTPlusData;
-
 typedef struct
 {
 	RDSData data[PROGRAMS];
@@ -295,8 +301,8 @@ typedef struct
 void saveToFile(RDSEncoder *emp, const char *option);
 void loadFromFile(RDSEncoder *emp);
 int rdssaved();
-void removerds();
 
+void set_rds_defaults(RDSEncoder* enc, uint8_t program);
 void init_rds_encoder(RDSEncoder* enc);
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits);
 void set_rds_rt1(RDSEncoder* enc, unsigned char *rt1);
