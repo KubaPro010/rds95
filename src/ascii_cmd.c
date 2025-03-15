@@ -400,7 +400,7 @@ void process_ascii_cmd(RDSModulator* mod, unsigned char *str) {
         char option[32] = {0};
         snprintf(option, sizeof(option), "%s", (const char*)str);
         saveToFile(mod->enc, option);
-        Modulator_saveToFile(mod->params, option);
+        Modulator_saveToFile(&mod->params, option);
         return;
     }
 
