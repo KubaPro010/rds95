@@ -470,18 +470,16 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	enc->data[program].ms = 1;
 	enc->data[program].pi = 0xFFFF;
 	strcpy((char *)enc->data[enc->program].ps, "* RDS * ");
+	strcpy((char *)enc->state[enc->program].ps_text, "* RDS * ");
 	enc->data[program].rt1_enabled = 1;
 
 	memset(enc->data[program].rt1, ' ', 64);
 	enc->data[program].rt1[0] = '\r';
+	memset(enc->state[program].rt_text, ' ', 64);
+	enc->state[program].rt_text[0] = '\r';
 
-	enc->state[program].rt_ab = 1;
-	enc->state[program].ptyn_ab = 1;
-	enc->state[program].rt_update = 1;
-	enc->state[program].ps_update = 1;
-	enc->state[program].tps_update = 1;
-	enc->state[program].lps_update = 1;
-	enc->state[program].ptyn_update = 1;
+	enc->state[i].rt_ab = 1;
+	enc->state[i].ptyn_ab = 1;
 
 	init_rtplus(enc, GROUP_11A, program);
 }
