@@ -180,7 +180,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 
 	blocks[1] |= enc->data[enc->program].ta << 4;
 	blocks[1] |= enc->data[enc->program].ms << 3;
-	blocks[1] |= ((enc->data[enc->program].di >> (3 - enc->state[enc->program].ps_csegment)) & INT8_0) << 2;
+	blocks[1] |= ((enc->data[enc->program].di >> (3 - enc->state[enc->program].ps_csegment)) & 1) << 2;
 	blocks[1] |= enc->state[enc->program].ps_csegment;
 	blocks[2] = get_next_af(enc);
 	if(enc->data[enc->program].ta && enc->state[enc->program].tps_text[0] != '\0') {
@@ -588,12 +588,12 @@ void set_rds_rtplus_flags(RDSEncoder* enc, uint8_t flags) {
 }
 
 void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags) {
-	enc->rtpData[enc->program].type[0]	= tags[0] & INT8_L6;
-	enc->rtpData[enc->program].start[0]	= tags[1] & INT8_L6;
-	enc->rtpData[enc->program].len[0]	= tags[2] & INT8_L6;
-	enc->rtpData[enc->program].type[1]	= tags[3] & INT8_L6;
-	enc->rtpData[enc->program].start[1]	= tags[4] & INT8_L6;
-	enc->rtpData[enc->program].len[1]	= tags[5] & INT8_L5;
+	enc->rtpData[enc->program].type[0]	= tags[0] & 0x3f;
+	enc->rtpData[enc->program].start[0]	= tags[1] & 0x3f;
+	enc->rtpData[enc->program].len[0]	= tags[2] & 0x3f;
+	enc->rtpData[enc->program].type[1]	= tags[3] & 0x3f;
+	enc->rtpData[enc->program].start[1]	= tags[4] & 0x3f;
+	enc->rtpData[enc->program].len[1]	= tags[5] & 0x1f;
 
 	enc->rtpData[enc->program].toggle ^= 1;
 	enc->rtpData[enc->program].running = 1;

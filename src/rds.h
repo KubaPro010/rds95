@@ -208,7 +208,7 @@ typedef struct
 #define GET_GROUP_TYPE(x)	((x >> 4) & 15)
 #define GET_GROUP_VER(x)	(x & 1)
 
-#define IS_TYPE_B(a)	(a[1] & INT16_11)
+#define IS_TYPE_B(a)	(a[1] & 0x0800)
 
 void saveToFile(RDSEncoder *emp, const char *option);
 void loadFromFile(RDSEncoder *emp);
