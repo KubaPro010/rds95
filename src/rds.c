@@ -4,6 +4,8 @@
 #include "lib.h"
 #include <time.h>
 
+#define r_memcpy(src, dst, size) memcpy(dst, src, size)
+
 void saveToFile(RDSEncoder *emp, const char *option) {
     char encoderPath[256];
     snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
@@ -76,14 +78,14 @@ void saveToFile(RDSEncoder *emp, const char *option) {
         memcpy(tempEncoder.data[emp->program].udg2, emp->data[emp->program].udg2, sizeof(emp->data[emp->program].udg2));
         tempEncoder.data[emp->program].udg2_len = emp->data[emp->program].udg2_len;
 	} else if (strcmp(option, "ALL") == 0) {
-        memcpy(&(emp->data[emp->program]), &(tempEncoder.data[emp->program]), sizeof(RDSData));
-        memcpy(&(emp->rtpData[emp->program]), &(tempEncoder.rtpData[emp->program]), sizeof(RDSRTPlusData));
+        r_memcpy(&(emp->data[emp->program]), &(tempEncoder.data[emp->program]), sizeof(RDSData));
+        r_memcpy(&(emp->rtpData[emp->program]), &(tempEncoder.rtpData[emp->program]), sizeof(RDSRTPlusData));
         tempEncoder.program = emp->program;
     }
     
-	memcpy(&(emp->state[emp->program]), &(tempEncoder.state[emp->program]), sizeof(RDSState));
-	memcpy(&(emp->oda_state[emp->program]), &(tempEncoder.oda_state[emp->program]), sizeof(RDSODAState));
-	memcpy(&(emp->odas[emp->program]), &(tempEncoder.odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
+	r_memcpy(&(emp->state[emp->program]), &(tempEncoder.state[emp->program]), sizeof(RDSState));
+	r_memcpy(&(emp->oda_state[emp->program]), &(tempEncoder.oda_state[emp->program]), sizeof(RDSODAState));
+	r_memcpy(&(emp->odas[emp->program]), &(tempEncoder.odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
 
 	file = fopen(encoderPath, "wb");
     if (file == NULL) {
