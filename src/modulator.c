@@ -16,7 +16,7 @@ void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
         memcpy(&tempEncoder, emp, sizeof(RDSModulatorParameters));
     }
     
-    if (strcmp(option, "LEVL") == 0) {
+    if (strcmp(option, "LEVEL") == 0) {
         tempEncoder.level = emp->level;
     } else if (strcmp(option, "RDSGEN") == 0) {
 		tempEncoder.rdsgen = emp->rdsgen;
