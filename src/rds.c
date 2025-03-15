@@ -77,14 +77,15 @@ void saveToFile(RDSEncoder *emp, const char *option) {
         tempEncoder.data[emp->program].udg2_len = emp->data[emp->program].udg2_len;
 	} else if (strcmp(option, "ALL") == 0) {
         memcpy(&(emp->data[emp->program]), &(tempEncoder.data[emp->program]), sizeof(RDSData));
-        memcpy(&(emp->state[emp->program]), &(tempEncoder.state[emp->program]), sizeof(RDSState));
-        memcpy(&(emp->oda_state[emp->program]), &(tempEncoder.oda_state[emp->program]), sizeof(RDSODAState));
-        memcpy(&(emp->odas[emp->program]), &(tempEncoder.odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
         memcpy(&(emp->rtpData[emp->program]), &(tempEncoder.rtpData[emp->program]), sizeof(RDSRTPlusData));
         tempEncoder.program = emp->program;
     }
     
-    file = fopen(encoderPath, "wb");
+	memcpy(&(emp->state[emp->program]), &(tempEncoder.state[emp->program]), sizeof(RDSState));
+	memcpy(&(emp->oda_state[emp->program]), &(tempEncoder.oda_state[emp->program]), sizeof(RDSODAState));
+	memcpy(&(emp->odas[emp->program]), &(tempEncoder.odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
+
+	file = fopen(encoderPath, "wb");
     if (file == NULL) {
         perror("Error opening file");
         return;
