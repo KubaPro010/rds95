@@ -466,7 +466,7 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
             return;
         } else {
             char option[32] = {0};
-            strncpy(option, (const char*)&str, sizeof(option));
+            snprintf(option, sizeof(option), "%s", (const char*)&str);
             saveToFile(enc->enc, option);
             return;
         }
