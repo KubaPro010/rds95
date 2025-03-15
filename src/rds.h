@@ -19,7 +19,7 @@
 #define PS_LENGTH	8
 #define PTYN_LENGTH	8
 #define LPS_LENGTH	32
-#define DEFAULT_GRPSQC "02222FA1RXY"
+#define DEFAULT_GRPSQC (unsigned char*)"02222FA1RXY"
 #define MAX_AFS 25
 
 #define AF_CODE_FILLER		205
