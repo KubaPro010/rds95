@@ -4,7 +4,7 @@ static float waveform[2][FILTER_SIZE];
 
 void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
     char encoderPath[256];
-    snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
+    snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsModulator", getenv("HOME"));
     FILE *file;
     
     RDSModulatorParameters tempEncoder;
