@@ -12,7 +12,6 @@ typedef struct {
     uint8_t cmd_length;
 } command_handler_t;
 
-// Command handlers
 static void handle_ptyn(unsigned char *arg, RDSModulator* mod) {
     arg[PTYN_LENGTH] = 0;
     set_rds_ptyn(mod->enc, xlat(arg));
@@ -243,11 +242,11 @@ static void handle_grpseq(unsigned char *arg, RDSModulator* mod) {
 }
 
 static void handle_level(unsigned char *arg, RDSModulator* mod) {
-    mod->level = strtoul((char *)arg, NULL, 10)/255.0f;
+    mod->params.level = strtoul((char *)arg, NULL, 10)/255.0f;
 }
 
 static void handle_rdsgen(unsigned char *arg, RDSModulator* mod) {
-    mod->rdsgen = strtoul((char *)arg, NULL, 10);
+    mod->params.rdsgen = strtoul((char *)arg, NULL, 10);
 }
 
 static void handle_udg1(unsigned char *arg, RDSModulator* mod) {
@@ -280,7 +279,7 @@ static void handle_udg1(unsigned char *arg, RDSModulator* mod) {
     mod->enc->data[mod->enc->program].udg1_len = sets;
 }
 static void handle_udg2(unsigned char *arg, RDSModulator* mod) {
-    uint16_t blocks[8][3];  // Up to 8 sets of 3 blocks each
+    uint16_t blocks[8][3];
     int sets = 0;
     unsigned char *ptr = arg;
     
@@ -289,20 +288,19 @@ static void handle_udg2(unsigned char *arg, RDSModulator* mod) {
                           &blocks[sets][0], &blocks[sets][1], &blocks[sets][2]);
         
         if (count != 3) {
-            break;  // Couldn't parse a complete set of 3 blocks
+            break;
         }
         
         sets++;
         
-        // Look for the comma separator
         while (*ptr && *ptr != ',') {
             ptr++;
         }
         
         if (*ptr == ',') {
-            ptr++;  // Skip over the comma
+            ptr++;
         } else {
-            break;  // No more separators
+            break;
         }
     }
     
@@ -315,15 +313,14 @@ static void handle_init(unsigned char *arg, RDSModulator* mod) {
     set_rds_defaults(mod->enc, mod->enc->program);
 }
 
-// Command tables organized by delimiter position and command length
 static const command_handler_t commands_eq3[] = {
+    {"MS", handle_ms, 2},
     {"PS", handle_ps, 2},
-    {"CT", handle_ct, 2},
-    {"DI", handle_di, 2},
+    {"PI", handle_pi, 2},
     {"TP", handle_tp, 2},
     {"TA", handle_ta, 2},
-    {"MS", handle_ms, 2},
-    {"PI", handle_pi, 2},
+    {"DI", handle_di, 2},
+    {"CT", handle_ct, 2},
     {"AF", handle_af, 2}
 };
 
@@ -374,7 +371,6 @@ static const command_handler_t commands_exact[] = {
     // TODO: handle help, ver, status
 };
 
-// Process a command using the appropriate command table
 static bool process_command_table(const command_handler_t *table, int table_size, 
                                  unsigned char *cmd, unsigned char *arg, RDSModulator* mod) {
     for (int i = 0; i < table_size; i++) {
@@ -404,6 +400,7 @@ void process_ascii_cmd(RDSModulator* mod, unsigned char *str) {
         char option[32] = {0};
         snprintf(option, sizeof(option), "%s", (const char*)str);
         saveToFile(mod->enc, option);
+        Modulator_saveToFile(mod->params, option);
         return;
     }
 
@@ -418,7 +415,6 @@ void process_ascii_cmd(RDSModulator* mod, unsigned char *str) {
         }
     }
 
-    // Process commands with = delimiter at position 3 (format: XX=y...)
     if (cmd_len > 2 && str[2] == '=') {
         cmd = str;
         cmd[2] = 0;
@@ -430,7 +426,6 @@ void process_ascii_cmd(RDSModulator* mod, unsigned char *str) {
         }
     }
 
-    // Process commands with = delimiter at position 4 (format: XXX=y...)
     if (cmd_len > 3 && str[3] == '=') {
         cmd = str;
         cmd[3] = 0;
@@ -442,7 +437,6 @@ void process_ascii_cmd(RDSModulator* mod, unsigned char *str) {
         }
     }
 
-    // Process commands with = delimiter at position 5 (format: XXXX=y...)
     if (cmd_len > 4 && str[4] == '=') {
         cmd = str;
         cmd[4] = 0;
@@ -454,7 +448,6 @@ void process_ascii_cmd(RDSModulator* mod, unsigned char *str) {
         }
     }
 
-    // Process commands with = delimiter at position 6 (format: XXXXX=y...)
     if (cmd_len > 5 && str[5] == '=') {
         cmd = str;
         cmd[5] = 0;

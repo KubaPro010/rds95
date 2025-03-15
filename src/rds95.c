@@ -20,7 +20,6 @@ static void stop() {
 	stop_rds = 1;
 }
 
-/* threads */
 static void *control_pipe_worker(void* modulator) {
 	RDSModulator *mod = (RDSModulator*)modulator;
 	while (!stop_rds) {
@@ -48,11 +47,10 @@ static void show_help(char *name) {
 
 int main(int argc, char **argv) {
 	char control_pipe[51] = "\0";
-	/* PASIMPLE */
+
 	pa_simple *device;
 	pa_sample_spec format;
 
-	/* pthread */
 	pthread_attr_t attr;
 	pthread_t control_pipe_thread;
 
@@ -69,25 +67,22 @@ int main(int argc, char **argv) {
 	int opt;
 	while((opt = getopt_long(argc, argv, short_opt, long_opt, NULL)) != -1) {
 		switch (opt) {
-			case 'C': /* ctl */
+			case 'C':
 				memcpy(control_pipe, optarg, 50);
 				break;
 
-			case 'h': /* help */
+			case 'h':
 			default:
 				show_help(argv[0]);
 				return 1;
 		}
 	}
 
-	/* Initialize pthread stuff */
 	pthread_attr_init(&attr);
 
-	/* Gracefully stop the encoder on SIGINT or SIGTERM */
 	signal(SIGINT, stop);
 	signal(SIGTERM, stop);
 
-	/* PASIMPLE format */
 	format.format = PA_SAMPLE_FLOAT32NE;
 	format.channels = 1;
 	format.rate = RDS_SAMPLE_RATE;

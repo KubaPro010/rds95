@@ -3,15 +3,13 @@
 #include <time.h>
 
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
-/* millisecond sleep */
 void msleep(unsigned long ms) {
 	struct timespec ts;
-	ts.tv_sec = ms / 1000ul;		/* whole seconds */
-	ts.tv_nsec = (ms % 1000ul) * 1000;	/* remainder, in nanoseconds */
+	ts.tv_sec = ms / 1000ul;
+	ts.tv_nsec = (ms % 1000ul) * 1000;
 	nanosleep(&ts, NULL);
 }
 
-/* just like strlen */
 int _strnlen(const char *s, int maxlen) {
 	int len = 0;
 	while (s[len] != 0 && len < maxlen)
@@ -19,7 +17,6 @@ int _strnlen(const char *s, int maxlen) {
 	return len;
 }
 
-/* unsigned equivalent of strcmp */
 int ustrcmp(const unsigned char *s1, const unsigned char *s2) {
 	unsigned char c1, c2;
 
@@ -34,9 +31,7 @@ int ustrcmp(const unsigned char *s1, const unsigned char *s2) {
 }
 
 static char *rtp_content_types[64] = {
-	/* dummy */
 	"DUMMY_CLASS",
-	/* item */
 	"ITEM.TITLE",
 	"ITEM.ALBUM",
 	"ITEM.TRACKNUMBER",
@@ -48,7 +43,6 @@ static char *rtp_content_types[64] = {
 	"ITEM.BAND",
 	"ITEM.COMMENT",
 	"ITEM.GENRE",
-	/* info */
 	"INFO.NEWS",
 	"INFO.NEWS.LOCAL",
 	"INFO.STOCKMARKET",
@@ -68,7 +62,6 @@ static char *rtp_content_types[64] = {
 	"INFO.ADVERTISEMENT",
 	"INFO.URL",
 	"INFO.OTHER",
-	/* program */
 	"STATIONNAME.SHORT",
 	"STATIONNAME.LONG",
 	"PROGRAMME.NOW",
@@ -79,7 +72,6 @@ static char *rtp_content_types[64] = {
 	"PROGRAMME.FREQUENCY",
 	"PROGRAMME.HOMEPAGE",
 	"PROGRAMME.SUBCHANNEL",
-	/* interactivity */
 	"PHONE.HOTLINE",
 	"PHONE.STUDIO",
 	"PHONE.OTHER",
@@ -93,14 +85,11 @@ static char *rtp_content_types[64] = {
 	"CHAT.CENTRE",
 	"VOTE.QUESTION",
 	"VOTE.CENTRE",
-	/* rfu */
 	"RFU_1",
 	"RFU_2",
-	/* private classes */
 	"PRIVATE_1",
 	"PRIVATE_2",
 	"PRIVATE_3",
-	/* descriptor */
 	"PLACE",
 	"APPOINTMENT",
 	"IDENTIFIER",
@@ -132,7 +121,6 @@ static uint16_t offset_words[] = {
 	0x350  /*  C' */
 };
 
-/* Calculate the checkword for each block and emit the bits */
 void add_checkwords(uint16_t *blocks, uint8_t *bits)
 {
 	uint8_t i, j, bit, msb;
@@ -142,7 +130,6 @@ void add_checkwords(uint16_t *blocks, uint8_t *bits)
 		group_type_b = true;
 
 	for (i = 0; i < GROUP_LENGTH; i++) {
-		/* Group version B needs C' for block 3 */
 		if (i == 2 && group_type_b) {
 			offset_word = offset_words[4];
 		} else {
@@ -151,10 +138,9 @@ void add_checkwords(uint16_t *blocks, uint8_t *bits)
 
 		block = blocks[i];
 
-		/* Classical CRC computation */
 		block_crc = 0;
 		for (j = 0; j < BLOCK_SIZE; j++) {
-			bit = (block & (INT16_15 >> j)) != 0;
+			bit = (block & (0x8000 >> j)) != 0;
 			msb = (block_crc >> (POLY_DEG - 1)) & 1;
 			block_crc <<= 1;
 			if (msb ^ bit) block_crc ^= POLY;
@@ -167,40 +153,28 @@ void add_checkwords(uint16_t *blocks, uint8_t *bits)
 	}
 }
 
-/*
- * AF stuff
- */
 uint8_t add_rds_af(RDSAFs *af_list, float freq) {
 	uint16_t af;
-	uint8_t entries_reqd = 1; /* default for FM */
+	uint8_t entries_reqd = 1;
 
-	/*
-	 * check how many slots are required for the frequency
-	 *
-	 * LF/MF (AM) needs 2 entries: one for the
-	 * AM follows code and the freq code itself
-	 */
-	if (freq < 87.6f || freq > 107.9f) { /* is LF/MF */
+	if (freq < 87.6f || freq > 107.9f) {
 		entries_reqd = 2;
 	}
 
-	/* check if the AF list is full */
 	if (af_list->num_afs + entries_reqd > MAX_AFS) {
-		/* Too many AF entries */
 		return 1;
 	}
 
-	/* check if new frequency is valid */
-	if (freq >= 87.6f && freq <= 107.9f) { /* FM */
+	if (freq >= 87.6f && freq <= 107.9f) {
 		af = (uint16_t)(freq * 10.0f) - 875;
 		af_list->afs[af_list->num_entries] = af;
 		af_list->num_entries += 1;
-	} else if (freq >= 153.0f && freq <= 279.0f) { /* LF */
+	} else if (freq >= 153.0f && freq <= 279.0f) {
 		af = (uint16_t)(freq - 153.0f) / 9 + 1;
 		af_list->afs[af_list->num_entries + 0] = AF_CODE_LFMF_FOLLOWS;
 		af_list->afs[af_list->num_entries + 1] = af;
 		af_list->num_entries += 2;
-	} else if (freq >= 531.0f && freq <= 1602.0f) { /* AM 9 kHz spacing */
+	} else if (freq >= 531.0f && freq <= 1602.0f) {
 		af = (uint16_t)(freq - 531.0f) / 9 + 16;
 		af_list->afs[af_list->num_entries + 0] = AF_CODE_LFMF_FOLLOWS;
 		af_list->afs[af_list->num_entries + 1] = af;
@@ -214,13 +188,6 @@ uint8_t add_rds_af(RDSAFs *af_list, float freq) {
 	return 0;
 }
 
-/*
- * UTF-8 to RDS char set converter
- *
- * Translates certain chars into their RDS equivalents
- * NOTE!! Only applies to PS, RT and PTYN. LPS uses UTF-8 (SCB = 1)
- *
- */
 #define XLATSTRLEN	255
 unsigned char *xlat(unsigned char *str) {
 	static unsigned char new_str[XLATSTRLEN];
