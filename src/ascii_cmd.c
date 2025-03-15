@@ -205,7 +205,7 @@ static void handle_rt1en(unsigned char *arg, RDSModulator* mod) {
 
 static void handle_ptynen(unsigned char *arg, RDSModulator* mod) {
     arg[1] = 0;
-    mod->enc->state[mod->enc->program].ptyn_enabled = strtoul((char *)arg, NULL, 10);
+    mod->enc->data[mod->enc->program].ptyn_enabled = strtoul((char *)arg, NULL, 10);
 }
 
 static void handle_rtprun(unsigned char *arg, RDSModulator* mod) {

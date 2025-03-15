@@ -56,6 +56,7 @@ typedef struct {
 	uint8_t rt1_enabled;
 	unsigned char rt1[RT_LENGTH];
 
+	uint8_t ptyn_enabled;
 	unsigned char ptyn[PTYN_LENGTH];
 
 	RDSAFs af;
@@ -92,7 +93,6 @@ typedef struct {
 
 	unsigned char ptyn_text[RT_LENGTH];
 	uint8_t ptyn_state;
-	uint8_t ptyn_enabled;
 	uint8_t ptyn_update;
 	uint8_t ptyn_ab;
 

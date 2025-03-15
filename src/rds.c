@@ -54,7 +54,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
         tempEncoder.state[emp->program].rt_ab = emp->state[emp->program].rt_ab;
     } else if (strcmp(option, "PTYN") == 0) {
         memcpy(tempEncoder.data[emp->program].ptyn, emp->data[emp->program].ptyn, PTYN_LENGTH);
-        tempEncoder.state[emp->program].ptyn_enabled = emp->state[emp->program].ptyn_enabled;
+        tempEncoder.data[emp->program].ptyn_enabled = emp->data[emp->program].ptyn_enabled;
         tempEncoder.state[emp->program].ptyn_update = emp->state[emp->program].ptyn_update;
         tempEncoder.state[emp->program].ptyn_ab = emp->state[emp->program].ptyn_ab;
     } else if (strcmp(option, "AF") == 0 || strcmp(option, "AFCH") == 0) {
@@ -371,7 +371,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 		if(grp == '0') good_group = 1;
 		if(grp == '1' && enc->data[enc->program].ecclic_enabled) good_group = 1;
 		if(grp == '2' && enc->data[enc->program].rt1_enabled) good_group = 1;
-		if(grp == 'A' && enc->state[enc->program].ptyn_enabled) good_group = 1;
+		if(grp == 'A' && enc->data[enc->program].ptyn_enabled) good_group = 1;
 		if(grp == 'X' && enc->data[enc->program].udg1_len != 0) good_group = 1;
 		if(grp == 'Y' && enc->data[enc->program].udg2_len != 0) good_group = 1;
 		if(grp == 'R' && enc->rtpData[enc->program].enabled) good_group = 1;
