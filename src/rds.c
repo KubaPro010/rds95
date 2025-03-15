@@ -476,6 +476,7 @@ static void init_rtplus(RDSEncoder* enc, uint8_t group) {
 }
 
 void init_rds_encoder(RDSEncoder* enc) {
+	enc->program = 0;
 	memset(&enc->data[enc->program].af, 0, sizeof(RDSAFs));
 	enc->data[enc->program].ct = 1;
 	enc->data[enc->program].di = 1;
