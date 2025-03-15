@@ -72,9 +72,9 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 	}
 
 	if(modulatorsaved()) {
-		Modulator_loadFromFile(rdsMod->params);
+		Modulator_loadFromFile(&rdsMod->params);
 	} else {
-		Modulator_saveToFile(rdsMod->params, "ALL");
+		Modulator_saveToFile(&rdsMod->params, "ALL");
 	}
 }
 
