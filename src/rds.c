@@ -475,11 +475,15 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 
 	memset(enc->data[program].rt1, ' ', 64);
 	enc->data[program].rt1[0] = '\r';
-	memset(enc->state[program].rt_text, ' ', 64);
-	enc->state[program].rt_text[0] = '\r';
 
 	enc->state[program].rt_ab = 1;
 	enc->state[program].ptyn_ab = 1;
+
+	enc->state[program].rt_update = 1;
+	enc->state[program].ps_update = 1;
+	enc->state[program].tps_update = 1;
+	enc->state[program].ptyn_update = 1;
+	enc->state[program].lps_update = 1;
 
 	init_rtplus(enc, GROUP_11A, program);
 }
