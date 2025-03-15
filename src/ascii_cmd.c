@@ -365,14 +365,9 @@ static bool process_command_table(const command_handler_t *table, int table_size
 void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
     unsigned char *cmd, *arg;
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
-    uint8_t to_save = 0, cmd_reached = 0;
 
-    if (str[0] == '*') {
-        to_save = 1;
+    if (str[0] == '*' && !strchr((const char*)str, '=')) {
         str++;
-    }
-
-    if (to_save && !strchr((const char*)str, '=')) {
         char option[32] = {0};
         snprintf(option, sizeof(option), "%s", (const char*)str);
         saveToFile(enc->enc, option);
@@ -383,19 +378,15 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         cmd = str;
         cmd[1] = 0;
         arg = str + 2;
-        cmd_reached = 1;
         
         if (process_command_table(commands_eq2,
                                   sizeof(commands_eq2) / sizeof(command_handler_t),
                                   cmd, arg, enc)) {
-            if (to_save) {
-                saveToFile(enc->enc, (const char*)cmd);
-            }
         }
     }
 
     // Process commands with = delimiter at position 3 (format: XX=y...)
-    if (cmd_len > 2 && str[2] == '=' && !cmd_reached) {
+    if (cmd_len > 2 && str[2] == '=') {
         cmd = str;
         cmd[2] = 0;
         arg = str + 3;
@@ -404,14 +395,11 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         if (process_command_table(commands_eq3,
                                   sizeof(commands_eq3) / sizeof(command_handler_t),
                                   cmd, arg, enc)) {
-            if (to_save) {
-                saveToFile(enc->enc, (const char*)cmd);
-            }
         }
     }
 
     // Process commands with = delimiter at position 4 (format: XXX=y...)
-    if (cmd_len > 3 && str[3] == '=' && !cmd_reached) {
+    if (cmd_len > 3 && str[3] == '=') {
         cmd = str;
         cmd[3] = 0;
         arg = str + 4;
@@ -420,14 +408,11 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         if (process_command_table(commands_eq4,
                                   sizeof(commands_eq4) / sizeof(command_handler_t),
                                   cmd, arg, enc)) {
-            if (to_save) {
-                saveToFile(enc->enc, (const char*)cmd);
-            }
         }
     }
 
     // Process commands with = delimiter at position 5 (format: XXXX=y...)
-    if (cmd_len > 4 && str[4] == '=' && !cmd_reached) {
+    if (cmd_len > 4 && str[4] == '=') {
         cmd = str;
         cmd[4] = 0;
         arg = str + 5;
@@ -436,14 +421,11 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         if (process_command_table(commands_eq5,
                                   sizeof(commands_eq5) / sizeof(command_handler_t),
                                   cmd, arg, enc)) {
-            if (to_save) {
-                saveToFile(enc->enc, (const char*)cmd);
-            }
         }
     }
 
     // Process commands with = delimiter at position 6 (format: XXXXX=y...)
-    if (cmd_len > 5 && str[5] == '=' && !cmd_reached) {
+    if (cmd_len > 5 && str[5] == '=') {
         cmd = str;
         cmd[5] = 0;
         arg = str + 6;
@@ -452,13 +434,10 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         if (process_command_table(commands_eq6,
                                   sizeof(commands_eq6) / sizeof(command_handler_t),
                                   cmd, arg, enc)) {
-            if (to_save) {
-                saveToFile(enc->enc, (const char*)cmd);
-            }
         }
     }
 
-    if (cmd_len > 6 && str[6] == '=' && !cmd_reached) {
+    if (cmd_len > 6 && str[6] == '=') {
         cmd = str;
         cmd[6] = 0;
         arg = str + 7;
@@ -467,13 +446,10 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         if (process_command_table(commands_eq7,
                                   sizeof(commands_eq7) / sizeof(command_handler_t),
                                   cmd, arg, enc)) {
-            if (to_save) {
-                saveToFile(enc->enc, (const char*)cmd);
-            }
         }
     }
 
-    if (cmd_len > 7 && str[7] == '=' && !cmd_reached) {
+    if (cmd_len > 7 && str[7] == '=') {
         cmd = str;
         cmd[7] = 0;
         arg = str + 8;
@@ -482,9 +458,6 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         if (process_command_table(commands_eq8,
                                   sizeof(commands_eq8) / sizeof(command_handler_t),
                                   cmd, arg, enc)) {
-            if (to_save) {
-                saveToFile(enc->enc, (const char*)cmd);
-            }
         }
     }
 }
