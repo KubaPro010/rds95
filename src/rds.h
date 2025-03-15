@@ -279,7 +279,7 @@ typedef struct
 
 #define IS_TYPE_B(a)	(a[1] & INT16_11)
 
-void saveToFile(RDSEncoder *emp);
+void saveToFile(RDSEncoder *emp, const char *option);
 void loadFromFile(RDSEncoder *emp);
 int rdssaved();
 

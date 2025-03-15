@@ -365,10 +365,11 @@ static bool process_command_table(const command_handler_t *table, int table_size
 void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
     unsigned char *cmd, *arg;
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
+    uint8_t to_save;
 
     if (str[0] == '*') {
-        saveToFile(enc->enc);
-        return;
+        to_save = 1;
+        str++;
     }
 
     if (cmd_len > 1 && str[1] == '=') {
@@ -455,6 +456,18 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
         if (process_command_table(commands_eq8,
                                     sizeof(commands_eq8) / sizeof(command_handler_t),
                                     cmd, arg, enc)) {
+            return;
+        }
+    }
+
+    if (to_save) {
+        if (strncmp((const char*)&str[1], "ALL", 3) == 0) {
+            saveToFile(enc->enc, "ALL");
+            return;
+        } else {
+            char option[32] = {0};
+            strncpy(option, (const char*)&str[1], sizeof(option) - 1);
+            saveToFile(enc->enc, option);
             return;
         }
     }

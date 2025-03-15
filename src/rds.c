@@ -4,15 +4,96 @@
 #include "lib.h"
 #include <time.h>
 
-void saveToFile(RDSEncoder *emp) {
-	char encoderPath[256];
-	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
-    FILE *file = fopen(encoderPath, "wb");
+void saveToFile(RDSEncoder *emp, const char *option) {
+    char encoderPath[256];
+    snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
+    FILE *file;
+    
+    if (strcmp(option, "ALL") == 0) {
+        file = fopen(encoderPath, "wb");
+        if (file == NULL) {
+            perror("Error opening file");
+            return;
+        }
+        fwrite(emp, sizeof(RDSEncoder), 1, file);
+        fclose(file);
+        return;
+    }
+    
+    RDSEncoder tempEncoder;
+    file = fopen(encoderPath, "rb");
+    if (file != NULL) {
+        fread(&tempEncoder, sizeof(RDSEncoder), 1, file);
+        fclose(file);
+    } else {
+        memcpy(&tempEncoder, emp, sizeof(RDSEncoder));
+    }
+    
+    if (strcmp(option, "MS") == 0) {
+        tempEncoder.data[emp->program].ms = emp->data[emp->program].ms;
+    } else if (strcmp(option, "PS") == 0) {
+        memcpy(tempEncoder.data[emp->program].ps, emp->data[emp->program].ps, PS_LENGTH);
+        tempEncoder.state[emp->program].ps_update = emp->state[emp->program].ps_update;
+    } else if (strcmp(option, "PI") == 0) {
+        tempEncoder.data[emp->program].pi = emp->data[emp->program].pi;
+    } else if (strcmp(option, "PTY") == 0) {
+        tempEncoder.data[emp->program].pty = emp->data[emp->program].pty;
+    } else if (strcmp(option, "TP") == 0) {
+        tempEncoder.data[emp->program].tp = emp->data[emp->program].tp;
+    } else if (strcmp(option, "TA") == 0) {
+        tempEncoder.data[emp->program].ta = emp->data[emp->program].ta;
+    } else if (strcmp(option, "DI") == 0) {
+        tempEncoder.data[emp->program].di = emp->data[emp->program].di;
+    } else if (strcmp(option, "CT") == 0) {
+        tempEncoder.data[emp->program].ct = emp->data[emp->program].ct;
+    } else if (strcmp(option, "RT1") == 0 || strcmp(option, "TEXT") == 0) {
+        memcpy(tempEncoder.data[emp->program].rt1, emp->data[emp->program].rt1, RT_LENGTH);
+        tempEncoder.data[emp->program].rt1_enabled = emp->data[emp->program].rt1_enabled;
+        tempEncoder.state[emp->program].rt_update = emp->state[emp->program].rt_update;
+        tempEncoder.state[emp->program].rt_segments = emp->state[emp->program].rt_segments;
+        tempEncoder.state[emp->program].rt_ab = emp->state[emp->program].rt_ab;
+    } else if (strcmp(option, "PTYN") == 0) {
+        memcpy(tempEncoder.data[emp->program].ptyn, emp->data[emp->program].ptyn, PTYN_LENGTH);
+        tempEncoder.state[emp->program].ptyn_enabled = emp->state[emp->program].ptyn_enabled;
+        tempEncoder.state[emp->program].ptyn_update = emp->state[emp->program].ptyn_update;
+        tempEncoder.state[emp->program].ptyn_ab = emp->state[emp->program].ptyn_ab;
+    } else if (strcmp(option, "AF") == 0 || strcmp(option, "AFCH") == 0) {
+        memcpy(&(tempEncoder.data[emp->program].af), &(emp->data[emp->program].af), sizeof(emp->data[emp->program].af));
+    } else if (strcmp(option, "ECC") == 0) {
+        tempEncoder.data[emp->program].ecc = emp->data[emp->program].ecc;
+    } else if (strcmp(option, "LIC") == 0) {
+        tempEncoder.data[emp->program].lic = emp->data[emp->program].lic;
+    } else if (strcmp(option, "ECCEN") == 0) {
+        tempEncoder.data[emp->program].ecclic_enabled = emp->data[emp->program].ecclic_enabled;
+    } else if (strcmp(option, "TPS") == 0) {
+        memcpy(tempEncoder.data[emp->program].tps, emp->data[emp->program].tps, PS_LENGTH);
+        tempEncoder.state[emp->program].tps_update = emp->state[emp->program].tps_update;
+    } else if (strcmp(option, "LPS") == 0) {
+        memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
+        tempEncoder.state[emp->program].lps_update = emp->state[emp->program].lps_update;
+        tempEncoder.state[emp->program].lps_segments = emp->state[emp->program].lps_segments;
+    } else if (strcmp(option, "SHORTRT") == 0) {
+        tempEncoder.data[emp->program].shortrt = emp->data[emp->program].shortrt;
+    } else if (strcmp(option, "PIN") == 0 || strcmp(option, "PINEN") == 0) {
+        memcpy(tempEncoder.data[emp->program].pin, emp->data[emp->program].pin, sizeof(emp->data[emp->program].pin));
+    } else if (strcmp(option, "GRPSEQ") == 0) {
+        memcpy(tempEncoder.data[emp->program].grp_sqc, emp->data[emp->program].grp_sqc, sizeof(emp->data[emp->program].grp_sqc));
+    } else if (strcmp(option, "RTP") == 0 || strcmp(option, "RTPRUN") == 0) {
+        memcpy(&(tempEncoder.rtpData[emp->program]), &(emp->rtpData[emp->program]), sizeof(emp->rtpData[emp->program]));
+    } else if (strcmp(option, "UDG1") == 0) {
+        memcpy(tempEncoder.data[emp->program].udg1, emp->data[emp->program].udg1, sizeof(emp->data[emp->program].udg1));
+        tempEncoder.data[emp->program].udg1_len = emp->data[emp->program].udg1_len;
+    } else if (strcmp(option, "UDG2") == 0) {
+        memcpy(tempEncoder.data[emp->program].udg2, emp->data[emp->program].udg2, sizeof(emp->data[emp->program].udg2));
+        tempEncoder.data[emp->program].udg2_len = emp->data[emp->program].udg2_len;
+    }
+    
+    file = fopen(encoderPath, "wb");
     if (file == NULL) {
         perror("Error opening file");
         return;
     }
-    fwrite(emp, sizeof(RDSEncoder), 1, file);
+    fwrite(&tempEncoder, sizeof(RDSEncoder), 1, file);
     fclose(file);
 }
 
@@ -414,7 +495,7 @@ void init_rds_encoder(RDSEncoder* enc) {
 	if (rdssaved()) {
 		loadFromFile(enc);
 	} else {
-		saveToFile(enc);
+		saveToFile(enc, "ALL");
 	}
 }
 
