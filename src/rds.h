@@ -36,44 +36,44 @@
 #pragma pack(1)
 typedef struct {
 	uint8_t num_entries;
-	uint8_t num_afs;
+	uint8_t num_afs : 5;
 	uint8_t afs[MAX_AFS];
 } RDSAFs;
 typedef struct {
-	uint8_t enabled;
+	uint8_t enabled : 1;
 	uint16_t pi;
 	uint8_t pin[4];
 	unsigned char ps[8];
-	uint8_t ta;
-	uint8_t tp;
+	uint8_t ta : 1;
+	uint8_t tp : 1;
 	RDSAFs af;
 } RDSEONs;
 typedef struct {
 	uint16_t pi;
 
-	uint8_t ecclic_enabled;
-	uint16_t lic;
+	uint8_t ecclic_enabled : 1;
+	uint16_t lic : 12;
 	uint8_t ecc;
 
-	uint8_t ta;
-	uint8_t pty;
-	uint8_t tp;
-	uint8_t ms;
-	uint8_t di;
+	uint8_t ta : 1;
+	uint8_t pty : 5;
+	uint8_t tp : 1;
+	uint8_t ms : 1;
+	uint8_t di : 4;
 
 	unsigned char ps[PS_LENGTH];
 	unsigned char tps[PS_LENGTH];
 
-	uint8_t shortrt;
-	uint8_t rt1_enabled;
+	uint8_t shortrt : 1;
+	uint8_t rt1_enabled : 1;
 	unsigned char rt1[RT_LENGTH];
 
-	uint8_t ptyn_enabled;
+	uint8_t ptyn_enabled : 1;
 	unsigned char ptyn[PTYN_LENGTH];
 
 	RDSAFs af;
 
-	uint8_t ct;
+	uint8_t ct : 1;
 
 	unsigned char lps[LPS_LENGTH];
 
@@ -81,8 +81,8 @@ typedef struct {
 
 	unsigned char grp_sqc[24];
 
-	uint8_t udg1_len;
-	uint8_t udg2_len;
+	uint8_t udg1_len : 4;
+	uint8_t udg2_len : 4;
 
 	uint16_t udg1[8][3];
 	uint16_t udg2[8][3];
@@ -90,37 +90,37 @@ typedef struct {
 	RDSEONs eon[4];
 } RDSData;
 typedef struct {
-	uint8_t ecc_or_lic;
+	uint8_t ecc_or_lic : 1;
 
-	uint8_t ps_update;
-	uint8_t tps_update;
+	uint8_t ps_update : 1;
+	uint8_t tps_update : 1;
 	unsigned char ps_text[PS_LENGTH];
 	unsigned char tps_text[PS_LENGTH];
-	uint8_t ps_csegment;
+	uint8_t ps_csegment : 4;
 
 	unsigned char rt_text[RT_LENGTH];
-	uint8_t rt_state;
-	uint8_t rt_update;
-	uint8_t rt_ab;
-	uint8_t rt_segments;
+	uint8_t rt_state : 5;
+	uint8_t rt_update : 1;
+	uint8_t rt_ab : 1;
+	uint8_t rt_segments : 5;
 
 	unsigned char ptyn_text[RT_LENGTH];
-	uint8_t ptyn_state;
-	uint8_t ptyn_update;
-	uint8_t ptyn_ab;
+	uint8_t ptyn_state : 1;
+	uint8_t ptyn_update : 1;
+	uint8_t ptyn_ab : 1;
 
 	unsigned char lps_text[RT_LENGTH];
-	uint8_t lps_state;
-	uint8_t lps_update;
-	uint8_t lps_segments;
+	uint8_t lps_state : 5;
+	uint8_t lps_update : 1;
+	uint8_t lps_segments : 5;
 
 	uint16_t custom_group[GROUP_LENGTH];
 
-	uint8_t rtp_oda;
+	uint8_t rtp_oda : 1;
 	uint8_t grp_seq_idx[2];
 	uint8_t udg_idxs[2];
 
-	uint8_t last_ct_minute;
+	uint8_t last_ct_minute : 6;
 } RDSState;
 typedef struct {
 	uint8_t group;
@@ -128,14 +128,14 @@ typedef struct {
 	uint16_t scb;
 } RDSODA;
 typedef struct {
-	uint8_t current;
-	uint8_t count;
+	uint8_t current : 4;
+	uint8_t count : 4;
 } RDSODAState;
 typedef struct {
 	uint8_t group;
-	uint8_t enabled;
-	uint8_t running;
-	uint8_t toggle;
+	uint8_t enabled : 1;
+	uint8_t running : 1;
+	uint8_t toggle : 1;
 	uint8_t type[2];
 	uint8_t start[2];
 	uint8_t len[2];
@@ -147,7 +147,7 @@ typedef struct
 	RDSODA odas[PROGRAMS][MAX_ODAS];
 	RDSODAState oda_state[PROGRAMS];
 	RDSRTPlusData rtpData[PROGRAMS];
-	uint8_t program;
+	uint8_t program : 3;
 } RDSEncoder;
 #pragma pack()
 
