@@ -82,7 +82,7 @@ typedef struct {
 	uint8_t tps_update;
 	unsigned char ps_text[PS_LENGTH];
 	unsigned char tps_text[PS_LENGTH];
-	uint8_t ps_csegment
+	uint8_t ps_csegment;
 
 	unsigned char rt_text[RT_LENGTH];
 	uint8_t rt_state;
