@@ -472,8 +472,7 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	strcpy((char *)enc->data[program].grp_sqc, DEFAULT_GRPSQC);
 	enc->data[program].ms = 1;
 	enc->data[program].pi = 0xFFFF;
-	strcpy((char *)enc->data[enc->program].ps, "* RDS * ");
-	strcpy((char *)enc->state[enc->program].ps_text, "* RDS * ");
+	strcpy((char *)enc->data[program].ps, "* RDS * ");
 	enc->data[program].rt1_enabled = 1;
 
 	memset(enc->data[program].rt1, ' ', 64);
@@ -498,17 +497,6 @@ void init_rds_encoder(RDSEncoder* enc) {
 
 	if (rdssaved()) {
 		loadFromFile(enc);
-		
-		for(int i = 0; i < PROGRAMS; i++) {
-			enc->state[i].rt_ab = 1;
-			enc->state[i].ptyn_ab = 1;
-
-			enc->state[i].rt_update = 1;
-			enc->state[i].ps_update = 1;
-			enc->state[i].tps_update = 1;
-			enc->state[i].ptyn_update = 1;
-			enc->state[i].lps_update = 1;
-		}
 	} else {
 		saveToFile(enc, "ALL");
 	}
