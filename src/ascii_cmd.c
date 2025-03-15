@@ -461,12 +461,12 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
     }
 
     if (to_save) {
-        if (strncmp((const char*)&str[1], "ALL", 3) == 0) {
+        if (strncmp((const char*)&str, "ALL", 3) == 0) {
             saveToFile(enc->enc, "ALL");
             return;
         } else {
             char option[32] = {0};
-            strncpy(option, (const char*)&str[1], sizeof(option) - 1);
+            strncpy(option, (const char*)&str, sizeof(option) - 1);
             saveToFile(enc->enc, option);
             return;
         }
