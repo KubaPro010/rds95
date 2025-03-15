@@ -59,8 +59,8 @@ int modulatorsaved() {
 
 void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 	memset(rdsMod, 0, sizeof(*rdsMod));
-	rdsMod->level = 1.0f;
-	rdsMod->rdsgen = 1;
+	rdsMod->params.level = 1.0f;
+	rdsMod->params.rdsgen = 1;
 
 	rdsMod->enc = enc;
 
