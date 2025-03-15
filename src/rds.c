@@ -479,6 +479,9 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	enc->state[program].ptyn_ab = 1;
 	enc->state[program].rt_update = 1;
 	enc->state[program].ps_update = 1;
+	enc->state[program].tps_update = 1;
+	enc->state[program].lps_update = 1;
+	enc->state[program].ptyn_update = 1;
 
 	init_rtplus(enc, GROUP_11A, program);
 }
