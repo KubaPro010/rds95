@@ -122,7 +122,7 @@ int rdssaved() {
 void removerds() {
     char encoderPath[256];
     snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
-    remove(encoderPath)
+    remove(encoderPath);
 }
 
 
