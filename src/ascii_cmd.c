@@ -365,7 +365,7 @@ static bool process_command_table(const command_handler_t *table, int table_size
 void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
     unsigned char *cmd, *arg;
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
-    uint8_t to_save, cmd_reached = 0;
+    uint8_t to_save = 0, cmd_reached = 0;
 
     if (str[0] == '*') {
         to_save = 1;
@@ -466,7 +466,7 @@ void process_ascii_cmd(RDSModulator* enc, unsigned char *str) {
             return;
         } else {
             char option[32] = {0};
-            strncpy(option, (const char*)&str, sizeof(option) - 1);
+            strncpy(option, (const char*)&str, sizeof(option));
             saveToFile(enc->enc, option);
             return;
         }
