@@ -495,6 +495,17 @@ void init_rds_encoder(RDSEncoder* enc) {
 
 	if (rdssaved()) {
 		loadFromFile(enc);
+		
+		for(int i = 0; i < PROGRAMS; i++) {
+			enc->state[i].rt_ab = 1;
+			enc->state[i].ptyn_ab = 1;
+
+			enc->state[i].rt_update = 1;
+			enc->state[i].ps_update = 1;
+			enc->state[i].tps_update = 1;
+			enc->state[i].ptyn_update = 1;
+			enc->state[i].lps_update = 1;
+		}
 	} else {
 		saveToFile(enc, "ALL");
 	}
