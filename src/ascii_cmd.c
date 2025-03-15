@@ -235,7 +235,7 @@ static void handle_program(unsigned char *arg, RDSModulator* mod) {
 static void handle_grpseq(unsigned char *arg, RDSModulator* mod) {
     if (arg[0] == '\0') {
         memset(&(mod->enc->data[mod->enc->program].grp_sqc), 0, 24);
-        memcpy(&(mod->enc->data[mod->enc->program].grp_sqc), (unsigned char*)DEFAULT_GRPSQC, 24);
+        memcpy(&(mod->enc->data[mod->enc->program].grp_sqc), (unsigned char*)DEFAULT_GRPSQC, sizeof(DEFAULT_GRPSQC));
     } else {
         memset(&(mod->enc->data[mod->enc->program].grp_sqc), 0, 24);
         memcpy(&(mod->enc->data[mod->enc->program].grp_sqc), arg, 24);
