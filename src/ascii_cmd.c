@@ -312,7 +312,7 @@ static void handle_udg2(unsigned char *arg, RDSModulator* mod) {
 
 static void handle_init(unsigned char *arg, RDSModulator* mod) {
     (void)arg;
-    set_rds_defaults(mod->enc, mod->enc->program)
+    set_rds_defaults(mod->enc, mod->enc->program);
 }
 
 // Command tables organized by delimiter position and command length
