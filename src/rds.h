@@ -35,6 +35,7 @@ typedef struct {
 
 #define PROGRAMS 1
 
+#pragma pack(1)
 typedef struct {
 	uint16_t pi;
 
@@ -132,6 +133,7 @@ typedef struct
 	RDSRTPlusData rtpData[PROGRAMS];
 	uint8_t program;
 } RDSEncoder;
+#pragma pack()
 
 #define GROUP_TYPE_0	( 0 << 4)
 #define GROUP_TYPE_1	( 1 << 4)
