@@ -33,7 +33,7 @@ typedef struct {
 #define AF_CODE_NUM_AFS_BASE	AF_CODE_NO_AF
 #define AF_CODE_LFMF_FOLLOWS	250
 
-#define PROGRAMS 1
+#define PROGRAMS 2
 
 #pragma pack(1)
 typedef struct {
