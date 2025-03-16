@@ -206,7 +206,6 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 			enc->state[enc->program].dynamic_ps_position += PS_LENGTH;
 			break;
 		case 1:
-			memcpy(enc->state[enc->program].dps1_text[enc->state->dynamic_ps_position], enc->data[enc->program].ps, PS_LENGTH);
 			enc->state[enc->program].dynamic_ps_position += 1;
 			break;
 		// TODO: Mode 2 and 3
