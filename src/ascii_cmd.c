@@ -226,6 +226,12 @@ static void handle_rt1en(char *arg, RDSModulator* mod, char* output) {
     strcpy(output, "+\0");
 }
 
+static void handle_dps1en(char *arg, RDSModulator* mod, char* output) {
+    arg[1] = 0;
+    mod->enc->data[mod->enc->program].dps1_enabled = arg[0];
+    strcpy(output, "+\0");
+}
+
 static void handle_ptynen(char *arg, RDSModulator* mod, char* output) {
     arg[1] = 0;
     mod->enc->data[mod->enc->program].ptyn_enabled = strtoul((char *)arg, NULL, 10);
@@ -409,6 +415,7 @@ static const command_handler_t commands_eq7[] = {
     {"RTPRUN", handle_rtprun, 6},
     {"GRPSEQ", handle_grpseq, 6},
     {"RDSGEN", handle_rdsgen, 6}
+    {"DPS1EN", handle_dps1en, 6},
 };
 
 static const command_handler_t commands_eq8[] = {
