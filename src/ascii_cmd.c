@@ -270,12 +270,12 @@ static void handle_grpseq(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_level(char *arg, RDSModulator* mod, char* output) {
-    mod->params.level = strtoul((char *)arg, NULL, 10)/255.0f
+    mod->params.level = strtoul((char *)arg, NULL, 10)/255.0f;
     strcpy(output, "+\0");
 }
 
 static void handle_rdsgen(char *arg, RDSModulator* mod, char* output) {
-    mod->params.rdsgen = strtoul((char *)arg, NULL, 10)
+    mod->params.rdsgen = strtoul((char *)arg, NULL, 10);
     strcpy(output, "+\0");
 }
 
