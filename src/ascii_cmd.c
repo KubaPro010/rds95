@@ -414,7 +414,7 @@ static const command_handler_t commands_eq7[] = {
     {"PTYNEN", handle_ptynen, 6},
     {"RTPRUN", handle_rtprun, 6},
     {"GRPSEQ", handle_grpseq, 6},
-    {"RDSGEN", handle_rdsgen, 6}
+    {"RDSGEN", handle_rdsgen, 6},
     {"DPS1EN", handle_dps1en, 6},
 };
 
