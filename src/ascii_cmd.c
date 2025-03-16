@@ -427,6 +427,8 @@ static bool process_command_table(const command_handler_t *table, int table_size
 
 void process_ascii_cmd(RDSModulator* mod, char *str) {
     char *cmd, *arg, *output;
+    memset(output, 0, 255);
+    
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
 
     for(uint16_t i = 0; i < cmd_len; i++) {
