@@ -10,9 +10,10 @@
 
 #define GROUP_LENGTH		4
 #define BITS_PER_GROUP		(GROUP_LENGTH * (BLOCK_SIZE + POLY_DEG))
-#define RDS_SAMPLE_RATE		9500
-#define SAMPLES_PER_BIT     8 // (1/1187.5)*RDS_SAMPLE_RATE
-#define FILTER_SIZE	 24
+// when i say ratio 10, i mean 1187.5*10
+#define RDS_SAMPLE_RATE		11875 // pira's m32 works at 361 khz, which is a ratio of 304, but this does a ratio of 10, while the m232 does a ratio of about 500
+#define SAMPLES_PER_BIT     10 // (1/1187.5)*RDS_SAMPLE_RATE or RDS_SAMPLE_RATE/1187.5, to check you can do (1187.5*SAMPLES_PER_BIT)=(RDS_SAMPLE_RATE)
+#define FILTER_SIZE	 40
 #define SAMPLE_BUFFER_SIZE	(SAMPLES_PER_BIT + FILTER_SIZE)
 
 #define RT_LENGTH	64

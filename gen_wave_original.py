@@ -6,7 +6,7 @@ import io, os
 if PLOT: import matplotlib.pyplot as plt
 if FFT: import numpy as np  # Import numpy for FFT
 
-sample_rate = 11875
+sample_rate = 190000
 
 # this is modified from ChristopheJacquet's pydemod
 def rrcosfilter(NumSamples):
@@ -57,8 +57,8 @@ outc.write(header)
 outh.write(header)
 
 def generate():
-    offset = int(sample_rate*0.004)
-    count = int(offset / 10**(len(str(offset)) - 1))
+    offset = 760
+    count = 7
     l = int(sample_rate / 1187.5) // 2
     if count*l > l*16: raise Exception("Sample rate too small")
     print(f"{offset=} {count=} {l=}")
@@ -97,11 +97,11 @@ def generate():
         plt.grid(True)
         plt.show()
 
-    outc.write(u"float waveform_biphase[{size}] = {{{values}}};\n\n".format(
-        values = u", ".join(map(str, out)),
-        size = len(out)))
+    # outc.write(u"float waveform_biphase[{size}] = {{{values}}};\n\n".format(
+        # values = u", ".join(map(str, out)),
+        # size = len(out)))
 
-    outh.write(u"extern float waveform_biphase[{size}];\n".format(size=len(out)))
+    # outh.write(u"extern float waveform_biphase[{size}];\n".format(size=len(out)))
 
 generate()
 
