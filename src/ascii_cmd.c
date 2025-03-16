@@ -383,6 +383,10 @@ void process_ascii_cmd(RDSModulator* mod, unsigned char *str) {
     unsigned char *cmd, *arg;
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
 
+    for(uint16_t i = 0; i < cmd_len; i++) {
+        if(str[i] == '\t') str[i] = ' ';
+    }
+
     for (size_t i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
         const command_handler_t *handler = &commands_exact[i];
         if (cmd_len == handler->cmd_length && 
