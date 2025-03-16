@@ -194,16 +194,14 @@ typedef struct {
 	uint8_t start[2];
 	uint8_t len[2];
 } RDSRTPlusData;
-typedef struct
-{
+typedef struct {
 	uint8_t uecp_enabled : 1;
 	uint8_t encoder_addr[2];
 	uint16_t site_addr[2];
 	uint8_t selected_encoder_addr;
-	uint16_t selected_site_addr : 10
+	uint16_t selected_site_addr : 10;
 } RDSEncoderData;
-typedef struct
-{
+typedef struct {
 	RDSEncoderData encoder_data[PROGRAMS];
 	RDSData data[PROGRAMS];
 	RDSState state[PROGRAMS];
