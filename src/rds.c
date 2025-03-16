@@ -56,6 +56,8 @@ void saveToFile(RDSEncoder *emp, const char *option) {
         tempEncoder.data[emp->program].dps1_len = emp->data[emp->program].dps1_len;
         tempEncoder.data[emp->program].dps1_numberofrepeats = emp->data[emp->program].dps1_numberofrepeats;
         tempEncoder.data[emp->program].dps1_numberofrepeats_clear = emp->data[emp->program].dps1_numberofrepeats_clear;
+    } else if (strcmp(option, "DPS1EN") == 0) {
+        tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
     } else if (strcmp(option, "LPS") == 0) {
         memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
     } else if (strcmp(option, "SHORTRT") == 0) {
