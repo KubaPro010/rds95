@@ -22,7 +22,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
         tempEncoder.data[emp->program].ms = emp->data[emp->program].ms;
     } else if (strcmp(option, "PS") == 0) {
         memcpy(tempEncoder.data[emp->program].ps, emp->data[emp->program].ps, PS_LENGTH);
-        tempEncoder.state[emp->program].ps_update = emp->state[emp->program].ps_update;
     } else if (strcmp(option, "PI") == 0) {
         tempEncoder.data[emp->program].pi = emp->data[emp->program].pi;
     } else if (strcmp(option, "PTY") == 0) {
@@ -38,14 +37,9 @@ void saveToFile(RDSEncoder *emp, const char *option) {
     } else if (strcmp(option, "RT1") == 0 || strcmp(option, "TEXT") == 0) {
         memcpy(tempEncoder.data[emp->program].rt1, emp->data[emp->program].rt1, RT_LENGTH);
         tempEncoder.data[emp->program].rt1_enabled = emp->data[emp->program].rt1_enabled;
-        tempEncoder.state[emp->program].rt_update = emp->state[emp->program].rt_update;
-        tempEncoder.state[emp->program].rt_segments = emp->state[emp->program].rt_segments;
-        tempEncoder.state[emp->program].rt_ab = emp->state[emp->program].rt_ab;
     } else if (strcmp(option, "PTYN") == 0) {
         memcpy(tempEncoder.data[emp->program].ptyn, emp->data[emp->program].ptyn, PTYN_LENGTH);
         tempEncoder.data[emp->program].ptyn_enabled = emp->data[emp->program].ptyn_enabled;
-        tempEncoder.state[emp->program].ptyn_update = emp->state[emp->program].ptyn_update;
-        tempEncoder.state[emp->program].ptyn_ab = emp->state[emp->program].ptyn_ab;
     } else if (strcmp(option, "AF") == 0 || strcmp(option, "AFCH") == 0) {
         memcpy(&(tempEncoder.data[emp->program].af), &(emp->data[emp->program].af), sizeof(emp->data[emp->program].af));
     } else if (strcmp(option, "ECC") == 0) {
@@ -56,11 +50,14 @@ void saveToFile(RDSEncoder *emp, const char *option) {
         tempEncoder.data[emp->program].ecclic_enabled = emp->data[emp->program].ecclic_enabled;
     } else if (strcmp(option, "TPS") == 0) {
         memcpy(tempEncoder.data[emp->program].tps, emp->data[emp->program].tps, PS_LENGTH);
-        tempEncoder.state[emp->program].tps_update = emp->state[emp->program].tps_update;
+	} else if (strcmp(option, "DPS1") == 0) {
+        memcpy(tempEncoder.data[emp->program].dps1, emp->data[emp->program].dps1, PS_LENGTH);
+        tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
+        tempEncoder.data[emp->program].dps1_len = emp->data[emp->program].dps1_len;
+        tempEncoder.data[emp->program].dps1_numberofrepeats = emp->data[emp->program].dps1_numberofrepeats;
+        tempEncoder.data[emp->program].dps1_numberofrepeats_clear = emp->data[emp->program].dps1_numberofrepeats_clear;
     } else if (strcmp(option, "LPS") == 0) {
         memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
-        tempEncoder.state[emp->program].lps_update = emp->state[emp->program].lps_update;
-        tempEncoder.state[emp->program].lps_segments = emp->state[emp->program].lps_segments;
     } else if (strcmp(option, "SHORTRT") == 0) {
         tempEncoder.data[emp->program].shortrt = emp->data[emp->program].shortrt;
     } else if (strcmp(option, "PIN") == 0 || strcmp(option, "PINEN") == 0) {
@@ -547,6 +544,9 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	memset(enc->data[program].rt1, ' ', 64);
 	enc->data[program].rt1[0] = '\r';
 
+	enc->data[program].static_ps_period = 16;
+	enc->data[program].dps_label_period = 8;
+
 	enc->state[program].rt_ab = 1;
 	enc->state[program].ptyn_ab = 1;
 
@@ -599,6 +599,13 @@ void set_rds_ps(RDSEncoder* enc, char *ps) {
 	enc->state[enc->program].ps_update = 1;
 	memset(enc->data[enc->program].ps, ' ', PS_LENGTH);
 	while (*ps != 0 && len < PS_LENGTH) enc->data[enc->program].ps[len++] = *ps++;
+}
+void set_rds_dps1(RDSEncoder* enc, char *dps1) {
+	uint8_t i = 0, len = 0;
+
+	memset(enc->data[enc->program].dps1, ' ', RT_LENGTH);
+	while (*dps1 != 0 && len < RT_LENGTH) enc->data[enc->program].rt1[len++] = *dps1++;
+	enc->data[enc->program].dps1_len = len;
 }
 
 void set_rds_tps(RDSEncoder* enc, char *tps) {

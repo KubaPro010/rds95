@@ -67,6 +67,12 @@ static void handle_rt1(char *arg, RDSModulator* mod, char* output) {
     strcpy(output, "+\0");
 }
 
+static void handle_dps(char *arg, RDSModulator* mod, char* output) {
+    arg[RT_LENGTH * 2] = 0;
+    set_rds_dps1(mod->enc, xlat(arg));
+    strcpy(output, "+\0");
+}
+
 static void handle_pty(char *arg, RDSModulator* mod, char* output) {
     arg[2] = 0;
     mod->enc->data[mod->enc->program].pty = strtoul((char *)arg, NULL, 10);
@@ -380,6 +386,7 @@ static const command_handler_t commands_eq4[] = {
 
 static const command_handler_t commands_eq5[] = {
     {"TEXT", handle_rt1, 4},
+    {"DPS1", handle_dps1, 4},
     {"PTYN", handle_ptyn, 4},
     {"AFCH", handle_afch, 4},
     {"UDG1", handle_udg1, 4},
