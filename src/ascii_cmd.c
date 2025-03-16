@@ -383,7 +383,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     for (size_t i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
         const command_handler_t *handler = &commands_exact[i];
         if (cmd_len == handler->cmd_length && 
-            ustrcmp(str, (char *)handler->cmd) == 0) {
+            strcmp(str, (char *)handler->cmd) == 0) {
             handler->handler(NULL, mod);
             return;
         }
