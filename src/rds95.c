@@ -43,7 +43,6 @@ static void show_help(char *name) {
 		"    -C,--ctl          FIFO control pipe\n"
 		"    -h,--help         Show this help text and exit\n"
 		"\n",
-		VERSION,
 		name
 	);
 }
