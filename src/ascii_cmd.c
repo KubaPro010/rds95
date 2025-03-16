@@ -4,7 +4,7 @@
 #include "lib.h"
 #include "ascii_cmd.h"
 
-#define CMD_MATCHES(a) (ustrcmp(cmd, (char *)a) == 0)
+#define CMD_MATCHES(a) (strcmp(cmd, (char *)a) == 0)
 
 typedef struct {
     const char *cmd;

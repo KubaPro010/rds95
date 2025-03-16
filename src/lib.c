@@ -17,19 +17,6 @@ int _strnlen(const char *s, int maxlen) {
 	return len;
 }
 
-int ustrcmp(const char *s1, const char *s2) {
-	char c1, c2;
-
-	do {
-		c1 = *s1++;
-		c2 = *s2++;
-		if (c1 == '\0')
-			return c1 - c2;
-	} while (c1 == c2);
-
-	return c1 - c2;
-}
-
 static uint16_t offset_words[] = {
 	0x0FC, /*  A  */
 	0x198, /*  B  */
