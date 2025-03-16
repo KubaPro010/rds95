@@ -79,7 +79,6 @@ static void handle_lic(char *arg, RDSModulator* mod) {
 }
 
 static void handle_rtp(char *arg, RDSModulator* mod) {
-    char tag_names[2][32];
     uint8_t tags[6];
     
     if (sscanf((char *)arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
