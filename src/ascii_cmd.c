@@ -67,7 +67,7 @@ static void handle_rt1(char *arg, RDSModulator* mod, char* output) {
     strcpy(output, "+\0");
 }
 
-static void handle_dps(char *arg, RDSModulator* mod, char* output) {
+static void handle_dps1(char *arg, RDSModulator* mod, char* output) {
     arg[RT_LENGTH * 2] = 0;
     set_rds_dps1(mod->enc, xlat(arg));
     strcpy(output, "+\0");
