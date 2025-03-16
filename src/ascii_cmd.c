@@ -364,7 +364,7 @@ static const command_handler_t commands_exact[] = {
 static bool process_command_table(const command_handler_t *table, int table_size, 
                                  char *cmd, char *arg, RDSModulator* mod) {
     for (int i = 0; i < table_size; i++) {
-        if (ustrcmp(cmd, (char *)table[i].cmd) == 0) {
+        if (strcmp(cmd, (char *)table[i].cmd) == 0) {
             table[i].handler(arg, mod);
             return true;
         }

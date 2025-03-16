@@ -32,7 +32,7 @@ static void *control_pipe_worker(void* modulator) {
 }
 
 static void show_version() {
-	printf("rds95 (a RDS encoder by radio95) version 1.0");
+	printf("rds95 (a RDS encoder by radio95) version 1.0\n");
 }
 
 static void show_help(char *name) {
