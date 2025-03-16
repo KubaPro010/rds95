@@ -601,7 +601,7 @@ void set_rds_ps(RDSEncoder* enc, char *ps) {
 	while (*ps != 0 && len < PS_LENGTH) enc->data[enc->program].ps[len++] = *ps++;
 }
 void set_rds_dps1(RDSEncoder* enc, char *dps1) {
-	uint8_t i = 0, len = 0;
+	uint8_t len = 0;
 
 	memset(enc->data[enc->program].dps1, ' ', RT_LENGTH);
 	while (*dps1 != 0 && len < RT_LENGTH) enc->data[enc->program].rt1[len++] = *dps1++;
