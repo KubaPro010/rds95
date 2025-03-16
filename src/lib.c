@@ -17,8 +17,8 @@ int _strnlen(const char *s, int maxlen) {
 	return len;
 }
 
-int ustrcmp(const unsigned char *s1, const unsigned char *s2) {
-	unsigned char c1, c2;
+int ustrcmp(const char *s1, const char *s2) {
+	char c1, c2;
 
 	do {
 		c1 = *s1++;
@@ -28,89 +28,6 @@ int ustrcmp(const unsigned char *s1, const unsigned char *s2) {
 	} while (c1 == c2);
 
 	return c1 - c2;
-}
-
-static char *rtp_content_types[64] = {
-	"DUMMY_CLASS",
-	"ITEM.TITLE",
-	"ITEM.ALBUM",
-	"ITEM.TRACKNUMBER",
-	"ITEM.ARTIST",
-	"ITEM.COMPOSITION",
-	"ITEM.MOVEMENT",
-	"ITEM.CONDUCTOR",
-	"ITEM.COMPOSER",
-	"ITEM.BAND",
-	"ITEM.COMMENT",
-	"ITEM.GENRE",
-	"INFO.NEWS",
-	"INFO.NEWS.LOCAL",
-	"INFO.STOCKMARKET",
-	"INFO.SPORT",
-	"INFO.LOTTERY",
-	"INFO.HOROSCOPE",
-	"INFO.DAILY_DIVERSION",
-	"INFO.HEALTH",
-	"INFO.EVENT",
-	"INFO.SCENE",
-	"INFO.CINEMA",
-	"INFO.TV",
-	"INFO.DATE_TIME",
-	"INFO.WEATHER",
-	"INFO.TRAFFIC",
-	"INFO.ALARM",
-	"INFO.ADVERTISEMENT",
-	"INFO.URL",
-	"INFO.OTHER",
-	"STATIONNAME.SHORT",
-	"STATIONNAME.LONG",
-	"PROGRAMME.NOW",
-	"PROGRAMME.NEXT",
-	"PROGRAMME.PART",
-	"PROGRAMME.HOST",
-	"PROGRAMME.EDITORIAL_STAFF",
-	"PROGRAMME.FREQUENCY",
-	"PROGRAMME.HOMEPAGE",
-	"PROGRAMME.SUBCHANNEL",
-	"PHONE.HOTLINE",
-	"PHONE.STUDIO",
-	"PHONE.OTHER",
-	"SMS.STUDIO",
-	"SMS.OTHER",
-	"EMAIL.HOTLINE",
-	"EMAIL.STUDIO",
-	"EMAIL.OTHER",
-	"MMS.OTHER",
-	"CHAT",
-	"CHAT.CENTRE",
-	"VOTE.QUESTION",
-	"VOTE.CENTRE",
-	"RFU_1",
-	"RFU_2",
-	"PRIVATE_1",
-	"PRIVATE_2",
-	"PRIVATE_3",
-	"PLACE",
-	"APPOINTMENT",
-	"IDENTIFIER",
-	"PURCHASE",
-	"GET_DATA"
-};
-
-uint8_t get_rtp_tag_id(char *rtp_tag_name) {
-	uint8_t tag_id = 0;
-	for (uint8_t i = 0; i < 64; i++) {
-		if (strcmp(rtp_tag_name, rtp_content_types[i]) == 0) {
-			tag_id = i;
-			break;
-		}
-	}
-	return tag_id;
-}
-
-char *get_rtp_tag_name(uint8_t rtp_tag) {
-	if (rtp_tag > 63) rtp_tag = 0;
-	return rtp_content_types[rtp_tag];
 }
 
 static uint16_t offset_words[] = {
@@ -189,8 +106,8 @@ uint8_t add_rds_af(RDSAFs *af_list, float freq) {
 }
 
 #define XLATSTRLEN	255
-unsigned char *xlat(unsigned char *str) {
-	static unsigned char new_str[XLATSTRLEN];
+char *xlat(char *str) {
+	static char new_str[XLATSTRLEN];
 	uint8_t i = 0;
 
 	while (*str != 0 && i < XLATSTRLEN) {

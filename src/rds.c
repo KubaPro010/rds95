@@ -528,7 +528,7 @@ void init_rds_encoder(RDSEncoder* enc) {
 	}
 }
 
-void set_rds_rt1(RDSEncoder* enc, unsigned char *rt1) {
+void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 	uint8_t i = 0, len = 0;
 
 	enc->state[enc->program].rt_update = 1;
@@ -550,7 +550,7 @@ void set_rds_rt1(RDSEncoder* enc, unsigned char *rt1) {
 	}
 }
 
-void set_rds_ps(RDSEncoder* enc, unsigned char *ps) {
+void set_rds_ps(RDSEncoder* enc, char *ps) {
 	uint8_t len = 0;
 
 	enc->state[enc->program].ps_update = 1;
@@ -558,7 +558,7 @@ void set_rds_ps(RDSEncoder* enc, unsigned char *ps) {
 	while (*ps != 0 && len < PS_LENGTH) enc->data[enc->program].ps[len++] = *ps++;
 }
 
-void set_rds_tps(RDSEncoder* enc, unsigned char *tps) {
+void set_rds_tps(RDSEncoder* enc, char *tps) {
 	uint8_t len = 0;
 
 	enc->state[enc->program].tps_update = 1;
@@ -571,7 +571,7 @@ void set_rds_tps(RDSEncoder* enc, unsigned char *tps) {
 	while (*tps != 0 && len < PS_LENGTH) enc->data[enc->program].tps[len++] = *tps++;
 }
 
-void set_rds_lps(RDSEncoder* enc, unsigned char *lps) {
+void set_rds_lps(RDSEncoder* enc, char *lps) {
 	uint8_t i = 0, len = 0;
 
 	enc->state[enc->program].lps_update = 1;
@@ -614,7 +614,7 @@ void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags) {
 	enc->rtpData[enc->program].enabled = 1;
 }
 
-void set_rds_ptyn(RDSEncoder* enc, unsigned char *ptyn) {
+void set_rds_ptyn(RDSEncoder* enc, char *ptyn) {
 	uint8_t len = 0;
 
 	enc->state[enc->program].ptyn_update = 1;

@@ -44,13 +44,13 @@ typedef struct {
 	uint8_t enabled : 1;
 	uint16_t pi;
 	uint8_t pin[4];
-	unsigned char ps[8];
+	char ps[8];
 	uint8_t ta : 1;
 	uint8_t tp : 1;
 	RDSAFs af;
 } RDSEONs;
 typedef struct {
-	unsigned char text[255];
+	char text[255];
 	uint8_t destination : 4;
 } RDSMessage;
 typedef struct {
@@ -62,7 +62,7 @@ typedef struct {
 } RDSMessages;
 typedef struct
 {
-	unsigned char command[35];
+	char command[35];
 	uint8_t days : 7; // let's say that here it will be stored by bits, so 0b1000000 is monday and so on
 	uint8_t pty: 5;
 	uint16_t execution_hours[12];
@@ -89,14 +89,14 @@ typedef struct {
 	uint8_t ms : 1;
 	uint8_t di : 4;
 
-	unsigned char ps[PS_LENGTH];
-	unsigned char tps[PS_LENGTH];
+	char ps[PS_LENGTH];
+	char tps[PS_LENGTH];
 
 	uint8_t eqtext1 : 1;
 	uint8_t dps1_enabled : 1;
 	uint8_t dps2_enabled : 1;
-	unsigned char dps1[255];
-	unsigned char dps2[255];
+	char dps1[255];
+	char dps2[255];
 	uint8_t dps1_mode : 2;
 	uint8_t dps2_mode : 2;
 	uint8_t dps1_numberofrepeats : 7;
@@ -113,22 +113,22 @@ typedef struct {
 	uint8_t rt_type : 2;
 	uint8_t rt_text_timeout;
 	uint8_t rt_switching_period;
-	unsigned char default_rt[RT_LENGTH];
-	unsigned char rt1[RT_LENGTH];
-	unsigned char rt2[RT_LENGTH];
+	char default_rt[RT_LENGTH];
+	char rt1[RT_LENGTH];
+	char rt2[RT_LENGTH];
 
 	uint8_t ptyn_enabled : 1;
-	unsigned char ptyn[PTYN_LENGTH];
+	char ptyn[PTYN_LENGTH];
 
 	RDSAFs af;
 
 	uint8_t ct : 1;
 
-	unsigned char lps[LPS_LENGTH];
+	char lps[LPS_LENGTH];
 
 	uint8_t pin[4];
 
-	unsigned char grp_sqc[24];
+	char grp_sqc[24];
 
 	uint8_t udg1_len : 4;
 	uint8_t udg2_len : 4;
@@ -145,25 +145,25 @@ typedef struct {
 
 	uint8_t ps_update : 1;
 	uint8_t tps_update : 1;
-	unsigned char ps_text[PS_LENGTH];
-	unsigned char tps_text[PS_LENGTH];
+	char ps_text[PS_LENGTH];
+	char tps_text[PS_LENGTH];
 	uint8_t ps_csegment : 4;
 
-	unsigned char dps1_text[255];
-	unsigned char dps1_nexttext[127];
+	char dps1_text[255];
+	char dps1_nexttext[127];
 
-	unsigned char rt_text[RT_LENGTH];
+	char rt_text[RT_LENGTH];
 	uint8_t rt_state : 5;
 	uint8_t rt_update : 1;
 	uint8_t rt_ab : 1;
 	uint8_t rt_segments : 5;
 
-	unsigned char ptyn_text[RT_LENGTH];
+	char ptyn_text[RT_LENGTH];
 	uint8_t ptyn_state : 1;
 	uint8_t ptyn_update : 1;
 	uint8_t ptyn_ab : 1;
 
-	unsigned char lps_text[RT_LENGTH];
+	char lps_text[RT_LENGTH];
 	uint8_t lps_state : 5;
 	uint8_t lps_update : 1;
 	uint8_t lps_segments : 5;
@@ -278,12 +278,12 @@ int rdssaved();
 void set_rds_defaults(RDSEncoder* enc, uint8_t program);
 void init_rds_encoder(RDSEncoder* enc);
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits);
-void set_rds_rt1(RDSEncoder* enc, unsigned char *rt1);
-void set_rds_ps(RDSEncoder* enc, unsigned char *ps);
-void set_rds_tps(RDSEncoder* enc, unsigned char *tps);
-void set_rds_lps(RDSEncoder* enc, unsigned char *lps);
+void set_rds_rt1(RDSEncoder* enc, char *rt1);
+void set_rds_ps(RDSEncoder* enc, char *ps);
+void set_rds_tps(RDSEncoder* enc, char *tps);
+void set_rds_lps(RDSEncoder* enc, char *lps);
 void set_rds_rtplus_flags(RDSEncoder* enc, uint8_t flags);
 void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags);
-void set_rds_ptyn(RDSEncoder* enc, unsigned char *ptyn);
+void set_rds_ptyn(RDSEncoder* enc, char *ptyn);
 
 #endif

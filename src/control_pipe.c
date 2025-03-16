@@ -17,8 +17,8 @@ int open_control_pipe(char *filename) {
 }
 
 void poll_control_pipe(RDSModulator* mod) {
-    static unsigned char pipe_buf[CTL_BUFFER_SIZE];
-    static unsigned char cmd_buf[CMD_BUFFER_SIZE];
+    static char pipe_buf[CTL_BUFFER_SIZE];
+    static char cmd_buf[CMD_BUFFER_SIZE];
     int bytes_read;
     char *token;
     

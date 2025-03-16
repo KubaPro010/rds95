@@ -31,9 +31,12 @@ static void *control_pipe_worker(void* modulator) {
 	pthread_exit(NULL);
 }
 
+static void show_version() {
+	printf("rds95 (a RDS encoder by radio95) version 1.0");
+}
+
 static void show_help(char *name) {
 	printf(
-		"rds95 (a RDS encoder by radio95) version %.1f\n"
 		"\n"
 		"Usage: %s [options]\n"
 		"\n"
@@ -46,6 +49,8 @@ static void show_help(char *name) {
 }
 
 int main(int argc, char **argv) {
+	show_version();
+
 	char control_pipe[51] = "\0";
 
 	pa_simple *device;
