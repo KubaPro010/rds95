@@ -310,7 +310,7 @@ static void handle_udg1(char *arg, RDSModulator* mod, char* output) {
     
     memcpy(&(mod->enc->data[mod->enc->program].udg1), &blocks, sets * sizeof(uint16_t[3]));
     mod->enc->data[mod->enc->program].udg1_len = sets;
-    if(bad_format) strcpy(output, "-\0")
+    if(bad_format) strcpy(output, "-\0");
     else if(all_scanned) strcpy(output, "+\0");
     else strcpy(output, "/\0");
 }
@@ -345,7 +345,7 @@ static void handle_udg2(char *arg, RDSModulator* mod, char* output) {
     
     memcpy(&(mod->enc->data[mod->enc->program].udg2), &blocks, sets * sizeof(uint16_t[3]));
     mod->enc->data[mod->enc->program].udg2_len = sets;
-    if(bad_format) strcpy(output, "-\0")
+    if(bad_format) strcpy(output, "-\0");
     else if(all_scanned) strcpy(output, "+\0");
     else strcpy(output, "/\0");
 }
