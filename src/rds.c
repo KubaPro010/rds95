@@ -488,8 +488,8 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	memset(&(enc->rtpData[program]), 0, sizeof(RDSRTPlusData));
 	memset(&(enc->encoder_data[program]), 0, sizeof(RDSEncoderData));
 
-	enc->encoder_data[program].encoder_addr[0] = 0;
-	enc->encoder_data[program].encoder_addr[1] = 0;
+	enc->encoder_data[program].encoder_addr[0] = 255;
+	enc->encoder_data[program].encoder_addr[1] = 255;
 
 	enc->data[program].ct = 1;
 	enc->data[program].di = 1;
