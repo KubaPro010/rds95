@@ -120,6 +120,7 @@ typedef struct {
 	uint8_t ptyn_enabled : 1;
 	char ptyn[PTYN_LENGTH];
 
+	uint8_t af_method : 1;
 	RDSAFs af;
 
 	uint8_t ct : 1;
