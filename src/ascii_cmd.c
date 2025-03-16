@@ -18,9 +18,6 @@ static void handle_ptyn(unsigned char *arg, RDSModulator* mod) {
 }
 
 static void handle_afch(unsigned char *arg, RDSModulator* mod) {
-    if (arg[0] == 'A' || arg[0] == 'B') {
-        return;
-    }
     if(arg[0] == '\0') {
         memset(&(mod->enc->data[mod->enc->program].af), 0, sizeof(mod->enc->data[mod->enc->program].af));
         return;

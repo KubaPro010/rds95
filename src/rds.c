@@ -72,6 +72,8 @@ void saveToFile(RDSEncoder *emp, const char *option) {
         memcpy(tempEncoder.rtpData[emp->program].len, emp->rtpData[emp->program].len, sizeof(emp->rtpData[emp->program].len));
         memcpy(tempEncoder.rtpData[emp->program].start, emp->rtpData[emp->program].start, sizeof(emp->rtpData[emp->program].start));
         memcpy(tempEncoder.rtpData[emp->program].type, emp->rtpData[emp->program].type, sizeof(emp->rtpData[emp->program].type));
+		memcpy(&(tempEncoder.odas[emp->program]), &(emp->odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
+		memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState));
 		tempEncoder.rtpData[emp->program].toggle = emp->rtpData[emp->program].toggle;
     } else if (strcmp(option, "UDG1") == 0) {
         memcpy(tempEncoder.data[emp->program].udg1, emp->data[emp->program].udg1, sizeof(emp->data[emp->program].udg1));
@@ -82,6 +84,8 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	} else if(strcmp(option, "RTPRUN") == 0) {
 		tempEncoder.rtpData[emp->program].running = emp->rtpData[emp->program].running;
 		tempEncoder.rtpData[emp->program].enabled = emp->rtpData[emp->program].enabled;
+		memcpy(&(tempEncoder.odas[emp->program]), &(emp->odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
+		memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState));
 	} else if(strcmp(option, "PTYNEN") == 0) {
 		tempEncoder.data[emp->program].ptyn_enabled = emp->data[emp->program].ptyn_enabled;
 	} else if(strcmp(option, "ECCEN") == 0) {
@@ -92,15 +96,18 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		tempEncoder.data[emp->program].pin[0] = emp->data[emp->program].pin[0];
 	} else if(strcmp(option, "PROGRAM") == 0) {
         tempEncoder.program = emp->program;
+	} else if(strcmp(option, "EON") == 0) {
+        memcpy(&(tempEncoder.data[emp->program].eon), &(emp->data[emp->program].eon), sizeof(RDSEONs)*4);
 	} else if (strcmp(option, "ALL") == 0) {
         memcpy(&(tempEncoder.data[emp->program]), &(emp->data[emp->program]), sizeof(RDSData));
         memcpy(&(tempEncoder.rtpData[emp->program]), &(emp->rtpData[emp->program]), sizeof(RDSRTPlusData));
-        tempEncoder.program = emp->program;
+		memcpy(&(tempEncoder.odas[emp->program]), &(emp->odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
+		memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState));
+		memcpy(&(tempEncoder.encoder_data[emp->program]), &(emp->encoder_data[emp->program]), sizeof(RDSODAState));
+		tempEncoder.program = emp->program;
     }
     
 	memcpy(&(tempEncoder.state[emp->program]), &(emp->state[emp->program]), sizeof(RDSState));
-	memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState));
-	memcpy(&(tempEncoder.odas[emp->program]), &(emp->odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
 
 	file = fopen(encoderPath, "wb");
     if (file == NULL) {
@@ -479,12 +486,17 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	memset(&(enc->oda_state[program]), 0, sizeof(RDSODAState));
 	memset(&(enc->odas[program]), 0, sizeof(RDSODA)*MAX_ODAS);
 	memset(&(enc->rtpData[program]), 0, sizeof(RDSRTPlusData));
+	memset(&(enc->encoder_data[program]), 0, sizeof(RDSEncoderData));
+
+	enc->encoder_data[program].uecp_encoder_addr[0] = 0;
+	enc->encoder_data[program].uecp_encoder_addr[1] = 0;
 
 	enc->data[program].ct = 1;
 	enc->data[program].di = 1;
 	enc->data[program].ecclic_enabled = 1;
 	strcpy((char *)enc->data[program].grp_sqc, DEFAULT_GRPSQC);
 	enc->data[program].ms = 1;
+	enc->data[program].tp = 1;
 	enc->data[program].pi = 0xFFFF;
 	strcpy((char *)enc->data[program].ps, "* RDS * ");
 	enc->data[program].rt1_enabled = 1;

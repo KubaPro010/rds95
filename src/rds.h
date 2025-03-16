@@ -36,7 +36,7 @@
 
 #pragma pack(1)
 typedef struct {
-	uint8_t num_entries;
+	uint8_t num_entries : 6;
 	uint8_t num_afs : 5;
 	uint8_t afs[MAX_AFS];
 } RDSAFs;
@@ -50,6 +50,33 @@ typedef struct {
 	RDSAFs af;
 } RDSEONs;
 typedef struct {
+	unsigned char text[255];
+	uint8_t destination : 4;
+} RDSMessage;
+typedef struct {
+	RDSMessage messages[100];
+	uint8_t dps2msg : 7;
+	uint8_t dps2msg_auto : 1;
+	uint8_t rt2msg : 7;
+	uint8_t rt2msg_auto : 1;
+} RDSMessages;
+typedef struct
+{
+	unsigned char command[35];
+	uint8_t days : 7; // let's say that here it will be stored by bits, so 0b1000000 is monday and so on
+	uint8_t pty: 5;
+	uint16_t execution_hours[12];
+	uint16_t execution_minutes[12];
+} RDSSchedulerItem;
+typedef struct
+{
+	RDSSchedulerItem items[49];
+	uint8_t enabled : 1;
+} RDSScheduler;
+typedef struct {
+	uint8_t dsn;
+	uint8_t psn;
+
 	uint16_t pi;
 
 	uint8_t ecclic_enabled : 1;
@@ -65,9 +92,30 @@ typedef struct {
 	unsigned char ps[PS_LENGTH];
 	unsigned char tps[PS_LENGTH];
 
+	uint8_t eqtext1 : 1;
+	uint8_t dps1_enabled : 1;
+	uint8_t dps2_enabled : 1;
+	unsigned char dps1[255];
+	unsigned char dps2[255];
+	uint8_t dps1_mode : 2;
+	uint8_t dps2_mode : 2;
+	uint8_t dps1_numberofrepeats : 7;
+	uint8_t dps1_numberofrepeats_clear : 1;
+	uint8_t dps2_numberofrepeats;
+	uint8_t dps_label_period;
+	uint8_t dps_restart : 1;
+	uint8_t dps_speed : 1;
+	uint8_t static_ps_period;
+
 	uint8_t shortrt : 1;
 	uint8_t rt1_enabled : 1;
+	uint8_t rt2_enabled : 1;
+	uint8_t rt_type : 2;
+	uint8_t rt_text_timeout;
+	uint8_t rt_switching_period;
+	unsigned char default_rt[RT_LENGTH];
 	unsigned char rt1[RT_LENGTH];
+	unsigned char rt2[RT_LENGTH];
 
 	uint8_t ptyn_enabled : 1;
 	unsigned char ptyn[PTYN_LENGTH];
@@ -89,6 +137,8 @@ typedef struct {
 	uint16_t udg2[8][3];
 
 	RDSEONs eon[4];
+	RDSMessages messages;
+	RDSScheduler schedule;
 } RDSData;
 typedef struct {
 	uint8_t ecc_or_lic : 1;
@@ -98,6 +148,9 @@ typedef struct {
 	unsigned char ps_text[PS_LENGTH];
 	unsigned char tps_text[PS_LENGTH];
 	uint8_t ps_csegment : 4;
+
+	unsigned char dps1_text[255];
+	unsigned char dps1_nexttext[127];
 
 	unsigned char rt_text[RT_LENGTH];
 	uint8_t rt_state : 5;
@@ -143,6 +196,15 @@ typedef struct {
 } RDSRTPlusData;
 typedef struct
 {
+	uint8_t uecp_enabled : 1;
+	uint8_t encoder_addr[2];
+	uint16_t site_addr[2];
+	uint8_t selected_encoder_addr;
+	uint16_t selected_site_addr : 10
+} RDSEncoderData;
+typedef struct
+{
+	RDSEncoderData encoder_data[PROGRAMS];
 	RDSData data[PROGRAMS];
 	RDSState state[PROGRAMS];
 	RDSODA odas[PROGRAMS][MAX_ODAS];
