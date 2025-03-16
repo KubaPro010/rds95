@@ -95,17 +95,19 @@ typedef struct {
 	uint8_t eqtext1 : 1;
 	uint8_t dps1_enabled : 1;
 	uint8_t dps2_enabled : 1;
+	uint8_t dps1_len;
 	char dps1[255];
+	uint8_t dps2_len;
 	char dps2[255];
 	uint8_t dps1_mode : 2;
 	uint8_t dps2_mode : 2;
 	uint8_t dps1_numberofrepeats : 7;
 	uint8_t dps1_numberofrepeats_clear : 1;
 	uint8_t dps2_numberofrepeats;
-	uint8_t dps_label_period;
+	uint8_t dps_label_period; // One transmission of a part of the dynamic ps
 	uint8_t dps_restart : 1;
-	uint8_t dps_speed : 1;
-	uint8_t static_ps_period;
+	uint8_t dps_speed : 1; // Low is 8 transmissions, high is 4
+	uint8_t static_ps_period; // One Transmission of static ps
 
 	uint8_t shortrt : 1;
 	uint8_t rt1_enabled : 1;
@@ -152,6 +154,10 @@ typedef struct {
 
 	char dps1_text[255];
 	char dps1_nexttext[127];
+	uint8_t static_ps_period : 4;
+	uint8_t dynamic_ps_period : 4;
+	uint8_t dynamic_ps_position : 4;
+	uint8_t dynamic_ps_state : 2;
 
 	char rt_text[RT_LENGTH];
 	uint8_t rt_state : 5;

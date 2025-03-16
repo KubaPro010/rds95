@@ -195,7 +195,6 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 	if(enc->data[enc->program].ta && enc->state[enc->program].tps_text[0] != '\0') {
 		blocks[3] = enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2] << 8 | enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2 + 1];
 	} else {
-		// TODO: Add DPS
 		blocks[3] =  enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2] << 8 |  enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2 + 1];
 	}
 	enc->state[enc->program].ps_csegment++;
