@@ -58,6 +58,12 @@ void saveToFile(RDSEncoder *emp, const char *option) {
         tempEncoder.data[emp->program].dps1_numberofrepeats_clear = emp->data[emp->program].dps1_numberofrepeats_clear;
     } else if (strcmp(option, "DPS1EN") == 0) {
         tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
+    } else if (strcmp(option, "DPS1MOD") == 0) {
+        tempEncoder.data[emp->program].dps1_mode = emp->data[emp->program].dps1_mode;
+    } else if (strcmp(option, "LABPER") == 0) {
+        tempEncoder.data[emp->program].dps_label_period = emp->data[emp->program].dps_label_period
+    } else if (strcmp(option, "SPSPER") == 0) {
+        tempEncoder.data[emp->program].static_ps_period = emp->data[emp->program].static_ps_period
     } else if (strcmp(option, "LPS") == 0) {
         memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
     } else if (strcmp(option, "SHORTRT") == 0) {
@@ -177,8 +183,9 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 
 // #region Group encoding
 static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
+	uint8_t dps1_on = (enc->data[enc->program].dps1_enabled && enc->data[enc->program].dps1_len != 0)
 	if(enc->state[enc->program].ps_csegment == 0) {
-		if(enc->state[enc->program].ps_update && !enc->data[enc->program].dps1_enabled) {
+		if(enc->state[enc->program].ps_update && !dps1_on) {
 			memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
 			enc->state[enc->program].ps_update = 0;
 		}
@@ -188,12 +195,12 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 			enc->state[enc->program].tps_update = 0;
 		}
 		
-		if(enc->state[enc->program].dps1_update && enc->data[enc->program].dps1_enabled) {
+		if(enc->state[enc->program].dps1_update && dps1_on) {
 			memcpy(enc->state[enc->program].dps1_text, enc->data[enc->program].dps1, PS_LENGTH);
 			enc->state[enc->program].dps1_update = 0;
 		}
 		
-		if(enc->data[enc->program].dps1_enabled) {
+		if(dps1_on) {
 			if(enc->state[enc->program].dynamic_ps_state == 0) {
 				memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
 				

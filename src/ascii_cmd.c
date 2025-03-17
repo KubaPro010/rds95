@@ -72,6 +72,11 @@ static void handle_dps1(char *arg, RDSModulator* mod, char* output) {
     set_rds_dps1(mod->enc, xlat(arg));
     strcpy(output, "+\0");
 }
+static void handle_dps1mod(char *arg, RDSModulator* mod, char* output) {
+    arg[1] = 0;
+    mod->enc->data[mod->enc->program].dps1_mode = strtoul((char *)arg, NULL, 10);
+    strcpy(output, "+\0");
+}
 
 static void handle_pty(char *arg, RDSModulator* mod, char* output) {
     arg[2] = 0;
@@ -230,6 +235,16 @@ static void handle_dps1en(char *arg, RDSModulator* mod, char* output) {
     arg[1] = 0;
     mod->enc->data[mod->enc->program].dps1_enabled = arg[0];
     mod->enc->state[mod->enc->program].ps_update = 1;
+    strcpy(output, "+\0");
+}
+
+static void handle_labper(char *arg, RDSModulator* mod, char* output) {
+    mod->enc->data[mod->enc->program].dps_label_period = strtoul((char *)arg, NULL, 10);
+    strcpy(output, "+\0");
+}
+
+static void handle_spsper(char *arg, RDSModulator* mod, char* output) {
+    mod->enc->data[mod->enc->program].static_ps_period = strtoul((char *)arg, NULL, 10);
     strcpy(output, "+\0");
 }
 
@@ -417,11 +432,14 @@ static const command_handler_t commands_eq7[] = {
     {"GRPSEQ", handle_grpseq, 6},
     {"RDSGEN", handle_rdsgen, 6},
     {"DPS1EN", handle_dps1en, 6},
+    {"LABPER", handle_labper, 6},
+    {"SPSPER", handle_spsper, 6},
 };
 
 static const command_handler_t commands_eq8[] = {
     {"SHORTRT", handle_shortrt, 7},
-    {"PROGRAM", handle_program, 7}
+    {"PROGRAM", handle_program, 7},
+    {"DPS1MOD", handle_dps1mod, 7},
 };
 
 static const command_handler_t commands_exact[] = {
