@@ -574,6 +574,8 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	set_rds_tps(enc, enc->data[program].tps);
 	set_rds_ptyn(enc, enc->data[program].ptyn);
 	set_rds_lps(enc, enc->data[program].lps);
+
+	enc->program = old_program;
 }
 
 void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
