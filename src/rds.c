@@ -112,8 +112,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		tempEncoder.program = emp->program;
     }
     
-	memcpy(&(tempEncoder.state[emp->program]), &(emp->state[emp->program]), sizeof(RDSState));
-
 	file = fopen(encoderPath, "wb");
     if (file == NULL) {
         perror("Error opening file");
@@ -183,83 +181,94 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 
 // #region Group encoding
 static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
-	uint8_t dps1_on = (enc->data[enc->program].dps1_enabled && enc->data[enc->program].dps1_len != 0);
-	if(enc->state[enc->program].ps_csegment == 0) {
-		if(enc->state[enc->program].ps_update && !dps1_on) {
-			memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
-			enc->state[enc->program].ps_update = 0;
-		}
-		
-		if(enc->state[enc->program].tps_update) {
-			memcpy(enc->state[enc->program].tps_text, enc->data[enc->program].tps, PS_LENGTH);
-			enc->state[enc->program].tps_update = 0;
-		}
-		
-		if(enc->state[enc->program].dps1_update && dps1_on) {
-			memcpy(enc->state[enc->program].dps1_text, enc->data[enc->program].dps1, DPS_LENGTH);
-			enc->state[enc->program].dps1_update = 0;
-			enc->state[enc->program].dps1_repeat_count = 0;
-		}
-		
-		if(dps1_on) {
-			if(enc->state[enc->program].dynamic_ps_state == 0) {
-				memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
-				
-				if(enc->state[enc->program].static_ps_period >= enc->data[enc->program].static_ps_period) {
-					enc->state[enc->program].dynamic_ps_state = 1;
-					enc->state[enc->program].static_ps_period = 0;
-					enc->state[enc->program].dynamic_ps_position = 0;
-				}
-			} else {
-				if(enc->data[enc->program].dps1_len > PS_LENGTH) {
-					switch(enc->data[enc->program].dps1_mode) {
-						case 0:
-							memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-							enc->state[enc->program].dynamic_ps_position += PS_LENGTH;
-							break;
-						case 1:
-							memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-							enc->state[enc->program].dynamic_ps_position++;
-							break;
-					}
-					
-					if(enc->state[enc->program].dynamic_ps_position >= enc->data[enc->program].dps1_len) {
-						enc->state[enc->program].dynamic_ps_position = 0;
-						enc->state[enc->program].dps1_repeat_count++;
-						
-						if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
-							enc->state[enc->program].dynamic_ps_state = 0;
-							enc->state[enc->program].dynamic_ps_period = 0;
-							enc->state[enc->program].dps1_repeat_count = 0;
-						}
-					}
-				} else {
-					memcpy(enc->state[enc->program].ps_text, enc->state[enc->program].dps1_text, PS_LENGTH);
-					enc->state[enc->program].dynamic_ps_period++;
-					
-					// For short messages, use the period to determine how many times to repeat
-					if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
-						enc->state[enc->program].dynamic_ps_state = 0;
-						enc->state[enc->program].dynamic_ps_period = 0;
-					}
-				}
-			}
-		}
-	}
+    uint8_t dps1_on = (enc->data[enc->program].dps1_enabled && enc->data[enc->program].dps1_len != 0);
+    if(enc->state[enc->program].ps_csegment == 0) {
+        if(enc->state[enc->program].ps_update && !dps1_on) {
+            memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
+            enc->state[enc->program].ps_update = 0;
+        }
+        
+        if(enc->state[enc->program].tps_update) {
+            memcpy(enc->state[enc->program].tps_text, enc->data[enc->program].tps, PS_LENGTH);
+            enc->state[enc->program].tps_update = 0;
+        }
+        
+        if(enc->state[enc->program].dps1_update && dps1_on) {
+            memcpy(enc->state[enc->program].dps1_text, enc->data[enc->program].dps1, DPS_LENGTH);
+            enc->state[enc->program].dps1_update = 0;
+            enc->state[enc->program].dps1_repeat_count = 0;
+        }
+        
+        if(dps1_on) {
+            if(enc->state[enc->program].dynamic_ps_state == 0) {
+                memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
+                
+                if(enc->state[enc->program].static_ps_period >= enc->data[enc->program].static_ps_period) {
+                    enc->state[enc->program].dynamic_ps_state = 1;
+                    enc->state[enc->program].static_ps_period = 0;
+                    enc->state[enc->program].dynamic_ps_position = 0;
+                }
+            } else {
+                if(enc->data[enc->program].dps1_len > PS_LENGTH) {
+                    uint8_t scroll_threshold = enc->data[enc->program].dps_speed ? 4 : 6;
+                    
+                    if (enc->state[enc->program].dynamic_ps_period >= scroll_threshold) {
+                        switch(enc->data[enc->program].dps1_mode) {
+                            case 0:
+                                memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
+                                enc->state[enc->program].dynamic_ps_position += PS_LENGTH;
+                                break;
+                            case 1:
+                                memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
+                                enc->state[enc->program].dynamic_ps_position++;
+                                break;
+                        }
+                        
+                        enc->state[enc->program].dynamic_ps_period = 0;
+                        
+                        if(enc->state[enc->program].dynamic_ps_position >= enc->data[enc->program].dps1_len) {
+                            enc->state[enc->program].dynamic_ps_position = 0;
+                            enc->state[enc->program].dps1_repeat_count++;
+                            
+                            if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
+                                enc->state[enc->program].dynamic_ps_state = 0;
+                                enc->state[enc->program].dynamic_ps_period = 0;
+                                enc->state[enc->program].dps1_repeat_count = 0;
+                            }
+                        }
+                    }
+                } else {
+                    memcpy(enc->state[enc->program].ps_text, enc->state[enc->program].dps1_text, PS_LENGTH);
+                    enc->state[enc->program].dynamic_ps_period++;
+                    
+                    if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
+                        enc->state[enc->program].dynamic_ps_state = 0;
+                        enc->state[enc->program].dynamic_ps_period = 0;
+                    }
+                }
+            }
+        }
+    }
 
-	blocks[1] |= enc->data[enc->program].ta << 4;
-	blocks[1] |= enc->data[enc->program].ms << 3;
-	blocks[1] |= ((enc->data[enc->program].di >> (3 - enc->state[enc->program].ps_csegment)) & 1) << 2;
-	blocks[1] |= enc->state[enc->program].ps_csegment;
-	blocks[2] = get_next_af(enc);
-	if(enc->data[enc->program].ta && enc->state[enc->program].tps_text[0] != '\0') {
-		blocks[3] = enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2] << 8 | enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2 + 1];
-	} else {
-		blocks[3] = enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2] << 8 |  enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2 + 1];
-	}
+    blocks[1] |= enc->data[enc->program].ta << 4;
+    blocks[1] |= enc->data[enc->program].ms << 3;
+    blocks[1] |= ((enc->data[enc->program].di >> (3 - enc->state[enc->program].ps_csegment)) & 1) << 2;
+    blocks[1] |= enc->state[enc->program].ps_csegment;
+    blocks[2] = get_next_af(enc);
+    if(enc->data[enc->program].ta && enc->state[enc->program].tps_text[0] != '\0') {
+        blocks[3] = enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2] << 8 | enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2 + 1];
+    } else {
+        blocks[3] = enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2] << 8 |  enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2 + 1];
+    }
 
-	enc->state[enc->program].ps_csegment++;
-	if (enc->state[enc->program].ps_csegment >= 4) enc->state[enc->program].ps_csegment = 0;
+    enc->state[enc->program].ps_csegment++;
+    if (enc->state[enc->program].ps_csegment >= 4) {
+        enc->state[enc->program].ps_csegment = 0;
+        // Increment the dynamic PS period counter when we've completed a full PS transmission
+        if (enc->state[enc->program].dynamic_ps_state == 1) {
+            enc->state[enc->program].dynamic_ps_period++;
+        }
+    }
 }
 
 static uint8_t get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
@@ -556,9 +565,21 @@ static void init_rtplus(RDSEncoder* enc, uint8_t group, uint8_t program) {
 	enc->rtpData[program].enabled = 0;
 }
 
+void reset_rds_state(RDSEncoder* enc, uint8_t program) {
+	memset(&(enc->state[program]), 0, sizeof(RDSState));
+	enc->state[program].rt_ab = 1;
+	enc->state[program].ptyn_ab = 1;
+
+	enc->state[program].rt_update = 1;
+	enc->state[program].ps_update = 1;
+	enc->state[program].dps1_update = 1;
+	enc->state[program].tps_update = 1;
+	enc->state[program].ptyn_update = 1;
+	enc->state[program].lps_update = 1;
+}
+
 void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	memset(&(enc->data[program]), 0, sizeof(RDSData));
-	memset(&(enc->state[program]), 0, sizeof(RDSState));
 	memset(&(enc->oda_state[program]), 0, sizeof(RDSODAState));
 	memset(&(enc->odas[program]), 0, sizeof(RDSODA)*MAX_ODAS);
 	memset(&(enc->rtpData[program]), 0, sizeof(RDSRTPlusData));
@@ -580,18 +601,11 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	memset(enc->data[program].rt1, ' ', 64);
 	enc->data[program].rt1[0] = '\r';
 
-	enc->data[program].static_ps_period = 6;
-	enc->data[program].dps_label_period = 4;
+	enc->data[program].static_ps_period = 10;
+	enc->data[program].dps_label_period = 8;
 	enc->data[program].dps1_numberofrepeats = 1;
 
-	enc->state[program].rt_ab = 1;
-	enc->state[program].ptyn_ab = 1;
-
-	enc->state[program].rt_update = 1;
-	enc->state[program].ps_update = 1;
-	enc->state[program].tps_update = 1;
-	enc->state[program].ptyn_update = 1;
-	enc->state[program].lps_update = 1;
+	reset_rds_state(enc, program);
 
 	init_rtplus(enc, GROUP_11A, program);
 }
@@ -605,6 +619,10 @@ void init_rds_encoder(RDSEncoder* enc) {
 		loadFromFile(enc);
 	} else {
 		saveToFile(enc, "ALL");
+	}
+
+	for(int i = 0; i < PROGRAMS; i++) {
+		reset_rds_state(enc, i);
 	}
 }
 
