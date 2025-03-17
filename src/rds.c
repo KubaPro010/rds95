@@ -128,7 +128,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
         perror("Error opening file");
         return;
     }
-    fwrite(&RDSEncoderFile, sizeof(RDSEncoderFile), 1, file);
+    fwrite(&rdsEncoderfile, sizeof(RDSEncoderFile), 1, file);
     fclose(file);
 }
 
