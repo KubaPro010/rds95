@@ -229,6 +229,7 @@ static void handle_rt1en(char *arg, RDSModulator* mod, char* output) {
 static void handle_dps1en(char *arg, RDSModulator* mod, char* output) {
     arg[1] = 0;
     mod->enc->data[mod->enc->program].dps1_enabled = arg[0];
+    mod->enc->state[mod->enc->program].ps_update = 1;
     strcpy(output, "+\0");
 }
 
