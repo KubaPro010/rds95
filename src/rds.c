@@ -251,6 +251,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 								enc->state[enc->program].dynamic_ps_scroll_counter = 0;
 								enc->state[enc->program].static_ps_period = 0;
 								memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
+								goto encode
 							}
 						}
 
@@ -281,6 +282,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 		}
 	}
 
+encode:
 	blocks[1] |= enc->data[enc->program].ta << 4;
 	blocks[1] |= enc->data[enc->program].ms << 3;
 	blocks[1] |= ((enc->data[enc->program].di >> (3 - enc->state[enc->program].ps_csegment)) & 1) << 2;
