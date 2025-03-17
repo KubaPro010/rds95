@@ -561,21 +561,23 @@ static void init_rtplus(RDSEncoder* enc, uint8_t group, uint8_t program) {
 }
 
 void reset_rds_state(RDSEncoder* enc, uint8_t program) {
-	uint8_t old_program = enc->program;
 	enc->program = program;
 
 	memset(&(enc->state[program]), 0, sizeof(RDSState));
 	enc->state[program].rt_ab = 1;
 	enc->state[program].ptyn_ab = 1;
 
-	set_rds_rt1(enc, enc->data[program].rt1);
-	set_rds_ps(enc, enc->data[program].ps);
-	set_rds_dps1(enc, enc->data[program].dps1);
-	set_rds_tps(enc, enc->data[program].tps);
-	set_rds_ptyn(enc, enc->data[program].ptyn);
-	set_rds_lps(enc, enc->data[program].lps);
+	RDSEncoder tempCoder;
+	memset(&(tempCoder->state[program]), 0, sizeof(RDSState));
 
-	enc->program = old_program;
+	set_rds_rt1(&tempCoder, enc->data[program].rt1);
+	set_rds_ps(&tempCoder, enc->data[program].ps);
+	set_rds_dps1(&tempCoder, enc->data[program].dps1);
+	set_rds_tps(&tempCoder, enc->data[program].tps);
+	set_rds_ptyn(&tempCoder, enc->data[program].ptyn);
+	set_rds_lps(&tempCoder, enc->data[program].lps);
+
+	memcpy(&(enc->state[program]), &(tempCoder.state[program]), sizeof(RDSState));
 }
 
 void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
