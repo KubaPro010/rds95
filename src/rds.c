@@ -51,7 +51,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
     } else if (strcmp(option, "TPS") == 0) {
         memcpy(tempEncoder.data[emp->program].tps, emp->data[emp->program].tps, PS_LENGTH);
 	} else if (strcmp(option, "DPS1") == 0) {
-        memcpy(tempEncoder.data[emp->program].dps1, emp->data[emp->program].dps1, PS_LENGTH);
+        memcpy(tempEncoder.data[emp->program].dps1, emp->data[emp->program].dps1, DPS_LENGTH);
         tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
         tempEncoder.data[emp->program].dps1_len = emp->data[emp->program].dps1_len;
         tempEncoder.data[emp->program].dps1_numberofrepeats = emp->data[emp->program].dps1_numberofrepeats;
@@ -196,7 +196,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 		}
 		
 		if(enc->state[enc->program].dps1_update && dps1_on) {
-			memcpy(enc->state[enc->program].dps1_text, enc->data[enc->program].dps1, PS_LENGTH);
+			memcpy(enc->state[enc->program].dps1_text, enc->data[enc->program].dps1, DPS_LENGTH);
 			enc->state[enc->program].dps1_update = 0;
 			enc->state[enc->program].dps1_repeat_count = 0;
 		}
