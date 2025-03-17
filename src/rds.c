@@ -8,7 +8,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
     char encoderPath[256];
     snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
     FILE *file;
-    
+
     RDSEncoder tempEncoder;
     file = fopen(encoderPath, "rb");
     if (file != NULL) {
@@ -17,7 +17,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
     } else {
         memcpy(&tempEncoder, emp, sizeof(RDSEncoder));
     }
-    
+
     if (strcmp(option, "MS") == 0) {
         tempEncoder.data[emp->program].ms = emp->data[emp->program].ms;
     } else if (strcmp(option, "PS") == 0) {
@@ -122,7 +122,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	memcpy(&(rdsEncoderfile.oda_state[emp->program]), &(tempEncoder.oda_state[emp->program]), sizeof(RDSODAState));
 	memcpy(&(rdsEncoderfile.encoder_data[emp->program]), &(tempEncoder.encoder_data[emp->program]), sizeof(RDSODAState));
 	rdsEncoderfile.program = tempEncoder.program;
-    
+
 	file = fopen(encoderPath, "wb");
     if (file == NULL) {
         perror("Error opening file");
@@ -214,22 +214,22 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 			memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
 			enc->state[enc->program].ps_update = 0;
 		}
-		
+
 		if(enc->state[enc->program].tps_update) {
 			memcpy(enc->state[enc->program].tps_text, enc->data[enc->program].tps, PS_LENGTH);
 			enc->state[enc->program].tps_update = 0;
 		}
-		
+
 		if(enc->state[enc->program].dps1_update && dps1_on) {
 			memcpy(enc->state[enc->program].dps1_text, enc->data[enc->program].dps1, DPS_LENGTH);
 			enc->state[enc->program].dps1_update = 0;
 			enc->state[enc->program].dps1_repeat_count = 0;
 		}
-		
+
 		if(dps1_on) {
 			if(enc->state[enc->program].dynamic_ps_state == 0) {
 				memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
-				
+
 				if(enc->state[enc->program].static_ps_period >= enc->data[enc->program].static_ps_period) {
 					enc->state[enc->program].dynamic_ps_state = 1;
 					enc->state[enc->program].static_ps_period = 0;
@@ -237,7 +237,21 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 				}
 			} else {
 				if(enc->data[enc->program].dps1_len > PS_LENGTH) {
-					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 6 : 4;
+					if(enc->state[enc->program].dynamic_ps_position >= enc->data[enc->program].dps1_len) {
+						enc->state[enc->program].dynamic_ps_position = 0;
+						enc->state[enc->program].dps1_repeat_count++;
+
+						if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
+							enc->state[enc->program].dynamic_ps_state = 0;
+							enc->state[enc->program].dynamic_ps_period = 0;
+							enc->state[enc->program].dps1_repeat_count = 0;
+							enc->state[enc->program].dynamic_ps_scroll_counter = 0;
+							enc->state[enc->program].static_ps_period = 0;
+							memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
+						}
+					}
+
+					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 4 : 2;
 
 					if(enc->state[enc->program].dynamic_ps_scroll_counter >= scroll_threshold) {
 						switch(enc->data[enc->program].dps1_mode) {
@@ -254,24 +268,10 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 					} else {
 						enc->state[enc->program].dynamic_ps_scroll_counter++;
 					}
-					
-					if(enc->state[enc->program].dynamic_ps_position >= enc->data[enc->program].dps1_len) {
-						enc->state[enc->program].dynamic_ps_position = 0;
-						enc->state[enc->program].dps1_repeat_count++;
-						
-						if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
-							enc->state[enc->program].dynamic_ps_state = 0;
-							enc->state[enc->program].dynamic_ps_period = 0;
-							enc->state[enc->program].dps1_repeat_count = 0;
-							enc->state[enc->program].dynamic_ps_scroll_counter = 0;
-							enc->state[enc->program].static_ps_period = 0;
-							memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
-						}
-					}
 				} else {
 					memcpy(enc->state[enc->program].ps_text, enc->state[enc->program].dps1_text, PS_LENGTH);
 					enc->state[enc->program].dynamic_ps_period++;
-					
+
 					if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
 						enc->state[enc->program].dynamic_ps_state = 0;
 						enc->state[enc->program].dynamic_ps_period = 0;
@@ -693,7 +693,7 @@ void set_rds_dps1(RDSEncoder* enc, char *dps1) {
     memset(enc->data[enc->program].dps1, ' ', DPS_LENGTH);
     while (*dps1 != 0 && len < DPS_LENGTH) enc->data[enc->program].dps1[len++] = *dps1++;
     enc->data[enc->program].dps1_len = len;
-    
+
     enc->state[enc->program].dynamic_ps_position = 0;
     enc->state[enc->program].dynamic_ps_period = 0;
     enc->state[enc->program].static_ps_period = 0;
