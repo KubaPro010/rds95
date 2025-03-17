@@ -223,6 +223,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 								enc->state[enc->program].dynamic_ps_position++;
 								break;
 						}
+						enc->state[enc->program].dynamic_ps_scroll_counter = 0;
 					} else {
 						enc->state[enc->program].dynamic_ps_scroll_counter++;
 					}
