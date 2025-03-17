@@ -210,7 +210,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 				}
 			} else {
 				if(enc->data[enc->program].dps1_len > PS_LENGTH) {
-					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 12 : 8;
+					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 16 : 12;
 
 					if(enc->state[enc->program].dynamic_ps_scroll_counter >= scroll_threshold) {
 						switch(enc->data[enc->program].dps1_mode) {
