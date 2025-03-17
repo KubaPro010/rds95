@@ -208,6 +208,7 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 
 // #region Group encoding
 static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
+get_ps:
 	uint8_t dps1_on = (enc->data[enc->program].dps1_enabled && enc->data[enc->program].dps1_len != 0);
 	if(enc->state[enc->program].ps_csegment == 0) {
 		if(enc->state[enc->program].ps_update && !dps1_on) {
@@ -253,6 +254,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 									enc->state[enc->program].dps1_repeat_count = 0;
 									enc->state[enc->program].dynamic_ps_scroll_counter = 0;
 									enc->state[enc->program].static_ps_period = 0;
+									goto get_ps;
 								} else {
 									enc->state[enc->program].dynamic_ps_state = 0;
 									enc->state[enc->program].dynamic_ps_period = 0;
