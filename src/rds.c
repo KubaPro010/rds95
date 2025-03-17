@@ -187,7 +187,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 	}
 	if(enc->state[enc->program].ps_csegment == 0 && enc->state[enc->program].dps1_update && enc->data[enc->program].dps1_enabled) {
 		memcpy(enc->state[enc->program].dps1_text, enc->data[enc->program].dps1, PS_LENGTH);
-		enc->state[enc->program].dps1_update= 0;
+		enc->state[enc->program].dps1_update = 0;
 	}
 
 	if(enc->data[enc->program].dps1_enabled &&
@@ -609,6 +609,7 @@ void set_rds_ps(RDSEncoder* enc, char *ps) {
 void set_rds_dps1(RDSEncoder* enc, char *dps1) {
 	uint8_t len = 0;
 
+	enc->state[enc->program].dps1_update = 1;
 	memset(enc->data[enc->program].dps1, ' ', RT_LENGTH);
 	while (*dps1 != 0 && len < RT_LENGTH) enc->data[enc->program].dps1[len++] = *dps1++;
 	enc->data[enc->program].dps1_len = len;
