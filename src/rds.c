@@ -208,8 +208,8 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 
 // #region Group encoding
 static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
-get_ps:
 	uint8_t dps1_on = (enc->data[enc->program].dps1_enabled && enc->data[enc->program].dps1_len != 0);
+get_ps:
 	if(enc->state[enc->program].ps_csegment == 0) {
 		if(enc->state[enc->program].ps_update && !dps1_on) {
 			memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
