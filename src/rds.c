@@ -210,7 +210,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 				}
 			} else {
 				if(enc->data[enc->program].dps1_len > PS_LENGTH) {
-					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 16 : 12;
+					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 32 : 24;
 
 					if(enc->state[enc->program].dynamic_ps_scroll_counter >= scroll_threshold) {
 						switch(enc->data[enc->program].dps1_mode) {
@@ -235,6 +235,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 							enc->state[enc->program].dynamic_ps_state = 0;
 							enc->state[enc->program].dynamic_ps_period = 0;
 							enc->state[enc->program].dps1_repeat_count = 0;
+							enc->state[enc->program].dynamic_ps_scroll_counter = 0;
 						}
 					}
 				} else {
@@ -667,6 +668,7 @@ void set_rds_dps1(RDSEncoder* enc, char *dps1) {
     enc->state[enc->program].dynamic_ps_position = 0;
     enc->state[enc->program].dynamic_ps_period = 0;
     enc->state[enc->program].static_ps_period = 0;
+	enc->state[enc->program].dynamic_ps_scroll_counter = 0;
 }
 
 void set_rds_tps(RDSEncoder* enc, char *tps) {
