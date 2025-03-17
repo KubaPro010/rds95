@@ -190,7 +190,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 		// Copy Static PS
 		memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
 
-		if(enc->state[enc->program].dynamic_ps_period == (enc->data[enc->program].dps_label_period*3)) {
+		if(enc->state[enc->program].dynamic_ps_period == enc->data[enc->program].dps_label_period) {
 			enc->state[enc->program].dynamic_ps_state = 0; // Static
 			enc->state[enc->program].dynamic_ps_period = 0;
 		}
@@ -210,7 +210,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 		// TODO: Mode 2 and 3
 		}
 		if(enc->state[enc->program].dynamic_ps_position >= enc->data[enc->program].dps1_len) enc->state[enc->program].dynamic_ps_position = 0;
-		if(enc->state[enc->program].static_ps_period == (enc->data[enc->program].static_ps_period*3)) {
+		if(enc->state[enc->program].static_ps_period == enc->data[enc->program].static_ps_period) {
 			enc->state[enc->program].dynamic_ps_state = 1; // DPS1
 			enc->state[enc->program].static_ps_period = 0;
 		}
@@ -225,19 +225,6 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 		blocks[3] = enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2] << 8 | enc->state[enc->program].tps_text[enc->state[enc->program].ps_csegment * 2 + 1];
 	} else {
 		blocks[3] = enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2] << 8 |  enc->state[enc->program].ps_text[enc->state[enc->program].ps_csegment * 2 + 1];
-	}
-
-	if(enc->data[enc->program].dps1_enabled || enc->data[enc->program].dps2_enabled) {
-		switch (enc->state[enc->program].dynamic_ps_state)
-		{
-		case 0:
-			enc->state[enc->program].static_ps_period++;
-			break;
-		case 1:
-		case 2:
-			enc->state[enc->program].dynamic_ps_period++;
-			break;
-		}
 	}
 
 	enc->state[enc->program].ps_csegment++;
@@ -452,6 +439,18 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 			else enc->state[enc->program].grp_seq_idx[1] = 0;
 			enc->state[enc->program].grp_seq_idx[1]++;
 			get_rds_ps_group(enc, blocks);
+			if(enc->data[enc->program].dps1_enabled || enc->data[enc->program].dps2_enabled) {
+				switch (enc->state[enc->program].dynamic_ps_state)
+				{
+				case 0:
+					enc->state[enc->program].static_ps_period++;
+					break;
+				case 1:
+				case 2:
+					enc->state[enc->program].dynamic_ps_period++;
+					break;
+				}
+			}
 			goto group_coded;
 		case '1':
 			if(enc->data[enc->program].ecc && enc->data[enc->program].lic) {
