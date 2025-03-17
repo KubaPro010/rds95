@@ -111,17 +111,30 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		memcpy(&(tempEncoder.encoder_data[emp->program]), &(emp->encoder_data[emp->program]), sizeof(RDSODAState));
 		tempEncoder.program = emp->program;
     }
+
+	RDSEncoderFile rdsEncoderfile;
+	rdsEncoderfile.file_starter = 225;
+	rdsEncoderfile.file_middle = 160;
+	rdsEncoderfile.file_ender = 95;
+	memcpy(&(rdsEncoderfile.data[emp->program]), &(tempEncoder.data[emp->program]), sizeof(RDSData));
+	memcpy(&(rdsEncoderfile.rtpData[emp->program]), &(tempEncoder.rtpData[emp->program]), sizeof(RDSRTPlusData));
+	memcpy(&(rdsEncoderfile.odas[emp->program]), &(tempEncoder.odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
+	memcpy(&(rdsEncoderfile.oda_state[emp->program]), &(tempEncoder.oda_state[emp->program]), sizeof(RDSODAState));
+	memcpy(&(rdsEncoderfile.encoder_data[emp->program]), &(tempEncoder.encoder_data[emp->program]), sizeof(RDSODAState));
+	rdsEncoderfile.program = tempEncoder.program;
     
 	file = fopen(encoderPath, "wb");
     if (file == NULL) {
         perror("Error opening file");
         return;
     }
-    fwrite(&tempEncoder, sizeof(RDSEncoder), 1, file);
+    fwrite(&RDSEncoderFile, sizeof(RDSEncoderFile), 1, file);
     fclose(file);
 }
 
-void loadFromFile(RDSEncoder *emp) {
+void loadFromFile(RDSEncoder *enc) {
+	RDSEncoderFile rdsEncoderfile;
+
 	char encoderPath[256];
 	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
     FILE *file = fopen(encoderPath, "rb");
@@ -129,8 +142,22 @@ void loadFromFile(RDSEncoder *emp) {
         perror("Error opening file");
         return;
     }
-    fread(emp, sizeof(RDSEncoder), 1, file);
+    fread(&rdsEncoderfile, sizeof(RDSEncoderFile), 1, file);
     fclose(file);
+
+	if (rdsEncoderfile.file_starter != 225 || rdsEncoderfile.file_ender != 95 || rdsEncoderfile.file_middle != 160) {
+		fprintf(stderr, "Invalid file format\n");
+		return;
+	}
+
+	for (int i = 0; i < PROGRAMS; i++) {
+		memcpy(&(enc->data[i]), &(rdsEncoderfile.data[i]), sizeof(RDSData));
+		memcpy(&(enc->rtpData[i]), &(rdsEncoderfile.rtpData[i]), sizeof(RDSRTPlusData));
+		memcpy(&(enc->odas[i]), &(rdsEncoderfile.odas[i]), sizeof(RDSODA) * MAX_ODAS);
+		memcpy(&(enc->oda_state[i]), &(rdsEncoderfile.oda_state[i]), sizeof(RDSODAState));
+		memcpy(&(enc->encoder_data[i]), &(rdsEncoderfile.encoder_data[i]), sizeof(RDSODAState));
+	}
+	enc->program = rdsEncoderfile.program;
 }
 
 int rdssaved() {

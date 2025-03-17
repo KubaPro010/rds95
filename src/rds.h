@@ -42,37 +42,37 @@ typedef struct {
 	uint8_t afs[MAX_AFS];
 } RDSAFs;
 typedef struct {
-	uint8_t enabled : 1;
 	uint16_t pi;
-	uint8_t pin[4];
-	char ps[8];
+	uint8_t enabled : 1;
 	uint8_t ta : 1;
 	uint8_t tp : 1;
+	uint8_t pin[4];
+	char ps[8];
 	RDSAFs af;
 } RDSEONs;
 typedef struct {
-	char text[255];
 	uint8_t destination : 4;
+	char text[255];
 } RDSMessage;
 typedef struct {
-	RDSMessage messages[100];
 	uint8_t dps2msg : 7;
 	uint8_t dps2msg_auto : 1;
 	uint8_t rt2msg : 7;
 	uint8_t rt2msg_auto : 1;
+	RDSMessage messages[100];
 } RDSMessages;
 typedef struct
 {
-	char command[35];
 	uint8_t days : 7; // let's say that here it will be stored by bits, so 0b1000000 is monday and so on
 	uint8_t pty: 5;
 	uint16_t execution_hours[12];
 	uint16_t execution_minutes[12];
+	char command[35];
 } RDSSchedulerItem;
 typedef struct
 {
-	RDSSchedulerItem items[49];
 	uint8_t enabled : 1;
+	RDSSchedulerItem items[49];
 } RDSScheduler;
 typedef struct {
 	uint8_t dsn;
@@ -105,10 +105,10 @@ typedef struct {
 	uint8_t dps1_numberofrepeats : 7;
 	uint8_t dps1_numberofrepeats_clear : 1;
 	uint8_t dps2_numberofrepeats;
-	uint8_t dps_label_period; // One transmission of a part of the dynamic ps
+	uint8_t dps_label_period;
 	uint8_t dps_restart : 1;
-	uint8_t dps_speed : 1; // Low is 8 transmissions, high is 4
-	uint8_t static_ps_period; // One Transmission of static ps
+	uint8_t dps_speed : 1;
+	uint8_t static_ps_period;
 
 	uint8_t shortrt : 1;
 	uint8_t rt1_enabled : 1;
@@ -224,6 +224,18 @@ typedef struct {
 	RDSRTPlusData rtpData[PROGRAMS];
 	uint8_t program : 3;
 } RDSEncoder;
+
+typedef struct {
+	uint8_t file_starter; // Always is 225 first polish radio programme am frequency
+	RDSData data[PROGRAMS];
+	RDSRTPlusData rtpData[PROGRAMS];
+	RDSODA odas[PROGRAMS][MAX_ODAS];
+	uint8_t file_middle; // Always is 160, average of both
+	RDSODAState oda_state[PROGRAMS];
+	RDSEncoderData encoder_data[PROGRAMS];
+	uint8_t program : 3;
+	uint8_t file_ender; // Always is 95 my freq
+} RDSEncoderFile;
 #pragma pack()
 
 #define GROUP_TYPE_0	( 0 << 4)
