@@ -61,9 +61,9 @@ void saveToFile(RDSEncoder *emp, const char *option) {
     } else if (strcmp(option, "DPS1MOD") == 0) {
         tempEncoder.data[emp->program].dps1_mode = emp->data[emp->program].dps1_mode;
     } else if (strcmp(option, "LABPER") == 0) {
-        tempEncoder.data[emp->program].dps_label_period = emp->data[emp->program].dps_label_period
+        tempEncoder.data[emp->program].dps_label_period = emp->data[emp->program].dps_label_period;
     } else if (strcmp(option, "SPSPER") == 0) {
-        tempEncoder.data[emp->program].static_ps_period = emp->data[emp->program].static_ps_period
+        tempEncoder.data[emp->program].static_ps_period = emp->data[emp->program].static_ps_period;
     } else if (strcmp(option, "LPS") == 0) {
         memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
     } else if (strcmp(option, "SHORTRT") == 0) {
