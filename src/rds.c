@@ -456,21 +456,25 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 		default:
 		case '0':
 			if(enc->state[enc->program].grp_seq_idx[1] != 3) enc->state[enc->program].grp_seq_idx[0]--;
-			else enc->state[enc->program].grp_seq_idx[1] = 0;
-			enc->state[enc->program].grp_seq_idx[1]++;
-			get_rds_ps_group(enc, blocks);
-			if(enc->data[enc->program].dps1_enabled || enc->data[enc->program].dps2_enabled) {
-				switch (enc->state[enc->program].dynamic_ps_state)
-				{
-				case 0:
-					enc->state[enc->program].static_ps_period++;
-					break;
-				case 1:
-				case 2:
-					enc->state[enc->program].dynamic_ps_period++;
-					break;
+			else {
+				enc->state[enc->program].grp_seq_idx[1] = 0;
+
+				if(enc->data[enc->program].dps1_enabled || enc->data[enc->program].dps2_enabled) {
+					switch (enc->state[enc->program].dynamic_ps_state)
+					{
+					case 0:
+						enc->state[enc->program].static_ps_period++;
+						break;
+					case 1:
+					case 2:
+						enc->state[enc->program].dynamic_ps_period++;
+						break;
+					}
 				}
 			}
+
+			enc->state[enc->program].grp_seq_idx[1]++;
+			get_rds_ps_group(enc, blocks);
 			goto group_coded;
 		case '1':
 			if(enc->data[enc->program].ecc && enc->data[enc->program].lic) {
