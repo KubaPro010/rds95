@@ -274,23 +274,6 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
 								enc->state[enc->program].dynamic_ps_position++;
 								break;
-							case 2:
-								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-								uint8_t next_position = 0;
-								if (enc->state[enc->program].dynamic_ps_position + PS_LENGTH < enc->data[enc->program].dps1_len) {
-									next_position = enc->state[enc->program].dynamic_ps_position + PS_LENGTH;
-									for (int i = 0; i < PS_LENGTH; i++) {
-										if (enc->state[enc->program].dynamic_ps_position + i < enc->data[enc->program].dps1_len &&
-											enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position + i] == ' ') {
-											next_position = enc->state[enc->program].dynamic_ps_position + i + 1;
-											break;
-										}
-									}
-								} else {
-									next_position = 0;
-								}
-								enc->state[enc->program].dynamic_ps_position = next_position;
-								break;
 						}
 						enc->state[enc->program].dynamic_ps_scroll_counter = 0;
 					} else {
@@ -333,23 +316,6 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 							case 1:
 								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_nexttext[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
 								enc->state[enc->program].dynamic_ps_position++;
-								break;
-							case 2:
-								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_nexttext[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-								uint8_t next_position = 0;
-								if (enc->state[enc->program].dynamic_ps_position + PS_LENGTH < enc->data[enc->program].dps1_len) {
-									next_position = enc->state[enc->program].dynamic_ps_position + PS_LENGTH;
-									for (int i = 0; i < PS_LENGTH; i++) {
-										if (enc->state[enc->program].dynamic_ps_position + i < enc->data[enc->program].dps1_len &&
-											enc->state[enc->program].dps1_nexttext[enc->state[enc->program].dynamic_ps_position + i] == ' ') {
-											next_position = enc->state[enc->program].dynamic_ps_position + i + 1;
-											break;
-										}
-									}
-								} else {
-									next_position = 0;
-								}
-								enc->state[enc->program].dynamic_ps_position = next_position;
 								break;
 						}
 						enc->state[enc->program].dynamic_ps_scroll_counter = 0;

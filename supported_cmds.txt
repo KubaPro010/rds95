@@ -1,18 +1,18 @@
 AF
 AFCH
 DI
-- DPS1
-- DPS1EN
+DPS1
+DPS1EN
 - DPS2EN
-- DPS1ENQ
+DPS1ENQ
 - DPS2
-- DPS1MOD
+DPS1MOD (partial)
 - DPS2MOD
 - DPS1REP
 - DPS2REP
 - DTTMOUT
 - EQTEXT1
-- LABPER
+LABPER
 MS
 PI
 PS
@@ -26,8 +26,8 @@ RT1EN
 - RTPER
 - RTTYPE
 - RSTDPS
-- SCRLSPD
-- SPSPER
+SCRLSPD
+SPSPER
 TA
 - TATMOUT
 TP
@@ -121,16 +121,16 @@ Magic RDS 4 Pages for PIRA32:
             - RT1 Enabled
             - RT2 Enabled (TODO:)
             - Radiotext Type Bit (TODO: RTTYPE)
-        - Dynamic PS (TODO:):
+        - Dynamic PS:
             - DPS1 Text
             - DPS1 Setup:
                 - DPS1 Enabled (Default: 0)
-                - DPS1 Mode (Default: 1)
-                - DPS1 Number of repeats (Default: 0, options: CLEAR)
-            - DPS2:
+                - DPS1 Mode (Default: 1) (TODO: 2 and 3)
+                - DPS1 Number of repeats (Default: 0, options: CLEAR) (TODO:)
+            - DPS2 (TODO:):
                 - DPS2 Text
                 - DPS2 Source (Default: 0, manual)
-            - DPS Setup:
+            - DPS Setup (TODO:):
                 - DPS2 Enabled (Default: 0)
                 - DPS2 Mode (Default: 2)
                 - DPS2 Number of repeats (Default: 0)
@@ -138,7 +138,7 @@ Magic RDS 4 Pages for PIRA32:
                 - Static PS period (Default: 16)
                 - DPS String Period (LABPER, Default: 0)
                 - Scrolling Speed (modes 0-3 Default: low)
-                - Restart DPS on change (options: Only if it's running, Always | first is Default)
+                - Restart DPS on change (options: Only if it's running, Always | first is Default) (TODO:)
     - Alternative Frequency:
         - AF Method (TODO: AF=A, AF=B)
         ; A:
