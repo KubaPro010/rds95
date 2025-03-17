@@ -198,6 +198,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 		if(enc->state[enc->program].dps1_update && dps1_on) {
 			memcpy(enc->state[enc->program].dps1_text, enc->data[enc->program].dps1, PS_LENGTH);
 			enc->state[enc->program].dps1_update = 0;
+			enc->state[enc->program].dps1_repeat_count = 0;
 		}
 		
 		if(dps1_on) {
@@ -224,14 +225,23 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 					
 					if(enc->state[enc->program].dynamic_ps_position >= enc->data[enc->program].dps1_len) {
 						enc->state[enc->program].dynamic_ps_position = 0;
+						enc->state[enc->program].dps1_repeat_count++;
+						
+						if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
+							enc->state[enc->program].dynamic_ps_state = 0;
+							enc->state[enc->program].dynamic_ps_period = 0;
+							enc->state[enc->program].dps1_repeat_count = 0;
+						}
 					}
 				} else {
 					memcpy(enc->state[enc->program].ps_text, enc->state[enc->program].dps1_text, PS_LENGTH);
-				}
-				
-				if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
-					enc->state[enc->program].dynamic_ps_state = 0;
-					enc->state[enc->program].dynamic_ps_period = 0;
+					enc->state[enc->program].dynamic_ps_period++;
+					
+					// For short messages, use the period to determine how many times to repeat
+					if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
+						enc->state[enc->program].dynamic_ps_state = 0;
+						enc->state[enc->program].dynamic_ps_period = 0;
+					}
 				}
 			}
 		}
@@ -572,6 +582,7 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 
 	enc->data[program].static_ps_period = 6;
 	enc->data[program].dps_label_period = 4;
+	enc->data[program].dps1_numberofrepeats = 1;
 
 	enc->state[program].rt_ab = 1;
 	enc->state[program].ptyn_ab = 1;

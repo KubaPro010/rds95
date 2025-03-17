@@ -156,6 +156,7 @@ typedef struct {
 	uint8_t dps1_update : 1;
 	char dps1_text[DPS_LENGTH];
 	char dps1_nexttext[127];
+	uint8_t dps1_repeat_count : 7;
 	uint8_t static_ps_period : 4;
 	uint8_t dynamic_ps_period : 4;
 	uint8_t dynamic_ps_position : 4;
