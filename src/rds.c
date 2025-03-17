@@ -235,9 +235,9 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 					enc->state[enc->program].static_ps_period = 0;
 					enc->state[enc->program].dynamic_ps_position = 0;
 				}
-			} else {
+			} else if(enc->state[enc->program].dynamic_ps_state == 1) {
 				if(enc->data[enc->program].dps1_len > PS_LENGTH) {
-					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 2 : 1;
+					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 4 : 2;
 
 					if(enc->state[enc->program].dynamic_ps_scroll_counter >= scroll_threshold) {
 						if(enc->state[enc->program].dynamic_ps_position >= enc->data[enc->program].dps1_len) {
@@ -245,13 +245,23 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 							enc->state[enc->program].dps1_repeat_count++;
 
 							if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
-								enc->state[enc->program].dynamic_ps_state = 0;
-								enc->state[enc->program].dynamic_ps_period = 0;
-								enc->state[enc->program].dps1_repeat_count = 0;
-								enc->state[enc->program].dynamic_ps_scroll_counter = 0;
-								enc->state[enc->program].static_ps_period = 0;
-								memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
-								goto encode;
+								if(enc->state[enc->program].dps1_nexttext_update && enc->state[enc->program].dps1_nexttext_len != 0) {
+									enc->state[enc->program].dps1_nexttext_update = 0;
+
+									enc->state[enc->program].dynamic_ps_state = 2; // DPS1 nexttext
+									enc->state[enc->program].dynamic_ps_period = 0;
+									enc->state[enc->program].dps1_repeat_count = 0;
+									enc->state[enc->program].dynamic_ps_scroll_counter = 0;
+									enc->state[enc->program].static_ps_period = 0;
+								} else {
+									enc->state[enc->program].dynamic_ps_state = 0;
+									enc->state[enc->program].dynamic_ps_period = 0;
+									enc->state[enc->program].dps1_repeat_count = 0;
+									enc->state[enc->program].dynamic_ps_scroll_counter = 0;
+									enc->state[enc->program].static_ps_period = 0;
+									memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
+									goto encode;
+								}
 							}
 						}
 
@@ -271,6 +281,49 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 					}
 				} else {
 					memcpy(enc->state[enc->program].ps_text, enc->state[enc->program].dps1_text, PS_LENGTH);
+					enc->state[enc->program].dynamic_ps_period++;
+
+					if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
+						enc->state[enc->program].dynamic_ps_state = 0;
+						enc->state[enc->program].dynamic_ps_period = 0;
+					}
+				}
+			} else if(enc->state[enc->program].dynamic_ps_state == 2) {
+				if(enc->data[enc->program].dps1_len > PS_LENGTH) {
+					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 4 : 2;
+
+					if(enc->state[enc->program].dynamic_ps_scroll_counter >= scroll_threshold) {
+						if(enc->state[enc->program].dynamic_ps_position >= enc->state[enc->program].dps1_nexttext_len) {
+							enc->state[enc->program].dynamic_ps_position = 0;
+							enc->state[enc->program].dps1_repeat_count++;
+
+							if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
+								enc->state[enc->program].dynamic_ps_state = 0;
+								enc->state[enc->program].dynamic_ps_period = 0;
+								enc->state[enc->program].dps1_repeat_count = 0;
+								enc->state[enc->program].dynamic_ps_scroll_counter = 0;
+								enc->state[enc->program].static_ps_period = 0;
+								memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
+								goto encode;
+							}
+						}
+
+						switch(enc->data[enc->program].dps1_mode) {
+							case 0:
+								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_nexttext[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
+								enc->state[enc->program].dynamic_ps_position += PS_LENGTH;
+								break;
+							case 1:
+								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_nexttext[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
+								enc->state[enc->program].dynamic_ps_position++;
+								break;
+						}
+						enc->state[enc->program].dynamic_ps_scroll_counter = 0;
+					} else {
+						enc->state[enc->program].dynamic_ps_scroll_counter++;
+					}
+				} else {
+					memcpy(enc->state[enc->program].ps_text, enc->state[enc->program].dps1_nexttext, PS_LENGTH);
 					enc->state[enc->program].dynamic_ps_period++;
 
 					if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
@@ -700,6 +753,15 @@ void set_rds_dps1(RDSEncoder* enc, char *dps1) {
     enc->state[enc->program].dynamic_ps_period = 0;
     enc->state[enc->program].static_ps_period = 0;
 	enc->state[enc->program].dynamic_ps_scroll_counter = 0;
+}
+
+void set_rds_next_dps1(RDSEncoder* enc, char *dps1) {
+    uint8_t len = 0;
+
+    enc->state[enc->program].dps1_nexttext_update = 1;
+    memset(enc->state[enc->program].dps1_nexttext, ' ', 127);
+    while (*dps1 != 0 && len < 127) enc->state[enc->program].dps1_nexttext[len++] = *dps1++;
+    enc->state[enc->program].dps1_nexttext_len = len;
 }
 
 void set_rds_tps(RDSEncoder* enc, char *tps) {

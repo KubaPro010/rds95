@@ -78,6 +78,18 @@ static void handle_dps1mod(char *arg, RDSModulator* mod, char* output) {
     strcpy(output, "+\0");
 }
 
+static void handle_scrlspd(char *arg, RDSModulator* mod, char* output) {
+    arg[1] = 0;
+    mod->enc->data[mod->enc->program].dps_speed = strtoul((char *)arg, NULL, 10);
+    strcpy(output, "+\0");
+}
+
+static void handle_dps1enq(char *arg, RDSModulator* mod, char* output) {
+    arg[127 * 2] = 0;
+    set_rds_next_dps1(mod->enc, xlat(arg));
+    strcpy(output, "+\0");
+}
+
 static void handle_pty(char *arg, RDSModulator* mod, char* output) {
     arg[2] = 0;
     mod->enc->data[mod->enc->program].pty = strtoul((char *)arg, NULL, 10);
@@ -403,7 +415,8 @@ static const command_handler_t commands_eq4[] = {
     {"LIC", handle_lic, 3},
     {"RTP", handle_rtp, 3},
     {"LPS", handle_lps, 3},
-    {"PIN", handle_pin, 3}
+    {"PIN", handle_pin, 3},
+    {"DPS", handle_dps1, 3},
 };
 
 static const command_handler_t commands_eq5[] = {
@@ -440,6 +453,11 @@ static const command_handler_t commands_eq8[] = {
     {"SHORTRT", handle_shortrt, 7},
     {"PROGRAM", handle_program, 7},
     {"DPS1MOD", handle_dps1mod, 7},
+    {"SCRLSPD", handle_scrlspd, 7},
+    {"DPS1ENQ", handle_dps1enq, 7},
+};
+static const command_handler_t commands_eq10[] = {
+    {"PS_SCROLL", handle_dps1enq, 9},
 };
 
 static const command_handler_t commands_exact[] = {
@@ -560,6 +578,17 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
         
         if (process_command_table(commands_eq8,
                                   sizeof(commands_eq8) / sizeof(command_handler_t),
+                                  cmd, arg, output, mod)) {
+        }
+    }
+    
+    if (cmd_len > 9 && str[9] == '=') {
+        cmd = str;
+        cmd[9] = 0;
+        arg = str + 10;
+        
+        if (process_command_table(commands_eq10,
+                                  sizeof(commands_eq10) / sizeof(command_handler_t),
                                   cmd, arg, output, mod)) {
         }
     }

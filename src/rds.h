@@ -155,6 +155,8 @@ typedef struct {
 
 	uint8_t dps1_update : 1;
 	uint8_t dps2_update : 1;
+	uint8_t dps1_nexttext_update : 1;
+	uint8_t dps1_nexttext_len;
 	char dps1_text[DPS_LENGTH];
 	char dps1_nexttext[127];
 	char dps2_text[DPS_LENGTH];
@@ -306,6 +308,7 @@ void init_rds_encoder(RDSEncoder* enc);
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits);
 void set_rds_rt1(RDSEncoder* enc, char *rt1);
 void set_rds_dps1(RDSEncoder* enc, char *dps1);
+void set_rds_next_dps1(RDSEncoder* enc, char *dps1);
 void set_rds_ps(RDSEncoder* enc, char *ps);
 void set_rds_tps(RDSEncoder* enc, char *tps);
 void set_rds_lps(RDSEncoder* enc, char *lps);
