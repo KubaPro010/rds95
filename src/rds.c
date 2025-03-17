@@ -237,6 +237,8 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 							enc->state[enc->program].dynamic_ps_period = 0;
 							enc->state[enc->program].dps1_repeat_count = 0;
 							enc->state[enc->program].dynamic_ps_scroll_counter = 0;
+							enc->state[enc->program].static_ps_period = 0;
+							memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
 						}
 					}
 				} else {
