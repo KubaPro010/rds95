@@ -276,15 +276,18 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 								break;
 							case 2:
 								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-								uint8_t remaining_len = enc->data[enc->program].dps1_len-enc->state[enc->program].dynamic_ps_position;
-								if(remaining_len != 0) {
-									for(int i = 0; i < remaining_len; i++) {
-										if(enc->data[enc->program].dps1[remaining_len+i] == ' ') {
-											enc->state[enc->program].dynamic_ps_position = remaining_len+i;
-											break;
-										}
+								uint8_t next_position = enc->state[enc->program].dynamic_ps_position;
+								for(int i = 1; i < enc->data[enc->program].dps1_len - enc->state[enc->program].dynamic_ps_position; i++) {
+									if(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position + i] == ' ') {
+										next_position = enc->state[enc->program].dynamic_ps_position + i + 1; // Position after the space
+										break;
 									}
 								}
+								if(next_position == enc->state[enc->program].dynamic_ps_position ||
+								   next_position >= enc->data[enc->program].dps1_len) {
+									next_position = 0;
+								}
+								enc->state[enc->program].dynamic_ps_position = next_position;
 								break;
 						}
 						enc->state[enc->program].dynamic_ps_scroll_counter = 0;
@@ -331,15 +334,18 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 								break;
 							case 2:
 								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-								uint8_t remaining_len = enc->data[enc->program].dps1_len-enc->state[enc->program].dynamic_ps_position;
-								if(remaining_len != 0) {
-									for(int i = 0; i < remaining_len; i++) {
-										if(enc->data[enc->program].dps1[remaining_len+i] == ' ') {
-											enc->state[enc->program].dynamic_ps_position = remaining_len+i;
-											break;
-										}
+								uint8_t next_position = enc->state[enc->program].dynamic_ps_position;
+								for(int i = 1; i < enc->data[enc->program].dps1_len - enc->state[enc->program].dynamic_ps_position; i++) {
+									if(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position + i] == ' ') {
+										next_position = enc->state[enc->program].dynamic_ps_position + i + 1; // Position after the space
+										break;
 									}
 								}
+								if(next_position == enc->state[enc->program].dynamic_ps_position ||
+								   next_position >= enc->data[enc->program].dps1_len) {
+									next_position = 0;
+								}
+								enc->state[enc->program].dynamic_ps_position = next_position;
 								break;
 						}
 						enc->state[enc->program].dynamic_ps_scroll_counter = 0;
@@ -374,7 +380,6 @@ encode:
 	enc->state[enc->program].ps_csegment++;
 	if (enc->state[enc->program].ps_csegment >= 4) enc->state[enc->program].ps_csegment = 0;
 }
-
 
 static uint8_t get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
 	if (enc->state[enc->program].rt_update) {
