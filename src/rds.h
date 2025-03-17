@@ -18,7 +18,7 @@
 
 #define RT_LENGTH	64
 #define PS_LENGTH	8
-#define DPS_LENGTH	8
+#define DPS_LENGTH	255
 #define PTYN_LENGTH	8
 #define LPS_LENGTH	32
 #define DEFAULT_GRPSQC "002222XY"
