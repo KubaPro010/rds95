@@ -152,6 +152,7 @@ typedef struct {
 	char tps_text[PS_LENGTH];
 	uint8_t ps_csegment : 4;
 
+	uint8_t dps1_update : 1;
 	char dps1_text[255];
 	char dps1_nexttext[127];
 	uint8_t static_ps_period : 4;
