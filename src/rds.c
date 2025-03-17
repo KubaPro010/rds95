@@ -203,7 +203,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 	if(enc->data[enc->program].dps1_enabled &&
 		 enc->state[enc->program].ps_csegment == 0 && enc->state[enc->program].dynamic_ps_state != 1) {
 		// Copy DPS1
-		memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program]->dynamic_ps_position]), PS_LENGTH);
+		memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
 		switch (enc->data[enc->program].dps1_mode)
 		{
 		case 0:
