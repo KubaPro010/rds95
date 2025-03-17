@@ -10,10 +10,10 @@
 
 #define GROUP_LENGTH		4
 #define BITS_PER_GROUP		(GROUP_LENGTH * (BLOCK_SIZE + POLY_DEG))
-// when i say ratio 10, i mean 1187.5*10
-#define RDS_SAMPLE_RATE		11875 // pira's m32 works at 361 khz, which is a ratio of 304, but this does a ratio of 10, while the m232 does a ratio of about 500
-#define SAMPLES_PER_BIT     10 // (1/1187.5)*RDS_SAMPLE_RATE or RDS_SAMPLE_RATE/1187.5, to check you can do (1187.5*SAMPLES_PER_BIT)=(RDS_SAMPLE_RATE)
-#define FILTER_SIZE	 40
+// Higher sample rate makes you more synchronized so you stay at the 11.4 GPS (group per sec) but lesser sample rate gives a smaller amount of cpu usage
+#define RDS_SAMPLE_RATE		16625 // pira's m32 works at 361 khz, which is a ratio of 304, but this does a ratio of 14, while the m232 does a ratio of about 500
+#define SAMPLES_PER_BIT     14 // this would be your ratio
+#define FILTER_SIZE	 84
 #define SAMPLE_BUFFER_SIZE	(SAMPLES_PER_BIT + FILTER_SIZE)
 
 #define RT_LENGTH	64
@@ -154,13 +154,17 @@ typedef struct {
 	uint8_t ps_csegment : 4;
 
 	uint8_t dps1_update : 1;
+	uint8_t dps2_update : 1;
 	char dps1_text[DPS_LENGTH];
 	char dps1_nexttext[127];
+	char dps2_text[DPS_LENGTH];
 	uint8_t dps1_repeat_count : 7;
+	uint8_t dps2_repeat_count : 7;
 	uint8_t static_ps_period : 4;
 	uint8_t dynamic_ps_period : 4;
 	uint8_t dynamic_ps_position : 4;
 	uint8_t dynamic_ps_state : 2;
+	uint8_t dynamic_ps_scroll_counter : 7;
 
 	char rt_text[RT_LENGTH];
 	uint8_t rt_state : 5;

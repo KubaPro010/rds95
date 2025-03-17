@@ -6,7 +6,10 @@ import io, os
 if PLOT: import matplotlib.pyplot as plt
 if FFT: import numpy as np  # Import numpy for FFT
 
-sample_rate = 11875
+ratio = 14
+sample_rate = 1187.5*ratio
+print(f"{sample_rate=}")
+if not sample_rate.is_integer(): raise ValueError("Need a even value")
 
 # this is modified from ChristopheJacquet's pydemod
 def rrcosfilter(NumSamples):
