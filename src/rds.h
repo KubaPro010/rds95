@@ -158,11 +158,11 @@ typedef struct {
 	char dps1_text[DPS_LENGTH];
 	char dps1_nexttext[127];
 	char dps2_text[DPS_LENGTH];
-	uint8_t dps1_repeat_count : 7;
-	uint8_t dps2_repeat_count : 7;
-	uint8_t static_ps_period : 4;
-	uint8_t dynamic_ps_period : 4;
-	uint8_t dynamic_ps_position : 4;
+	uint8_t dps1_repeat_count;
+	uint8_t dps2_repeat_count;
+	uint8_t static_ps_period;
+	uint8_t dynamic_ps_period;
+	uint8_t dynamic_ps_position;
 	uint8_t dynamic_ps_state : 2;
 	uint8_t dynamic_ps_scroll_counter : 7;
 
