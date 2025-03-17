@@ -213,17 +213,11 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 				if(enc->data[enc->program].dps1_len > PS_LENGTH) {
 					switch(enc->data[enc->program].dps1_mode) {
 						case 0:
-							memcpy(enc->state[enc->program].ps_text, 
-								&(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), 
-								PS_LENGTH);
+							memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
 							enc->state[enc->program].dynamic_ps_position += PS_LENGTH;
 							break;
 						case 1:
-							memmove(enc->state[enc->program].ps_text, 
-									enc->state[enc->program].ps_text + 1, 
-									PS_LENGTH - 1);
-							enc->state[enc->program].ps_text[PS_LENGTH - 1] = 
-								enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position];
+							memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
 							enc->state[enc->program].dynamic_ps_position++;
 							break;
 					}
