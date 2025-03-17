@@ -186,7 +186,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 		enc->state[enc->program].tps_update = 0;
 	}
 	if(enc->data[enc->program].dps1_enabled &&
-		 enc->state[enc->program].ps_csegment == 0) {
+		 enc->state[enc->program].ps_csegment == 0 && enc->state[enc->program].dynamic_ps_state != 0) {
 		// Copy Static PS
 		memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
 
@@ -196,7 +196,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 		}
 	}
 	if(enc->data[enc->program].dps1_enabled &&
-		 enc->state[enc->program].ps_csegment == 0) {
+		 enc->state[enc->program].ps_csegment == 0 && enc->state[enc->program].dynamic_ps_state != 1) {
 		// Copy DPS1
 		memcpy(&(enc->state[enc->program].dps1_text[enc->state->dynamic_ps_position]), enc->data[enc->program].ps, PS_LENGTH);
 		switch (enc->data[enc->program].dps1_mode)
