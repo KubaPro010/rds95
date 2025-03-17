@@ -182,7 +182,6 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 // #region Group encoding
 static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 	uint8_t dps1_on = (enc->data[enc->program].dps1_enabled && enc->data[enc->program].dps1_len != 0);
-	uint8_t dps2_on = (enc->data[enc->program].dps2_enabled && enc->data[enc->program].dps2_len != 0);
 	if(enc->state[enc->program].ps_csegment == 0) {
 		if(enc->state[enc->program].ps_update && !dps1_on) {
 			memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
@@ -198,12 +197,6 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 			memcpy(enc->state[enc->program].dps1_text, enc->data[enc->program].dps1, DPS_LENGTH);
 			enc->state[enc->program].dps1_update = 0;
 			enc->state[enc->program].dps1_repeat_count = 0;
-		}
-
-		if(enc->state[enc->program].dps2_update && dps2_on) {
-			memcpy(enc->state[enc->program].dps2_text, enc->data[enc->program].dps2, DPS_LENGTH);
-			enc->state[enc->program].dps2_update = 0;
-			enc->state[enc->program].dps2_repeat_count = 0;
 		}
 		
 		if(dps1_on) {
