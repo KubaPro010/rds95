@@ -576,8 +576,8 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	memset(enc->data[program].rt1, ' ', 64);
 	enc->data[program].rt1[0] = '\r';
 
-	enc->data[program].static_ps_period = 1;
-	enc->data[program].dps_label_period = 1;
+	enc->data[program].static_ps_period = 6;
+	enc->data[program].dps_label_period = 4;
 
 	enc->state[program].rt_ab = 1;
 	enc->state[program].ptyn_ab = 1;
