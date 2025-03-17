@@ -215,7 +215,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 		// TODO: Mode 2 and 3
 		}
 		if(enc->state[enc->program].dynamic_ps_position >= enc->data[enc->program].dps1_len) enc->state[enc->program].dynamic_ps_position = 0;
-		if(enc->state[enc->program].dynamic_ps_period == enc->data[enc->program].dynamic_ps_period) {
+		if(enc->state[enc->program].dynamic_ps_period == enc->data[enc->program].dps_label_period) {
 			enc->state[enc->program].dynamic_ps_state = 0; // Static
 			enc->state[enc->program].dynamic_ps_period = 0;
 		}
