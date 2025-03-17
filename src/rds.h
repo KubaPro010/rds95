@@ -18,6 +18,7 @@
 
 #define RT_LENGTH	64
 #define PS_LENGTH	8
+#define DPS_LENGTH	8
 #define PTYN_LENGTH	8
 #define LPS_LENGTH	32
 #define DEFAULT_GRPSQC "002222XY"
@@ -96,9 +97,9 @@ typedef struct {
 	uint8_t dps1_enabled : 1;
 	uint8_t dps2_enabled : 1;
 	uint8_t dps1_len;
-	char dps1[255];
+	char dps1[DPS_LENGTH];
 	uint8_t dps2_len;
-	char dps2[255];
+	char dps2[DPS_LENGTH];
 	uint8_t dps1_mode : 2;
 	uint8_t dps2_mode : 2;
 	uint8_t dps1_numberofrepeats : 7;
@@ -153,7 +154,7 @@ typedef struct {
 	uint8_t ps_csegment : 4;
 
 	uint8_t dps1_update : 1;
-	char dps1_text[255];
+	char dps1_text[DPS_LENGTH];
 	char dps1_nexttext[127];
 	uint8_t static_ps_period : 4;
 	uint8_t dynamic_ps_period : 4;

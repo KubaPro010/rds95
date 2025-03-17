@@ -197,7 +197,6 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 			if(enc->state[enc->program].dynamic_ps_state == 0) {
 				memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
 				
-				enc->state[enc->program].static_ps_period++;
 				if(enc->state[enc->program].static_ps_period >= enc->data[enc->program].static_ps_period) {
 					enc->state[enc->program].dynamic_ps_state = 1;
 					enc->state[enc->program].static_ps_period = 0;
@@ -229,7 +228,6 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 					memcpy(enc->state[enc->program].ps_text, enc->state[enc->program].dps1_text, PS_LENGTH);
 				}
 				
-				enc->state[enc->program].dynamic_ps_period++;
 				if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
 					enc->state[enc->program].dynamic_ps_state = 0;
 					enc->state[enc->program].dynamic_ps_period = 0;
@@ -627,8 +625,8 @@ void set_rds_dps1(RDSEncoder* enc, char *dps1) {
     uint8_t len = 0;
 
     enc->state[enc->program].dps1_update = 1;
-    memset(enc->data[enc->program].dps1, ' ', RT_LENGTH);
-    while (*dps1 != 0 && len < RT_LENGTH) enc->data[enc->program].dps1[len++] = *dps1++;
+    memset(enc->data[enc->program].dps1, ' ', DPS_LENGTH);
+    while (*dps1 != 0 && len < DPS_LENGTH) enc->data[enc->program].dps1[len++] = *dps1++;
     enc->data[enc->program].dps1_len = len;
     
     enc->state[enc->program].dynamic_ps_position = 0;
