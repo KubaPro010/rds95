@@ -498,6 +498,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     char *cmd, *arg;
     char output[255];
     memset(output, 0, sizeof(output));
+    char upper_str[CTL_BUFFER_SIZE];
     
     uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
 
@@ -505,26 +506,34 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
         if(str[i] == '\t') str[i] = ' ';
     }
 
+    strncpy(upper_str, str, CTL_BUFFER_SIZE);
+    upper_str[CTL_BUFFER_SIZE-1] = '\0';
+    
+    for(uint16_t i = 0; i < cmd_len && upper_str[i] != '='; i++) {
+        if(upper_str[i] >= 'a' && upper_str[i] <= 'z') {
+            upper_str[i] = upper_str[i] - 'a' + 'A';
+        }
+    }
+
     for (size_t i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
         const command_handler_t *handler = &commands_exact[i];
-        if (cmd_len == handler->cmd_length && 
-            strcmp(str, (char *)handler->cmd) == 0) {
+        if (cmd_len == handler->cmd_length && strcmp(upper_str, (char *)handler->cmd) == 0) {
             handler->handler(NULL, mod, output);
             return;
         }
     }
 
-    if (str[0] == '*' && !strchr((const char*)str, '=')) {
-        str++;
+    if (upper_str[0] == '*' && !strchr((const char*)upper_str, '=')) {
+        upper_str++;
         char option[32] = {0};
-        snprintf(option, sizeof(option), "%s", (const char*)str);
+        snprintf(option, sizeof(option), "%s", (const char*)upper_str);
         saveToFile(mod->enc, option);
         Modulator_saveToFile(&mod->params, option);
         return;
     }
 
     if (cmd_len > 1 && str[1] == '=') {
-        cmd = str;
+        cmd = upper_str;
         cmd[1] = 0;
         arg = str + 2;
         
@@ -535,7 +544,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     }
 
     if (cmd_len > 2 && str[2] == '=') {
-        cmd = str;
+        cmd = upper_str;
         cmd[2] = 0;
         arg = str + 3;
         
@@ -546,7 +555,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     }
 
     if (cmd_len > 3 && str[3] == '=') {
-        cmd = str;
+        cmd = upper_str;
         cmd[3] = 0;
         arg = str + 4;
         
@@ -557,7 +566,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     }
 
     if (cmd_len > 4 && str[4] == '=') {
-        cmd = str;
+        cmd = upper_str;
         cmd[4] = 0;
         arg = str + 5;
         
@@ -568,7 +577,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     }
 
     if (cmd_len > 5 && str[5] == '=') {
-        cmd = str;
+        cmd = upper_str;
         cmd[5] = 0;
         arg = str + 6;
         
@@ -579,7 +588,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     }
 
     if (cmd_len > 6 && str[6] == '=') {
-        cmd = str;
+        cmd = upper_str;
         cmd[6] = 0;
         arg = str + 7;
         
@@ -590,7 +599,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     }
 
     if (cmd_len > 7 && str[7] == '=') {
-        cmd = str;
+        cmd = upper_str;
         cmd[7] = 0;
         arg = str + 8;
         
@@ -601,7 +610,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     }
     
     if (cmd_len > 9 && str[9] == '=') {
-        cmd = str;
+        cmd = upper_str;
         cmd[9] = 0;
         arg = str + 10;
         
