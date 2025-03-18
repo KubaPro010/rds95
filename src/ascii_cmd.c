@@ -406,6 +406,12 @@ static void handle_init(char *arg, RDSModulator* mod, char* output) {
     strcpy(output, "+\0");
 }
 
+static void handle_ver(char *arg, RDSModulator* mod, char* output) {
+    (void)arg;
+    (void)mod;
+    strcpy(output, "Firmware v. 0.0a - (C) 2025 radio95\0");
+}
+
 static const command_handler_t commands_eq3[] = {
     {"MS", handle_ms, 2},
     {"PS", handle_ps, 2},
@@ -427,6 +433,7 @@ static const command_handler_t commands_eq4[] = {
     {"LPS", handle_lps, 3},
     {"PIN", handle_pin, 3},
     {"DPS", handle_dps1, 3},
+    {"VER", handle_ver, 3},
 };
 
 static const command_handler_t commands_eq5[] = {

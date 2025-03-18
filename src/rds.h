@@ -30,6 +30,7 @@
 #define AF_CODE_LFMF_FOLLOWS	250
 
 #define PROGRAMS 2
+#define EONS 4
 
 #define MAX_ODAS	8
 // List of ODAs: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
@@ -46,10 +47,11 @@ typedef struct {
 	uint8_t enabled : 1;
 	uint8_t ta : 1;
 	uint8_t tp : 1;
+	uint8_t pty : 5;
 	uint8_t pin[4];
 	char ps[8];
 	RDSAFs af;
-} RDSEONs;
+} RDSEON;
 typedef struct {
 	uint8_t destination : 4;
 	char text[255];
@@ -138,7 +140,8 @@ typedef struct {
 	uint16_t udg1[8][3];
 	uint16_t udg2[8][3];
 
-	RDSEONs eon[4];
+	RDSEON eon[EONS];
+
 	RDSMessages messages;
 	RDSScheduler schedule;
 } RDSData;
@@ -193,6 +196,7 @@ typedef struct {
 	uint8_t last_ct_minute : 6;
 
 	uint8_t eon_index : 3;
+	uint8_t eon_state : 4;
 } RDSState;
 typedef struct {
 	uint8_t group;
