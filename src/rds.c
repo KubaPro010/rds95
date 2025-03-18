@@ -229,6 +229,7 @@ get_ps:
 		if(dps1_on) {
 			char ps_text[PS_LENGTH];
 			strncpy(ps_text, (enc->data[enc->program].ta) ? enc->data[enc->program].tps : enc->data[enc->program].ps, PS_LENGTH);
+			ps_text[PS_LENGTH - 1] = '\0';
 
 			if(enc->state[enc->program].dynamic_ps_state == 0) {
 				memcpy(enc->state[enc->program].ps_text, ps_text, PS_LENGTH);
@@ -617,8 +618,10 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 
 
 	struct tm *utc, *local_time;
-	time(local_time);
-	utc = gmtime(local_time);
+	time_t now;
+	time(&now);
+	local_time = localtime(&now);
+	utc = gmtime(&now);
 	enc->state[enc->program].last_ct_minute = utc->tm_min;
 
 	memcpy(&(enc->state[program]), &(tempCoder.state[program]), sizeof(RDSState));
