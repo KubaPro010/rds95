@@ -617,10 +617,9 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	set_rds_grpseq(&tempCoder, enc->data[program].grp_sqc);
 
 
-	struct tm *utc, *local_time;
+	struct tm *utc;
 	time_t now;
 	time(&now);
-	local_time = localtime(&now);
 	utc = gmtime(&now);
 	enc->state[enc->program].last_ct_minute = utc->tm_min;
 
@@ -804,7 +803,8 @@ void set_rds_grpseq(RDSEncoder* enc, char *grpseq) {
 
 	if(grpseq[0] == '\0') {
 		while (DEFAULT_GRPSQC[len] != 0 && len < 24) {
-			enc->data[enc->program].grp_sqc[len++] = DEFAULT_GRPSQC[len];
+			enc->data[enc->program].grp_sqc[len] = DEFAULT_GRPSQC[len];
+			len++;
 		}
 		return;
 	}
