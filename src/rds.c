@@ -53,7 +53,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	} else if (strcmp(option, "DPS1") == 0) {
         memcpy(tempEncoder.data[emp->program].dps1, emp->data[emp->program].dps1, DPS_LENGTH);
         tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
-        tempEncoder.data[emp->program].dps1_len = emp->data[emp->program].dps1_len;
         tempEncoder.data[emp->program].dps1_numberofrepeats = emp->data[emp->program].dps1_numberofrepeats;
         tempEncoder.data[emp->program].dps1_numberofrepeats_clear = emp->data[emp->program].dps1_numberofrepeats_clear;
     } else if (strcmp(option, "DPS1EN") == 0) {
@@ -208,7 +207,7 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 
 // #region Group encoding
 static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
-	uint8_t dps1_on = (enc->data[enc->program].dps1_enabled && enc->data[enc->program].dps1_len != 0);
+	uint8_t dps1_on = (enc->data[enc->program].dps1_enabled && enc->state[enc->program].dps1_len != 0);
 get_ps:
 	if(enc->state[enc->program].ps_csegment == 0) {
 		if(enc->state[enc->program].ps_update && !dps1_on) {
@@ -216,7 +215,7 @@ get_ps:
 			enc->state[enc->program].ps_update = 0;
 		}
 
-		if(enc->state[enc->program].tps_update) {
+		if(enc->state[enc->program].tps_update && !dps1_on) {
 			memcpy(enc->state[enc->program].tps_text, enc->data[enc->program].tps, PS_LENGTH);
 			enc->state[enc->program].tps_update = 0;
 		}
@@ -228,8 +227,11 @@ get_ps:
 		}
 
 		if(dps1_on) {
+			char ps_text[PS_LENGTH];
+			strncpy(ps_text, (enc->data[enc->program].ta) ? enc->data[enc->program].tps : enc->data[enc->program].ps, PS_LENGTH);
+
 			if(enc->state[enc->program].dynamic_ps_state == 0) {
-				memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
+				memcpy(enc->state[enc->program].ps_text, ps_text, PS_LENGTH);
 
 				if(enc->state[enc->program].static_ps_period >= enc->data[enc->program].static_ps_period) {
 					enc->state[enc->program].dynamic_ps_state = 1;
@@ -237,101 +239,50 @@ get_ps:
 					enc->state[enc->program].dynamic_ps_position = 0;
 				}
 			} else if(enc->state[enc->program].dynamic_ps_state == 1) {
-				if(enc->data[enc->program].dps1_len > PS_LENGTH) {
-					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 4 : 2;
+				uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 4 : 2;
+				if(enc->data[enc->program].dps1_mode == 0) scroll_threshold = enc->data[enc->program].dps_label_period;
 
-					if(enc->state[enc->program].dynamic_ps_scroll_counter >= scroll_threshold) {
-						if(enc->state[enc->program].dynamic_ps_position >= enc->data[enc->program].dps1_len) {
-							enc->state[enc->program].dynamic_ps_position = 0;
-							enc->state[enc->program].dps1_repeat_count++;
+				if(enc->state[enc->program].dynamic_ps_scroll_counter >= scroll_threshold) {
+					if(enc->state[enc->program].dynamic_ps_position >= enc->state[enc->program].dps1_len) {
+						enc->state[enc->program].dynamic_ps_position = 0;
+						enc->state[enc->program].dps1_repeat_count++;
 
-							if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
-								if(enc->state[enc->program].dps1_nexttext_len != 0 && enc->data[enc->program].dps1_len < 128 && enc->state[enc->program].dps1_nexttext_update) {
-									enc->state[enc->program].dps1_nexttext_update = 0;
-
-									enc->state[enc->program].dynamic_ps_state = 2; // DPS1 nexttext
-									enc->state[enc->program].dynamic_ps_period = 0;
-									enc->state[enc->program].dps1_repeat_count = 0;
-									enc->state[enc->program].dynamic_ps_scroll_counter = 0;
-									enc->state[enc->program].static_ps_period = 0;
-									goto get_ps;
-								} else {
-									enc->state[enc->program].dynamic_ps_state = 0;
-									enc->state[enc->program].dynamic_ps_period = 0;
-									enc->state[enc->program].dps1_repeat_count = 0;
-									enc->state[enc->program].dynamic_ps_scroll_counter = 0;
-									enc->state[enc->program].static_ps_period = 0;
-									memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
-									goto encode;
-								}
-							}
-						}
-
-						switch(enc->data[enc->program].dps1_mode) {
-							case 0:
-								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-								enc->state[enc->program].dynamic_ps_position += PS_LENGTH;
-								break;
-							case 1:
-								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-								enc->state[enc->program].dynamic_ps_position++;
-								break;
-						}
-						enc->state[enc->program].dynamic_ps_scroll_counter = 0;
-					} else {
-						enc->state[enc->program].dynamic_ps_scroll_counter++;
-					}
-				} else {
-					memcpy(enc->state[enc->program].ps_text, enc->state[enc->program].dps1_text, PS_LENGTH);
-					enc->state[enc->program].dynamic_ps_period++;
-
-					if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
-						enc->state[enc->program].dynamic_ps_state = 0;
-						enc->state[enc->program].dynamic_ps_period = 0;
-					}
-				}
-			} else if(enc->state[enc->program].dynamic_ps_state == 2) {
-				if(enc->data[enc->program].dps1_len > PS_LENGTH) {
-					uint8_t scroll_threshold = (enc->data[enc->program].dps_speed == 0) ? 4 : 2;
-
-					if(enc->state[enc->program].dynamic_ps_scroll_counter >= scroll_threshold) {
-						if(enc->state[enc->program].dynamic_ps_position >= enc->state[enc->program].dps1_nexttext_len) {
-							enc->state[enc->program].dynamic_ps_position = 0;
-							enc->state[enc->program].dps1_repeat_count++;
-
-							if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
+						if(enc->state[enc->program].dps1_repeat_count >= enc->data[enc->program].dps1_numberofrepeats) {
+							if(enc->state[enc->program].dps1_nexttext_len != 0 && enc->state[enc->program].dps1_len < 128 && enc->state[enc->program].dps1_nexttext_update) {
+								enc->state[enc->program].dps1_nexttext_update = 0;
+								enc->state[enc->program].dynamic_ps_state = 1;
+								enc->state[enc->program].dynamic_ps_period = 0;
+								enc->state[enc->program].dps1_repeat_count = 0;
+								enc->state[enc->program].dynamic_ps_scroll_counter = 0;
+								enc->state[enc->program].static_ps_period = 0;
+								memcpy(enc->state[enc->program].dps1_text, enc->state[enc->program].dps1_nexttext, PS_LENGTH);
+								enc->state[enc->program].dps1_len = enc->state[enc->program].dps1_nexttext_len;
+								goto get_ps;
+							} else {
 								enc->state[enc->program].dynamic_ps_state = 0;
 								enc->state[enc->program].dynamic_ps_period = 0;
 								enc->state[enc->program].dps1_repeat_count = 0;
 								enc->state[enc->program].dynamic_ps_scroll_counter = 0;
 								enc->state[enc->program].static_ps_period = 0;
-								memcpy(enc->state[enc->program].ps_text, enc->data[enc->program].ps, PS_LENGTH);
+								memcpy(enc->state[enc->program].ps_text, ps_text, PS_LENGTH);
 								goto encode;
 							}
 						}
-
-						switch(enc->data[enc->program].dps1_mode) {
-							case 0:
-								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_nexttext[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-								enc->state[enc->program].dynamic_ps_position += PS_LENGTH;
-								break;
-							case 1:
-								memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_nexttext[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
-								enc->state[enc->program].dynamic_ps_position++;
-								break;
-						}
-						enc->state[enc->program].dynamic_ps_scroll_counter = 0;
-					} else {
-						enc->state[enc->program].dynamic_ps_scroll_counter++;
 					}
+
+					switch(enc->data[enc->program].dps1_mode) {
+						case 0:
+							memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
+							enc->state[enc->program].dynamic_ps_position += PS_LENGTH;
+							break;
+						case 1:
+							memcpy(enc->state[enc->program].ps_text, &(enc->state[enc->program].dps1_text[enc->state[enc->program].dynamic_ps_position]), PS_LENGTH);
+							enc->state[enc->program].dynamic_ps_position++;
+							break;
+					}
+					enc->state[enc->program].dynamic_ps_scroll_counter = 0;
 				} else {
-					memcpy(enc->state[enc->program].ps_text, enc->state[enc->program].dps1_nexttext, PS_LENGTH);
-					enc->state[enc->program].dynamic_ps_period++;
-
-					if(enc->state[enc->program].dynamic_ps_period >= enc->data[enc->program].dps_label_period) {
-						enc->state[enc->program].dynamic_ps_state = 0;
-						enc->state[enc->program].dynamic_ps_period = 0;
-					}
+					enc->state[enc->program].dynamic_ps_scroll_counter++;
 				}
 			}
 		}
@@ -662,6 +613,13 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	set_rds_tps(&tempCoder, enc->data[program].tps);
 	set_rds_ptyn(&tempCoder, enc->data[program].ptyn);
 	set_rds_lps(&tempCoder, enc->data[program].lps);
+	set_rds_grpseq(&tempCoder, enc->data[program].grp_sqc);
+
+
+	struct tm *utc, *local_time;
+	time(local_time);
+	utc = gmtime(local_time);
+	enc->state[enc->program].last_ct_minute = utc->tm_min;
 
 	memcpy(&(enc->state[program]), &(tempCoder.state[program]), sizeof(RDSState));
 }
@@ -695,6 +653,9 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	reset_rds_state(enc, program);
 
 	init_rtplus(enc, GROUP_11A, program);
+
+	enc->encoder_data->ascii_data.expected_encoder_addr = 255;
+	enc->encoder_data->ascii_data.expected_site_addr = 255;
 }
 
 void init_rds_encoder(RDSEncoder* enc) {
@@ -748,7 +709,7 @@ void set_rds_dps1(RDSEncoder* enc, char *dps1) {
     enc->state[enc->program].dps1_update = 1;
     memset(enc->data[enc->program].dps1, ' ', DPS_LENGTH);
     while (*dps1 != 0 && len < DPS_LENGTH) enc->data[enc->program].dps1[len++] = *dps1++;
-    enc->data[enc->program].dps1_len = len;
+    enc->state[enc->program].dps1_len = len;
 
     enc->state[enc->program].dynamic_ps_position = 0;
     enc->state[enc->program].dynamic_ps_period = 0;
@@ -833,4 +794,18 @@ void set_rds_ptyn(RDSEncoder* enc, char *ptyn) {
 
 	memset(enc->data[enc->program].ptyn, ' ', PTYN_LENGTH);
 	while (*ptyn != 0 && len < PTYN_LENGTH) enc->data[enc->program].ptyn[len++] = *ptyn++;
+}
+
+void set_rds_grpseq(RDSEncoder* enc, char *grpseq) {
+	uint8_t len = 0;
+
+	if(grpseq[0] == '\0') {
+		while (DEFAULT_GRPSQC[len] != 0 && len < 24) {
+			enc->data[enc->program].grp_sqc[len++] = DEFAULT_GRPSQC[len];
+		}
+		return;
+	}
+
+	memset(enc->data[enc->program].grp_sqc, 0, 24);
+	while (*grpseq != 0 && len < 24) enc->data[enc->program].grp_sqc[len++] = *grpseq++;
 }

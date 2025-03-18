@@ -64,12 +64,14 @@ static void handle_tps(char *arg, RDSModulator* mod, char* output) {
 static void handle_rt1(char *arg, RDSModulator* mod, char* output) {
     arg[RT_LENGTH * 2] = 0;
     set_rds_rt1(mod->enc, xlat(arg));
+    if(mod->enc->data[mod->enc->program].eqtext1) set_rds_dps1(mod->enc, xlat(arg));
     strcpy(output, "+\0");
 }
 
 static void handle_dps1(char *arg, RDSModulator* mod, char* output) {
     arg[DPS_LENGTH * 2] = 0;
     set_rds_dps1(mod->enc, xlat(arg));
+    if(mod->enc->data[mod->enc->program].eqtext1) set_rds_rt1(mod->enc, xlat(arg));
     strcpy(output, "+\0");
 }
 static void handle_dps1mod(char *arg, RDSModulator* mod, char* output) {
@@ -300,11 +302,9 @@ static void handle_program(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_grpseq(char *arg, RDSModulator* mod, char* output) {
     if (arg[0] == '\0') {
-        memset(&(mod->enc->data[mod->enc->program].grp_sqc), 0, 24);
-        memcpy(&(mod->enc->data[mod->enc->program].grp_sqc), (char*)DEFAULT_GRPSQC, sizeof(DEFAULT_GRPSQC));
+        set_rds_grpseq(mod->enc, DEFAULT_GRPSQC);
     } else {
-        memset(&(mod->enc->data[mod->enc->program].grp_sqc), 0, 24);
-        memcpy(&(mod->enc->data[mod->enc->program].grp_sqc), arg, 24);
+        set_rds_grpseq(mod->enc, arg);
     }
     strcpy(output, "+\0");
 }
@@ -312,6 +312,15 @@ static void handle_grpseq(char *arg, RDSModulator* mod, char* output) {
 static void handle_level(char *arg, RDSModulator* mod, char* output) {
     mod->params.level = strtoul((char *)arg, NULL, 10)/255.0f;
     strcpy(output, "+\0");
+}
+
+static void handle_reset(char *arg, RDSModulator* mod, char* output) {
+    loadFromFile(mod->enc);
+    for(int i = 0; i < PROGRAMS; i++) {
+        reset_rds_state(mod->enc, i);
+    }
+    Modulator_loadFromFile(mod->params); 
+    strcpy(output, "\0");
 }
 
 static void handle_rdsgen(char *arg, RDSModulator* mod, char* output) {
@@ -436,7 +445,8 @@ static const command_handler_t commands_eq6[] = {
     {"PINEN", handle_pinen, 5},
     {"RT1EN", handle_rt1en, 5},
     {"ECCEN", handle_eccen, 5},
-    {"LEVEL", handle_level, 5}
+    {"LEVEL", handle_level, 5},
+    {"RESET", handle_reset, 5},
 };
 
 static const command_handler_t commands_eq7[] = {

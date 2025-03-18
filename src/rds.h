@@ -96,9 +96,7 @@ typedef struct {
 	uint8_t eqtext1 : 1;
 	uint8_t dps1_enabled : 1;
 	uint8_t dps2_enabled : 1;
-	uint8_t dps1_len;
 	char dps1[DPS_LENGTH];
-	uint8_t dps2_len;
 	char dps2[DPS_LENGTH];
 	uint8_t dps1_mode : 2;
 	uint8_t dps2_mode : 2;
@@ -155,6 +153,8 @@ typedef struct {
 
 	uint8_t dps1_update : 1;
 	uint8_t dps2_update : 1;
+	uint8_t dps1_len;
+	uint8_t dps2_len;
 	uint8_t dps1_nexttext_update : 1;
 	uint8_t dps1_nexttext_len;
 	char dps1_text[DPS_LENGTH];
@@ -191,6 +191,8 @@ typedef struct {
 	uint8_t udg_idxs[2];
 
 	uint8_t last_ct_minute : 6;
+
+	uint8_t eon_index : 3;
 } RDSState;
 typedef struct {
 	uint8_t group;
@@ -210,12 +212,21 @@ typedef struct {
 	uint8_t start[2];
 	uint8_t len[2];
 } RDSRTPlusData;
-typedef struct {
+
+typedef struct
+{
+	uint8_t expected_encoder_addr;	
+	uint16_t expected_site_addr : 10;
+} RDSEncoderASCIIData;
+typedef struct
+{
 	uint8_t uecp_enabled : 1;
+} RDSEncoderUECPData;
+typedef struct {
 	uint8_t encoder_addr[2];
 	uint16_t site_addr[2];
-	uint8_t selected_encoder_addr;
-	uint16_t selected_site_addr : 10;
+	RDSEncoderASCIIData ascii_data;
+	RDSEncoderUECPData uecp_data;
 } RDSEncoderData;
 typedef struct {
 	RDSEncoderData encoder_data[PROGRAMS];
@@ -226,7 +237,6 @@ typedef struct {
 	RDSRTPlusData rtpData[PROGRAMS];
 	uint8_t program : 3;
 } RDSEncoder;
-
 typedef struct {
 	uint8_t file_starter; // Always is 225 first polish radio programme am frequency
 	RDSData data[PROGRAMS];
@@ -303,6 +313,7 @@ void saveToFile(RDSEncoder *emp, const char *option);
 void loadFromFile(RDSEncoder *emp);
 int rdssaved();
 
+void reset_rds_state(RDSEncoder* enc, uint8_t program);
 void set_rds_defaults(RDSEncoder* enc, uint8_t program);
 void init_rds_encoder(RDSEncoder* enc);
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits);
@@ -315,5 +326,6 @@ void set_rds_lps(RDSEncoder* enc, char *lps);
 void set_rds_rtplus_flags(RDSEncoder* enc, uint8_t flags);
 void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags);
 void set_rds_ptyn(RDSEncoder* enc, char *ptyn);
+void set_rds_grpseq(RDSEncoder* enc, char *grpseq);
 
 #endif
