@@ -524,9 +524,9 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     }
 
     if (upper_str[0] == '*' && !strchr((const char*)upper_str, '=')) {
-        upper_str++;
+        char *upper_str_ptr = upper_str + 1;
         char option[32] = {0};
-        snprintf(option, sizeof(option), "%s", (const char*)upper_str);
+        snprintf(option, sizeof(option), "%s", (const char*)upper_str_ptr);
         saveToFile(mod->enc, option);
         Modulator_saveToFile(&mod->params, option);
         return;
