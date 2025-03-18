@@ -215,7 +215,7 @@ static void handle_af(char *arg, RDSModulator* mod, char* output) {
         add_rds_af(&new_af, *af_iter++);
     }
     
-    memcpy(&(mod->enc->data[mod->enc->program].af), &new_af, sizeof(mod->enc[mod->enc->program].data->af));
+    memcpy(&(mod->enc->data[mod->enc->program].af), &new_af, sizeof(mod->enc->data[mod->enc->program].af));
     strcpy(output, "+\0");
 }
 
@@ -524,9 +524,9 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
     }
 
     if (upper_str[0] == '*' && !strchr((const char*)upper_str, '=')) {
-        char *upper_str_ptr = upper_str + 1;
+        const char* option_str = upper_str + 1;  // Create a new pointer to the character after '*'
         char option[32] = {0};
-        snprintf(option, sizeof(option), "%s", (const char*)upper_str_ptr);
+        snprintf(option, sizeof(option), "%s", option_str);
         saveToFile(mod->enc, option);
         Modulator_saveToFile(&mod->params, option);
         return;
