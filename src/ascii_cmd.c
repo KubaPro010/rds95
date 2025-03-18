@@ -315,11 +315,12 @@ static void handle_level(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_reset(char *arg, RDSModulator* mod, char* output) {
+    (void)arg;
     loadFromFile(mod->enc);
     for(int i = 0; i < PROGRAMS; i++) {
         reset_rds_state(mod->enc, i);
     }
-    Modulator_loadFromFile(mod->params); 
+    Modulator_loadFromFile(&mod->params); 
     strcpy(output, "\0");
 }
 
