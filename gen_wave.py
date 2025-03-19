@@ -60,20 +60,29 @@ outc.write(header)
 outh.write(header)
 
 def generate():
-    offset = int(sample_rate*0.004)
-    count = int(offset / 10**(len(str(offset)) - 1))
     l = int(sample_rate / 1187.5) // 2
-    if count*l > l*16: raise Exception("Sample rate too small")
-    print(f"{offset=} {count=} {l=}")
 
-    sample = [0.0] * (count*l)
+    sample = [0.0] * (16*l)
     sample[l] = 1
     sample[2*l] = -1
 
     sf = rrcosfilter(l*16)
     shapedSamples = convolve(sample, sf)
+    
+    lowest = 0
+    lowest_idx = 0
+    highest = 0
+    highest_idx = 0
+    for i,j in enumerate(shapedSamples):
+        if j < lowest:
+            lowest = j
+            lowest_idx = i
+        if j > highest:
+            highest = j
+            highest_idx = i
+    middle = int((lowest_idx+highest_idx)/2)
 
-    out = shapedSamples[offset-l*count:offset+l*count]
+    out = shapedSamples[middle-int(ratio*2):middle+int(ratio*2)]
     out = [2 * (i - min(out)) / (max(out) - min(out)) - 1 for i in out]
     if max(out) > 1 or min(out) < -1: raise Exception("Clipped")
 
