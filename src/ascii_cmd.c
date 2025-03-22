@@ -415,6 +415,7 @@ static void handle_eonpin(char *arg, char *pattern, RDSModulator* mod, char* out
     if (arg[0] == '\0') {
         mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pin[0] = 0;
     } else {
+        mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pin[0] = 1;
         uint8_t pin[3];
         if (sscanf((char *)arg, "%hhu,%hhu,%hhu", &pin[0], &pin[1], &pin[2]) == 3) {
             for (int i = 0; i < 3; i++) {
