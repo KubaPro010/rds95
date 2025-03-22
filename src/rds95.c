@@ -11,7 +11,7 @@
 #include "lib.h"
 #include "ascii_cmd.h"
 
-#define RDS_DEVICE "RDS"
+#define RDS1_DEVICE "RDS"
 #define RDS2_DEVICE "RDS2"
 
 #define NUM_MPX_FRAMES	512
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
 		NULL,
 		"rds95",
 		PA_STREAM_PLAYBACK,
-		RDS_DEVICE,
+		RDS1_DEVICE,
 		"RDS1 Generator",
 		&format,
 		NULL,
