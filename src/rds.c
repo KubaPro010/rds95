@@ -522,6 +522,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 	utc = gmtime(&now);
 
 	if (utc->tm_min != enc->state[enc->program].last_ct_minute) {
+		enc->state[enc->program].last_ct_minute = utc->tm_min;
 		uint8_t eon_has_ta = 0;
 		for (int i = 0; i < EONS; i++) {
 			if (enc->data[enc->program].eon[i].enabled && enc->data[enc->program].eon[i].ta) {
@@ -539,7 +540,6 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 			goto group_coded;
 		}
 	}
-	enc->state[enc->program].last_ct_minute = utc->tm_min;
 
 	if(get_rds_custom_groups(enc, blocks)) {
 		goto group_coded;
