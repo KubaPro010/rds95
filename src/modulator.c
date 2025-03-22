@@ -116,8 +116,10 @@ float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 	if (rdsMod->params.rdsgen == 0) {
 		tooutput = 0;
 	} else {
-		if (stream == 1) {
-			tooutput = 0;
+		if(rdsMod->params.rdsgen == 1) {
+			if (stream == 1) {
+				tooutput = 0;
+			}
 		}
 	}
 	return sample*rdsMod->params.level*tooutput;
