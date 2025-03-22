@@ -140,12 +140,11 @@ int main(int argc, char **argv) {
 	int pulse_error;
 
 	float rds1_buffer[NUM_MPX_FRAMES];
-	float rds2_buffer[NUM_MPX_FRAMES];
 
 	while(!stop_rds) {
 		for (uint16_t i = 0; i < NUM_MPX_FRAMES; i++) {
 			rds1_buffer[i] = get_rds_sample(&rdsModulator, 0);
-			rds2_buffer[i] = get_rds_sample(&rdsModulator, 1);
+			(void)get_rds_sample(&rdsModulator, 1);
 		}
 
 		if (pa_simple_write(rds1_device, rds1_buffer, sizeof(rds1_buffer), &pulse_error) != 0) {
