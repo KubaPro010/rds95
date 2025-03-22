@@ -11,7 +11,7 @@
 #include "lib.h"
 #include "ascii_cmd.h"
 
-#define RDS1_DEVICE "RDS"
+#define RDS_DEVICE "RDS"
 
 #define NUM_MPX_FRAMES	512
 
@@ -34,7 +34,7 @@ static void *control_pipe_worker(void* modulator) {
 }
 
 static void show_version() {
-	printf("rds95 (a RDS encoder by radio95) version 1.1\n");
+	printf("rds95 (a RDS encoder by radio95) version 1.2\n");
 }
 
 static void show_help(char *name) {
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
 	char control_pipe[51] = "\0";
 
-	pa_simple *rds1_device = NULL;
+	pa_simple *rds_device = NULL;
 	pa_sample_spec format;
 	pa_buffer_attr buffer;
 
@@ -91,25 +91,25 @@ int main(int argc, char **argv) {
 	signal(SIGTERM, stop);
 
 	format.format = PA_SAMPLE_FLOAT32NE;
-	format.channels = 1;
+	format.channels = 2;
 	format.rate = RDS_SAMPLE_RATE;
 
 	buffer.prebuf = 0;
 	buffer.tlength = 12228;
 	buffer.maxlength = 12228;
 
-	rds1_device = pa_simple_new(
+	rds_device = pa_simple_new(
 		NULL,
 		"rds95",
 		PA_STREAM_PLAYBACK,
-		RDS1_DEVICE,
-		"RDS1 Generator",
+		RDS_DEVICE,
+		"RDS Generator",
 		&format,
 		NULL,
 		&buffer,
 		NULL
 	);
-	if (rds1_device == NULL) {
+	if (rds_device == NULL) {
 		fprintf(stderr, "Error: cannot open sound device.\n");
 		goto exit;
 	}
@@ -139,15 +139,15 @@ int main(int argc, char **argv) {
 
 	int pulse_error;
 
-	float rds1_buffer[NUM_MPX_FRAMES];
+	float rds_buffer[NUM_MPX_FRAMES*2];
 
 	while(!stop_rds) {
-		for (uint16_t i = 0; i < NUM_MPX_FRAMES; i++) {
-			rds1_buffer[i] = get_rds_sample(&rdsModulator, 0);
-			(void)get_rds_sample(&rdsModulator, 1);
+		for (uint16_t i = 0; i < NUM_MPX_FRAMES*2; i++) {
+			rds_buffer[i] = get_rds_sample(&rdsModulator, 0);
+			rds_buffer[i+1] = get_rds_sample(&rdsModulator, 1);
 		}
 
-		if (pa_simple_write(rds1_device, rds1_buffer, sizeof(rds1_buffer), &pulse_error) != 0) {
+		if (pa_simple_write(rds_device, rds_buffer, sizeof(rds_buffer), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
@@ -160,8 +160,8 @@ exit:
 	}
 
 	pthread_attr_destroy(&attr);
-	if (rds1_device != NULL) {
-		pa_simple_free(rds1_device);
+	if (rds_device != NULL) {
+		pa_simple_free(rds_device);
 	}
 
 	return 0;
