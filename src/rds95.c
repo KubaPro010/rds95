@@ -12,7 +12,6 @@
 #include "ascii_cmd.h"
 
 #define RDS1_DEVICE "RDS"
-#define RDS2_DEVICE "RDS2"
 
 #define NUM_MPX_FRAMES	512
 
@@ -56,7 +55,6 @@ int main(int argc, char **argv) {
 	char control_pipe[51] = "\0";
 
 	pa_simple *rds1_device = NULL;
-	pa_simple *rds2_device = NULL;
 	pa_sample_spec format;
 	pa_buffer_attr buffer;
 
@@ -116,22 +114,6 @@ int main(int argc, char **argv) {
 		goto exit;
 	}
 
-	rds2_device = pa_simple_new(
-		NULL,
-		"rds95",
-		PA_STREAM_PLAYBACK,
-		RDS2_DEVICE,
-		"RDS2 Generator",
-		&format,
-		NULL,
-		&buffer,
-		NULL
-	);
-	if (rds2_device == NULL) {
-		fprintf(stderr, "Error: cannot open sound device.\n");
-		goto exit;
-	}
-
 	RDSEncoder rdsEncoder;
 	RDSModulator rdsModulator;
 	init_rds_encoder(&rdsEncoder);
@@ -170,10 +152,6 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
-		if (pa_simple_write(rds2_device, rds2_buffer, sizeof(rds2_buffer), &pulse_error) != 0) {
-			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
-			break;
-		}
 	}
 
 exit:
@@ -185,9 +163,6 @@ exit:
 	pthread_attr_destroy(&attr);
 	if (rds1_device != NULL) {
 		pa_simple_free(rds1_device);
-	}
-	if (rds2_device != NULL) {
-		pa_simple_free(rds2_device);
 	}
 
 	return 0;
