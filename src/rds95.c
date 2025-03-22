@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 
 	char control_pipe[51] = "\0";
 
-	pa_simple *device;
+	pa_simple *rds1_device;
 	#ifdef RDS2_DEVICE
 	pa_simple *rds2_device = NULL;
 	#endif
@@ -102,18 +102,18 @@ int main(int argc, char **argv) {
 	buffer.tlength = 8192;
 	buffer.maxlength = 8192;
 
-	device = pa_simple_new(
+	rds1_device = pa_simple_new(
 		NULL,
 		"rds95",
 		PA_STREAM_PLAYBACK,
 		RDS_DEVICE,
-		"RDS Generator",
+		"RDS1 Generator",
 		&format,
 		NULL,
 		&buffer,
 		NULL
 	);
-	if (device == NULL) {
+	if (rds1_device == NULL) {
 		fprintf(stderr, "Error: cannot open sound device.\n");
 		goto exit;
 	}
@@ -173,13 +173,13 @@ int main(int argc, char **argv) {
 			#endif
 		}
 
-		if (pa_simple_write(device, rds1_buffer, sizeof(rds1_buffer), &pulse_error) != 0) {
+		if (pa_simple_write(rds1_device, rds1_buffer, sizeof(rds1_buffer), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
 		#ifdef RDS2_DEVICE
 		if (pa_simple_write(rds2_device, rds2_buffer, sizeof(rds2_buffer), &pulse_error) != 0) {
-			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
+			fprintf(stderr, "Error: could not play audio. RDS2 (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
 		#endif
@@ -192,7 +192,7 @@ exit:
 	}
 
 	pthread_attr_destroy(&attr);
-	pa_simple_free(device);
+	pa_simple_free(rds1_device);
 	#ifdef RDS2_DEVICE
 	pa_simple_free(rds2_device);
 	#endif

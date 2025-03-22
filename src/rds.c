@@ -551,7 +551,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, bool rds2) {
 	if(rds2 && !enc->encoder_data.rds2_mode) blocks[0] = 0; // tunneling
 	else if(rds2 && enc->encoder_data.rds2_mode) {
 		// TODO: add rds2 only stuff
-		return;
+		goto group_coded;
 	}
 	blocks[1] = 0;
 	blocks[2] = 0;
