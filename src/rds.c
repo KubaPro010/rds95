@@ -457,7 +457,7 @@ get_eon:
 		break;
 	case 4: // 13
 		if(eon.pty == 0 && eon.tp == 0) {
-			enc->state[enc->program].eon_index++;
+			enc->state[enc->program].eon_state++;
 			goto get_eon;
 		}
 		blocks[2] = eon.pty << 11;
@@ -466,6 +466,7 @@ get_eon:
 		break;
 	case 5: // 14
 		if(eon.pin[0] == 0) {
+			enc->state[enc->program].eon_state = 0;
 			enc->state[enc->program].eon_index++;
 			goto get_eon;
 		}
