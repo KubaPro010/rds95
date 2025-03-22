@@ -23,6 +23,8 @@ void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
 	} else if (strcmp(option, "ALL") == 0) {
 		tempEncoder.level = emp->level;
 		tempEncoder.rdsgen = emp->rdsgen;
+	} else {
+		return;
 	}
 	
 	file = fopen(encoderPath, "wb");
