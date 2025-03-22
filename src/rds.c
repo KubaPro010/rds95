@@ -308,14 +308,14 @@ encode:
 }
 
 static void get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
-	if (enc->state[enc->program].rt_update && enc->data[enc->program].rt1_enabled) {
+	if (enc->state[enc->program].rt_update && enc->data[enc->program].rt1_enabled && enc->state[enc->program].current_rt) {
 		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
 		enc->state[enc->program].rt_ab ^= 1;
 		enc->state[enc->program].rt_update = 0;
 		enc->state[enc->program].rt_state = 0;
 		enc->state[enc->program].current_rt = 0;
 	}
-	if(enc->state[enc->program].rt2_update && enc->data[enc->program].rt2_enabled && !enc->data[enc->program].rt1_enabled) {
+	if(enc->state[enc->program].rt2_update && enc->data[enc->program].rt2_enabled && !enc->state[enc->program].current_rt) {
 		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt2, RT_LENGTH);
 		enc->state[enc->program].rt_ab ^= 1;
 		enc->state[enc->program].rt2_update = 0;
@@ -601,7 +601,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 
 		if(grp == '0') good_group = 1;
 		if(grp == '1' && enc->data[enc->program].ecclic_enabled) good_group = 1;
-		if(grp == '2' && enc->data[enc->program].rt1_enabled) good_group = 1;
+		if(grp == '2' && enc->data[enc->program].rt1_enabled || enc->data[enc->program].rt2_enabled) good_group = 1;
 		if(grp == 'A' && enc->data[enc->program].ptyn_enabled) good_group = 1;
 		if(grp == 'E') {
 			for (int i = 0; i < EONS; i++) {
