@@ -398,7 +398,7 @@ static void handle_init(char *arg, RDSModulator* mod, char* output) {
 static void handle_ver(char *arg, RDSModulator* mod, char* output) {
     (void)arg;
     (void)mod;
-    strcpy(output, "Firmware v. 0.0a - (C) 2025 radio95\0");
+    strcpy(output, "Firmware v. 1.1a - (C) 2025 radio95\0");
 }
 
 static void handle_eonen(char *arg, char *pattern, RDSModulator* mod, char* output) {
@@ -559,10 +559,10 @@ static bool process_pattern_commands(char *cmd, char *arg, char *output, RDSModu
         size_t prefix_len = strlen(handler->prefix);
         size_t suffix_len = strlen(handler->suffix);
 
-        if (cmd_len >= (prefix_len + suffix_len) &&
+        if (cmd_len > (prefix_len + suffix_len) &&
             strncmp(cmd, handler->prefix, prefix_len) == 0 &&
             strcmp(cmd + cmd_len - suffix_len, handler->suffix) == 0) {
-
+            
             size_t pattern_len = cmd_len - prefix_len - suffix_len;
             if (pattern_len < sizeof(pattern_buffer)) {
                 strncpy(pattern_buffer, cmd + prefix_len, pattern_len);

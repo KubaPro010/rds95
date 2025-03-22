@@ -520,8 +520,8 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 	time(&now);
 	utc = gmtime(&now);
 
-	if (utc->tm_min != enc->state[enc->program].last_ct_minute) {
-		enc->state[enc->program].last_ct_minute = utc->tm_min;
+	if (utc->tm_min != enc->state[enc->program].last_minute) {
+		enc->state[enc->program].last_minute = utc->tm_min;
 		uint8_t eon_has_ta = 0;
 		for (int i = 0; i < EONS; i++) {
 			if (enc->data[enc->program].eon[i].enabled && enc->data[enc->program].eon[i].ta) {
@@ -699,12 +699,11 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	set_rds_lps(&tempCoder, enc->data[program].lps);
 	set_rds_grpseq(&tempCoder, enc->data[program].grp_sqc);
 
-
 	struct tm *utc;
 	time_t now;
 	time(&now);
 	utc = gmtime(&now);
-	enc->state[program].last_ct_minute = utc->tm_min;
+	enc->state[program].last_minute = utc->tm_min;
 
 	for(int i = 0; i < EONS; i++) {
 		tempCoder.data[program].eon[i].ta = 0;
