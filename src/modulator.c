@@ -78,13 +78,13 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 	}
 }
 
-float get_rds_sample(RDSModulator* rdsMod, bool rds2) {
+float get_rds_sample(RDSModulator* rdsMod) {
 	uint16_t idx;
 	float *cur_waveform;
 	float sample;
 	if (rdsMod->sample_count == SAMPLES_PER_BIT) {
 		if (rdsMod->bit_pos == BITS_PER_GROUP) {
-			get_rds_bits(rdsMod->enc, rdsMod->bit_buffer, rds2);
+			get_rds_bits(rdsMod->enc, rdsMod->bit_buffer);
 			rdsMod->bit_pos = 0;
 		}
 
@@ -112,11 +112,5 @@ float get_rds_sample(RDSModulator* rdsMod, bool rds2) {
 	rdsMod->sample_buffer[rdsMod->out_sample_index++] = 0;
 	if (rdsMod->out_sample_index == SAMPLE_BUFFER_SIZE)
 		rdsMod->out_sample_index = 0;
-	float out = sample*rdsMod->params.level;
-	if (rdsMod->params.rdsgen == 0) {
-		out = 0;
-	} else if (rdsMod->params.rdsgen == 1 && rds2) {
-		out = 0;
-	}
-	return out;
+	return sample*rdsMod->params.level*rdsMod->params.rdsgen;
 }

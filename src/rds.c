@@ -546,14 +546,8 @@ static uint8_t get_rds_custom_groups(RDSEncoder* enc, uint16_t *blocks) {
 	return 0;
 }
 
-static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, bool rds2) {
+static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[0] = enc->data[enc->program].pi;
-	if(rds2) blocks[0] = 0; // tunneling
-	// if(rds2 && !enc->encoder_data.rds2_mode) blocks[0] = 0; // tunneling
-	// else if(rds2 && enc->encoder_data.rds2_mode) {
-	// 	// TODO: add rds2 only stuff
-	// 	goto group_coded;
-	// }
 	blocks[1] = 0;
 	blocks[2] = 0;
 	blocks[3] = 0;
@@ -732,9 +726,9 @@ group_coded:
 	}
 }
 
-void get_rds_bits(RDSEncoder* enc, uint8_t *bits, bool rds2) {
+void get_rds_bits(RDSEncoder* enc, uint8_t *bits) {
 	static uint16_t out_blocks[GROUP_LENGTH];
-	get_rds_group(enc, out_blocks, rds2);
+	get_rds_group(enc, out_blocks);
 	add_checkwords(out_blocks, bits);
 }
 
