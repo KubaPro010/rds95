@@ -241,10 +241,11 @@ typedef struct {
 	uint16_t special_features;
 	RDSScheduler schedule;
 	RDSMessages messages;
+	uint8_t rds2_mode : 1;
 	// uint8_t rds2_buffer[16384];
 } RDSEncoderData;
 typedef struct {
-	RDSEncoderData encoder_data[PROGRAMS];
+	RDSEncoderData encoder_data;
 	RDSData data[PROGRAMS];
 	RDSState state[PROGRAMS];
 	RDSODA odas[PROGRAMS][MAX_ODAS];
@@ -260,7 +261,7 @@ typedef struct {
 	RDSODA odas[PROGRAMS][MAX_ODAS];
 	uint8_t file_middle; // Always is 160, average of both
 	RDSODAState oda_state[PROGRAMS];
-	RDSEncoderData encoder_data[PROGRAMS];
+	RDSEncoderData encoder_data;
 	uint8_t program : 3;
 	uint8_t file_ender; // Always is 95 my freq
 } RDSEncoderFile;
@@ -332,7 +333,7 @@ int rdssaved();
 void reset_rds_state(RDSEncoder* enc, uint8_t program);
 void set_rds_defaults(RDSEncoder* enc, uint8_t program);
 void init_rds_encoder(RDSEncoder* enc);
-void get_rds_bits(RDSEncoder* enc, uint8_t *bits);
+void get_rds_bits(RDSEncoder* enc, uint8_t *bits, bool rds2);
 void set_rds_rt1(RDSEncoder* enc, char *rt1);
 void set_rds_rt2(RDSEncoder* enc, char *rt2);
 void set_rds_dps1(RDSEncoder* enc, char *dps1);

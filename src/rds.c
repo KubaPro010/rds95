@@ -112,7 +112,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		memcpy(&(tempEncoder.rtpData[emp->program]), &(emp->rtpData[emp->program]), sizeof(RDSRTPlusData));
 		memcpy(&(tempEncoder.odas[emp->program]), &(emp->odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
 		memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState));
-		memcpy(&(tempEncoder.encoder_data[emp->program]), &(emp->encoder_data[emp->program]), sizeof(RDSODAState));
+		memcpy(&(tempEncoder.encoder_data), &(emp->encoder_data), sizeof(RDSEncoderData));
 		tempEncoder.program = emp->program;
 	}
 
@@ -124,7 +124,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	memcpy(&(rdsEncoderfile.rtpData[emp->program]), &(tempEncoder.rtpData[emp->program]), sizeof(RDSRTPlusData));
 	memcpy(&(rdsEncoderfile.odas[emp->program]), &(tempEncoder.odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
 	memcpy(&(rdsEncoderfile.oda_state[emp->program]), &(tempEncoder.oda_state[emp->program]), sizeof(RDSODAState));
-	memcpy(&(rdsEncoderfile.encoder_data[emp->program]), &(tempEncoder.encoder_data[emp->program]), sizeof(RDSODAState));
+	memcpy(&(rdsEncoderfile.encoder_data), &(tempEncoder.encoder_data), sizeof(RDSEncoderData));
 	rdsEncoderfile.program = tempEncoder.program;
 
 	file = fopen(encoderPath, "wb");
@@ -159,8 +159,8 @@ void loadFromFile(RDSEncoder *enc) {
 		memcpy(&(enc->rtpData[i]), &(rdsEncoderfile.rtpData[i]), sizeof(RDSRTPlusData));
 		memcpy(&(enc->odas[i]), &(rdsEncoderfile.odas[i]), sizeof(RDSODA) * MAX_ODAS);
 		memcpy(&(enc->oda_state[i]), &(rdsEncoderfile.oda_state[i]), sizeof(RDSODAState));
-		memcpy(&(enc->encoder_data[i]), &(rdsEncoderfile.encoder_data[i]), sizeof(RDSODAState));
 	}
+	memcpy(&(enc->encoder_data), &(rdsEncoderfile.encoder_data), sizeof(RDSODAState));
 	enc->program = rdsEncoderfile.program;
 }
 
@@ -546,8 +546,13 @@ static uint8_t get_rds_custom_groups(RDSEncoder* enc, uint16_t *blocks) {
 	return 0;
 }
 
-static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
+static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, bool rds2) {
 	blocks[0] = enc->data[enc->program].pi;
+	if(rds2 && !enc->encoder_data.rds2_mode) blocks[0] = 0; // tunneling
+	else if(rds2 && enc->encoder_data.rds2_mode) {
+		// TODO: add rds2 only stuff
+		return;
+	}
 	blocks[1] = 0;
 	blocks[2] = 0;
 	blocks[3] = 0;
@@ -726,9 +731,9 @@ group_coded:
 	}
 }
 
-void get_rds_bits(RDSEncoder* enc, uint8_t *bits) {
+void get_rds_bits(RDSEncoder* enc, uint8_t *bits, bool rds2) {
 	static uint16_t out_blocks[GROUP_LENGTH];
-	get_rds_group(enc, out_blocks);
+	get_rds_group(enc, out_blocks, rds2);
 	add_checkwords(out_blocks, bits);
 }
 
@@ -775,10 +780,10 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	memset(&(enc->oda_state[program]), 0, sizeof(RDSODAState));
 	memset(&(enc->odas[program]), 0, sizeof(RDSODA)*MAX_ODAS);
 	memset(&(enc->rtpData[program]), 0, sizeof(RDSRTPlusData));
-	memset(&(enc->encoder_data[program]), 0, sizeof(RDSEncoderData));
+	memset(&(enc->encoder_data), 0, sizeof(RDSEncoderData));
 
-	enc->encoder_data[program].encoder_addr[0] = 255;
-	enc->encoder_data[program].encoder_addr[1] = 255;
+	enc->encoder_data.encoder_addr[0] = 255;
+	enc->encoder_data.encoder_addr[1] = 255;
 
 	enc->data[program].ct = 1;
 	enc->data[program].di = 1;

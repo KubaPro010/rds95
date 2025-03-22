@@ -29,4 +29,4 @@ void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option);
 void Modulator_loadFromFile(RDSModulatorParameters *emp);
 int modulatorsaved();
 void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc);
-float get_rds_sample(RDSModulator* rdsMod);
+float get_rds_sample(RDSModulator* rdsMod, bool rds2);

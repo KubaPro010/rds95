@@ -11,6 +11,9 @@
 #include "lib.h"
 #include "ascii_cmd.h"
 
+#define RDS_DEVICE "RDS"
+#define RDS2_DEVICE "RDS2"
+
 #define NUM_MPX_FRAMES	512
 
 static uint8_t stop_rds;
@@ -53,7 +56,11 @@ int main(int argc, char **argv) {
 	char control_pipe[51] = "\0";
 
 	pa_simple *device;
+	#ifdef RDS2_DEVICE
+	pa_simple *rds2_device;
+	#endif
 	pa_sample_spec format;
+	pa_buffer_attr buffer;
 
 	pthread_attr_t attr;
 	pthread_t control_pipe_thread;
@@ -91,21 +98,42 @@ int main(int argc, char **argv) {
 	format.channels = 1;
 	format.rate = RDS_SAMPLE_RATE;
 
+	buffer.prebuf = 0;
+	buffer.tlength = 8192;
+	buffer.maxlength = 8192;
+
 	device = pa_simple_new(
-		NULL,                       // Default PulseAudio server
-		"rds95",                 // Application name
-		PA_STREAM_PLAYBACK,        // Direction (playback)
-		"RDS",                       // Default device
-		"RDS Generator",           // Stream description
-		&format,                   // Sample format
-		NULL,                       // Default channel map
-		NULL,                       // Default buffering attributes
-		NULL                     // Error variable
+		NULL,
+		"rds95",
+		PA_STREAM_PLAYBACK,
+		RDS_DEVICE,
+		"RDS Generator",
+		&format,
+		NULL,
+		&buffer,
+		NULL
 	);
 	if (device == NULL) {
 		fprintf(stderr, "Error: cannot open sound device.\n");
 		goto exit;
 	}
+	#ifdef RDS2_DEVICE
+	rds2_device = pa_simple_new(
+		NULL,
+		"rds95",
+		PA_STREAM_PLAYBACK,
+		RDS2_DEVICE,
+		"RDS2 Generator",
+		&format,
+		NULL,
+		&buffer,
+		NULL
+	);
+	if(rds2_device == NULL) {
+		fprintf(stderr, "Error: cannot open sound device.\n");
+		goto exit;
+	}
+	#endif
 
 	RDSEncoder rdsEncoder;
 	RDSModulator rdsModulator;
@@ -132,17 +160,29 @@ int main(int argc, char **argv) {
 
 	int pulse_error;
 
-	static float mpx_buffer[NUM_MPX_FRAMES];
+	float rds1_buffer[NUM_MPX_FRAMES];
+	#ifdef RDS2_DEVICE
+	float rds2_buffer[NUM_MPX_FRAMES];
+	#endif
 
 	while(!stop_rds) {
 		for (uint16_t i = 0; i < NUM_MPX_FRAMES; i++) {
-			mpx_buffer[i] = get_rds_sample(&rdsModulator);
+			rds1_buffer[i] = get_rds_sample(&rdsModulator, false);
+			#ifdef RDS2_DEVICE
+			rds2_buffer[i] = get_rds_sample(&rdsModulator, true);
+			#endif
 		}
 
-		if (pa_simple_write(device, mpx_buffer, sizeof(mpx_buffer), &pulse_error) != 0) {
+		if (pa_simple_write(device, rds1_buffer, sizeof(rds1_buffer), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
+		#ifdef RDS2_DEVICE
+		if (pa_simple_write(rds2_device, rds2_buffer, sizeof(rds2_buffer), &pulse_error) != 0) {
+			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
+			break;
+		}
+		#endif
 	}
 
 exit:
@@ -153,6 +193,9 @@ exit:
 
 	pthread_attr_destroy(&attr);
 	pa_simple_free(device);
+	#ifdef RDS2_DEVICE
+	pa_simple_free(rds2_device);
+	#endif
 
 	return 0;
 }

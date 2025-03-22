@@ -78,13 +78,13 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 	}
 }
 
-float get_rds_sample(RDSModulator* rdsMod) {
+float get_rds_sample(RDSModulator* rdsMod, bool rds2) {
 	uint16_t idx;
 	float *cur_waveform;
 	float sample;
 	if (rdsMod->sample_count == SAMPLES_PER_BIT) {
 		if (rdsMod->bit_pos == BITS_PER_GROUP) {
-			get_rds_bits(rdsMod->enc, rdsMod->bit_buffer);
+			get_rds_bits(rdsMod->enc, rdsMod->bit_buffer, rds2);
 			rdsMod->bit_pos = 0;
 		}
 
