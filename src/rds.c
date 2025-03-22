@@ -548,11 +548,12 @@ static uint8_t get_rds_custom_groups(RDSEncoder* enc, uint16_t *blocks) {
 
 static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, bool rds2) {
 	blocks[0] = enc->data[enc->program].pi;
-	if(rds2 && !enc->encoder_data.rds2_mode) blocks[0] = 0; // tunneling
-	else if(rds2 && enc->encoder_data.rds2_mode) {
-		// TODO: add rds2 only stuff
-		goto group_coded;
-	}
+	if(rds2) blocks[0] = 0; // tunneling
+	// if(rds2 && !enc->encoder_data.rds2_mode) blocks[0] = 0; // tunneling
+	// else if(rds2 && enc->encoder_data.rds2_mode) {
+	// 	// TODO: add rds2 only stuff
+	// 	goto group_coded;
+	// }
 	blocks[1] = 0;
 	blocks[2] = 0;
 	blocks[3] = 0;
