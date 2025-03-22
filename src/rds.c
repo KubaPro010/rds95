@@ -98,6 +98,9 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		tempEncoder.data[emp->program].rt1_enabled = emp->data[emp->program].rt1_enabled;
 	} else if(strcmp(option, "RT2EN") == 0) {
 		tempEncoder.data[emp->program].rt2_enabled = emp->data[emp->program].rt2_enabled;
+	} else if(strcmp(option, "RTPER") == 0) {
+		tempEncoder.data[emp->program].rt_switching_period = emp->data[emp->program].rt_switching_period;
+		tempEncoder.data[emp->program].orignal_rt_switching_period = emp->data[emp->program].orignal_rt_switching_period;
 	} else if(strcmp(option, "PINEN") == 0) {
 		tempEncoder.data[emp->program].pin[0] = emp->data[emp->program].pin[0];
 	} else if(strcmp(option, "PROGRAM") == 0) {
@@ -308,14 +311,14 @@ encode:
 }
 
 static void get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
-	if (enc->state[enc->program].rt_update && enc->data[enc->program].rt1_enabled && enc->state[enc->program].current_rt) {
+	if (enc->state[enc->program].rt_update && enc->data[enc->program].rt1_enabled && !enc->state[enc->program].current_rt) {
 		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
 		enc->state[enc->program].rt_ab ^= 1;
 		enc->state[enc->program].rt_update = 0;
 		enc->state[enc->program].rt_state = 0;
 		enc->state[enc->program].current_rt = 0;
 	}
-	if(enc->state[enc->program].rt2_update && enc->data[enc->program].rt2_enabled && !enc->state[enc->program].current_rt) {
+	if(enc->state[enc->program].rt2_update && enc->data[enc->program].rt2_enabled && enc->state[enc->program].current_rt) {
 		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt2, RT_LENGTH);
 		enc->state[enc->program].rt_ab ^= 1;
 		enc->state[enc->program].rt2_update = 0;
