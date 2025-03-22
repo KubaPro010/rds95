@@ -177,12 +177,12 @@ typedef struct {
 	uint8_t rt2_segments : 5;
 	uint8_t current_rt : 1;
 
-	char ptyn_text[RT_LENGTH];
+	char ptyn_text[PTYN_LENGTH];
 	uint8_t ptyn_state : 1;
 	uint8_t ptyn_update : 1;
 	uint8_t ptyn_ab : 1;
 
-	char lps_text[RT_LENGTH];
+	char lps_text[LPS_LENGTH];
 	uint8_t lps_state : 5;
 	uint8_t lps_update : 1;
 	uint8_t lps_segments : 5;
@@ -201,7 +201,7 @@ typedef struct {
 	uint8_t eon_index : 3;
 	uint8_t eon_state : 4;
 
-	uint16_t last_stream0_group[GROUP_LENGTH];
+	uint16_t last_stream0_group[3];
 } RDSState;
 
 typedef struct {
