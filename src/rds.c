@@ -491,6 +491,7 @@ get_eon:
 		}
 		
 		enc->state[enc->program].eon_state = 0;
+		goto get_eon;
 	} else {
 		enc->state[enc->program].eon_state++;
 	}
