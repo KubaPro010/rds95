@@ -98,6 +98,10 @@ int main(int argc, char **argv) {
 	format.channels = 1;
 	format.rate = RDS_SAMPLE_RATE;
 
+	buffer.prebuf = 0;
+	buffer.tlength = 12228;
+	buffer.maxlength = 12228;
+
 	rds1_device = pa_simple_new(
 		NULL,
 		"rds95",
@@ -126,7 +130,7 @@ int main(int argc, char **argv) {
 		NULL
 	);
 	if(rds2_device == NULL) {
-		fprintf(stderr, "Error: cannot open sound device.\n");
+		fprintf(stderr, "Error: cannot open RDS2 sound device.\n");
 		goto exit;
 	}
 	#endif
