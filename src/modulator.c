@@ -78,39 +78,47 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 	}
 }
 
-float get_rds_sample(RDSModulator* rdsMod) {
+float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 	uint16_t idx;
 	float *cur_waveform;
 	float sample;
-	if (rdsMod->sample_count == SAMPLES_PER_BIT) {
-		if (rdsMod->bit_pos == BITS_PER_GROUP) {
-			get_rds_bits(rdsMod->enc, rdsMod->bit_buffer);
-			rdsMod->bit_pos = 0;
+	if (rdsMod->data[stream].sample_count == SAMPLES_PER_BIT) {
+		if (rdsMod->data[stream].bit_pos == BITS_PER_GROUP) {
+			get_rds_bits(rdsMod->enc, rdsMod->data[stream].bit_buffer);
+			rdsMod->data[stream].bit_pos = 0;
 		}
 
-		rdsMod->cur_bit = rdsMod->bit_buffer[rdsMod->bit_pos++];
-		rdsMod->prev_output = rdsMod->cur_output;
-		rdsMod->cur_output = rdsMod->prev_output ^ rdsMod->cur_bit;
+		rdsMod->data[stream].cur_bit = rdsMod->data[stream].bit_buffer[rdsMod->data[stream].bit_pos++];
+		rdsMod->data[stream].prev_output = rdsMod->data[stream].cur_output;
+		rdsMod->data[stream].cur_output = rdsMod->data[stream].prev_output ^ rdsMod->data[stream].cur_bit;
 
-		idx = rdsMod->in_sample_index;
-		cur_waveform = waveform[rdsMod->cur_output];
+		idx = rdsMod->data[stream].in_sample_index;
+		cur_waveform = waveform[rdsMod->data[stream].cur_output];
 
 		for (uint16_t i = 0; i < FILTER_SIZE; i++) {
-			rdsMod->sample_buffer[idx++] += *cur_waveform++;
+			rdsMod->data[stream].sample_buffer[idx++] += *cur_waveform++;
 			if (idx == SAMPLE_BUFFER_SIZE) idx = 0;
 		}
 
-		rdsMod->in_sample_index += SAMPLES_PER_BIT;
-		if (rdsMod->in_sample_index == SAMPLE_BUFFER_SIZE) rdsMod->in_sample_index = 0;
+		rdsMod->data[stream].in_sample_index += SAMPLES_PER_BIT;
+		if (rdsMod->data[stream].in_sample_index == SAMPLE_BUFFER_SIZE) rdsMod->data[stream].in_sample_index = 0;
 
-		rdsMod->sample_count = 0;
+		rdsMod->data[stream].sample_count = 0;
 	}
-	rdsMod->sample_count++;
+	rdsMod->data[stream].sample_count++;
 
-	sample = rdsMod->sample_buffer[rdsMod->out_sample_index];
+	sample = rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index];
 
-	rdsMod->sample_buffer[rdsMod->out_sample_index++] = 0;
-	if (rdsMod->out_sample_index == SAMPLE_BUFFER_SIZE)
-		rdsMod->out_sample_index = 0;
-	return sample*rdsMod->params.level*rdsMod->params.rdsgen;
+	rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index++] = 0;
+	if (rdsMod->data[stream].out_sample_index == SAMPLE_BUFFER_SIZE)
+		rdsMod->data[stream].out_sample_index = 0;
+	uint8_t tooutput = 1;
+	if (rdsMod->params.rdsgen == 0) {
+		tooutput = 0;
+	} else {
+		if (stream == 1) {
+			tooutput = 0;
+		}
+	}
+	return sample*rdsMod->params.level*tooutput;
 }

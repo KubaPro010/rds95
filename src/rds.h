@@ -333,7 +333,7 @@ int rdssaved();
 void reset_rds_state(RDSEncoder* enc, uint8_t program);
 void set_rds_defaults(RDSEncoder* enc, uint8_t program);
 void init_rds_encoder(RDSEncoder* enc);
-void get_rds_bits(RDSEncoder* enc, uint8_t *bits);
+void get_rds_bits(RDSEncoder* enc, uint8_t *bits, uint8_t stream);
 void set_rds_rt1(RDSEncoder* enc, char *rt1);
 void set_rds_rt2(RDSEncoder* enc, char *rt2);
 void set_rds_dps1(RDSEncoder* enc, char *dps1);
