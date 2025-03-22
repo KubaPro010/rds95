@@ -6,8 +6,10 @@ import io, os
 if PLOT: import matplotlib.pyplot as plt
 if FFT: import numpy as np  # Import numpy for FFT
 
+DATA_RATE = 1187.5
+
 ratio = 14
-sample_rate = 1187.5*ratio
+sample_rate = DATA_RATE*ratio
 print(f"{sample_rate=}")
 if not sample_rate.is_integer(): raise ValueError("Need a even value")
 
@@ -16,7 +18,7 @@ def rrcosfilter(NumSamples):
     T_delta = 1/float(sample_rate)
     sample_num = list(range(NumSamples))
     h_rrc = [0.0] * NumSamples
-    SymbolPeriod = 1/(2*1187.5)
+    SymbolPeriod = 1/(2*DATA_RATE)
 
     for x in sample_num:
         t = (x-NumSamples/2)*T_delta
@@ -60,7 +62,7 @@ outc.write(header)
 outh.write(header)
 
 def generate():
-    l = int(sample_rate / 1187.5) // 2
+    l = ratio // 2
 
     sample = [0.0] * (16*l)
     sample[l] = 1
@@ -102,7 +104,7 @@ def generate():
         # Plot the magnitude of the FFT
         plt.figure(figsize=(10, 6))
         plt.plot(fft_freqs[:N//2], np.abs(fft_out)[:N//2])  # Plot only the positive frequencies
-        plt.xlim(0,1187.5*3)
+        plt.xlim(0,DATA_RATE*3)
         plt.title("FFT of the waveform")
         plt.xlabel("Frequency (Hz)")
         plt.ylabel("Magnitude")

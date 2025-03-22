@@ -194,6 +194,7 @@ typedef struct {
 	uint8_t udg_idxs[2];
 
 	uint8_t last_ct_minute : 6;
+	uint8_t ta_timeout : 7;
 
 	uint8_t eon_index : 3;
 	uint8_t eon_state : 4;

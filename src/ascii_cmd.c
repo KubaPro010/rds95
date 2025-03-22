@@ -12,6 +12,12 @@ typedef struct {
     uint8_t cmd_length;
 } command_handler_t;
 
+typedef struct {
+    const char *prefix;
+    const char *suffix;
+    void (*handler)(char *arg, char *pattern, RDSModulator* mod, char* output);
+} pattern_command_handler_t;
+
 static void handle_ptyn(char *arg, RDSModulator* mod, char* output) {
     arg[PTYN_LENGTH] = 0;
     set_rds_ptyn(mod->enc, xlat(arg));
@@ -75,14 +81,12 @@ static void handle_dps1(char *arg, RDSModulator* mod, char* output) {
     strcpy(output, "+\0");
 }
 static void handle_dps1mod(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    mod->enc->data[mod->enc->program].dps1_mode = strtoul((char *)arg, NULL, 10);
+    mod->enc->data[mod->enc->program].dps1_mode = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_scrlspd(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    mod->enc->data[mod->enc->program].dps_speed = strtoul((char *)arg, NULL, 10);
+    mod->enc->data[mod->enc->program].dps_speed = atoi(arg);
     strcpy(output, "+\0");
 }
 
@@ -93,20 +97,17 @@ static void handle_dps1enq(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_pty(char *arg, RDSModulator* mod, char* output) {
-    arg[2] = 0;
-    mod->enc->data[mod->enc->program].pty = strtoul((char *)arg, NULL, 10);
+    mod->enc->data[mod->enc->program].pty = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_ecc(char *arg, RDSModulator* mod, char* output) {
-    arg[2] = 0;
-    mod->enc->data[mod->enc->program].ecc = strtoul((char *)arg, NULL, 16);
+    mod->enc->data[mod->enc->program].ecc = strtoul(arg, NULL, 16);
     strcpy(output, "+\0");
 }
 
 static void handle_lic(char *arg, RDSModulator* mod, char* output) {
-    arg[3] = 0;
-    mod->enc->data[mod->enc->program].lic = strtoul((char *)arg, NULL, 16);
+    mod->enc->data[mod->enc->program].lic = strtoul(arg, NULL, 16);
     strcpy(output, "+\0");
 }
 
@@ -147,37 +148,32 @@ static void handle_ps(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_ct(char *arg, RDSModulator* mod, char* output) {
     arg[2] = 1;
-    mod->enc->data[mod->enc->program].ct = arg[0];
+    mod->enc->data[mod->enc->program].ct = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_di(char *arg, RDSModulator* mod, char* output) {
-    arg[2] = 0;
-    mod->enc->data[mod->enc->program].di = arg[0];
+    mod->enc->data[mod->enc->program].di = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_tp(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    mod->enc->data[mod->enc->program].tp = arg[0];
+    mod->enc->data[mod->enc->program].tp = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_ta(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    mod->enc->data[mod->enc->program].ta = arg[0];
+    mod->enc->data[mod->enc->program].ta = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_ms(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    mod->enc->data[mod->enc->program].ms = arg[0];
+    mod->enc->data[mod->enc->program].ms = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_pi(char *arg, RDSModulator* mod, char* output) {
-    arg[4] = 0;
-    mod->enc->data[mod->enc->program].pi = strtoul((char *)arg, NULL, 16);
+    mod->enc->data[mod->enc->program].pi = strtoul(arg, NULL, 16);
     strcpy(output, "+\0");
 }
 
@@ -234,60 +230,53 @@ static void handle_g(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_pinen(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    mod->enc->data[mod->enc->program].pin[0] = arg[0];
+    mod->enc->data[mod->enc->program].pin[0] = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_rt1en(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    mod->enc->data[mod->enc->program].rt1_enabled = arg[0];
+    mod->enc->data[mod->enc->program].rt1_enabled = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_dps1en(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    mod->enc->data[mod->enc->program].dps1_enabled = arg[0];
+    mod->enc->data[mod->enc->program].dps1_enabled = atoi(arg);
     mod->enc->state[mod->enc->program].ps_update = 1;
     strcpy(output, "+\0");
 }
 
 static void handle_labper(char *arg, RDSModulator* mod, char* output) {
-    mod->enc->data[mod->enc->program].dps_label_period = strtoul((char *)arg, NULL, 10);
+    mod->enc->data[mod->enc->program].dps_label_period = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_spsper(char *arg, RDSModulator* mod, char* output) {
-    mod->enc->data[mod->enc->program].static_ps_period = strtoul((char *)arg, NULL, 10);
+    mod->enc->data[mod->enc->program].static_ps_period = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_ptynen(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    mod->enc->data[mod->enc->program].ptyn_enabled = strtoul((char *)arg, NULL, 10);
+    mod->enc->data[mod->enc->program].ptyn_enabled = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_rtprun(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
-    set_rds_rtplus_flags(mod->enc, strtoul((char *)arg, NULL, 10));
+    set_rds_rtplus_flags(mod->enc, atoi(arg));
     strcpy(output, "+\0");
 }
 
 static void handle_eccen(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
     mod->enc->data[mod->enc->program].ecclic_enabled = arg[0];
     strcpy(output, "+\0");
 }
 
 static void handle_shortrt(char *arg, RDSModulator* mod, char* output) {
-    arg[1] = 0;
     mod->enc->data[mod->enc->program].shortrt = arg[0];
     strcpy(output, "+\0");
 }
 
 static void handle_program(char *arg, RDSModulator* mod, char* output) {
-    int16_t program = strtol((char *)arg, NULL, 10)-1;
+    int16_t program = atoi(arg)-1;
     if(program == '\0') {
         strcpy(output, "-\0");
         return;
@@ -310,7 +299,7 @@ static void handle_grpseq(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_level(char *arg, RDSModulator* mod, char* output) {
-    mod->params.level = strtoul((char *)arg, NULL, 10)/255.0f;
+    mod->params.level = atoi(arg)/255.0f;
     strcpy(output, "+\0");
 }
 
@@ -325,7 +314,7 @@ static void handle_reset(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_rdsgen(char *arg, RDSModulator* mod, char* output) {
-    mod->params.rdsgen = strtoul((char *)arg, NULL, 10);
+    mod->params.rdsgen = atoi(arg);
     strcpy(output, "+\0");
 }
 
@@ -412,6 +401,63 @@ static void handle_ver(char *arg, RDSModulator* mod, char* output) {
     strcpy(output, "Firmware v. 0.0a - (C) 2025 radio95\0");
 }
 
+static void handle_eonen(char *arg, char *pattern,, RDSModulator* mod, char* output) {
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)].enabled = atoi(arg);
+    strcpy(output, "+\0");
+}
+
+static void handle_eonpi(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)].pi = strtoul(arg, NULL, 16);
+    strcpy(output, "+\0");
+}
+
+static void handle_eonpin(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    if (arg[0] == '\0') {
+        mod->enc->data[mod->enc->program].eon[atoi(pattern)].pin[0] = 0;
+    } else {
+        uint8_t pin[3];
+        if (sscanf((char *)arg, "%hhu,%hhu,%hhu", &pin[0], &pin[1], &pin[2]) == 3) {
+            for (int i = 0; i < 3; i++) {
+                mod->enc->data[mod->enc->program].eon[atoi(pattern)].pin[i + 1] = pin[i];
+            }
+        }
+    }
+    strcpy(output, "+\0");
+}
+
+static void handle_eonps(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    arg[PS_LENGTH * 2] = 0;
+
+    RDSEON *eon = &mod->enc->data[mod->enc->program].eon[atoi(pattern)];
+    memset(eon->ps, ' ', sizeof(eon->ps));
+
+    uint16_t len = 0;
+	while (*arg != 0 && len < 24) eon->ps[len++] = *arg++;
+    
+    strcpy(output, "+\0");
+}
+
+static void handle_eonpty(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)].pty = atoi(arg);
+    strcpy(output, "+\0");
+}
+
+static void handle_eonta(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    if (!mod->enc->data[mod->enc->program].eon[atoi(pattern)].enabled || 
+        !mod->enc->data[mod->enc->program].eon[atoi(pattern)].tp) {
+        strcpy(output, "-\0");
+        return;
+    }
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)].ta = atoi(arg);
+    if(mod->enc->data[mod->enc->program].eon[atoi(pattern)].ta) mod->enc->data[mod->enc->program].ta = 1;
+    strcpy(output, "+\0");
+}
+
+static void handle_eontp(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)].tp = atoi(arg);
+    strcpy(output, "+\0");
+}
+
 static const command_handler_t commands_eq3[] = {
     {"MS", handle_ms, 2},
     {"PS", handle_ps, 2},
@@ -433,7 +479,6 @@ static const command_handler_t commands_eq4[] = {
     {"LPS", handle_lps, 3},
     {"PIN", handle_pin, 3},
     {"DPS", handle_dps1, 3},
-    {"VER", handle_ver, 3},
 };
 
 static const command_handler_t commands_eq5[] = {
@@ -479,8 +524,18 @@ static const command_handler_t commands_eq10[] = {
 };
 
 static const command_handler_t commands_exact[] = {
-    {"INIT", handle_init, 4}
-    // TODO: handle help, ver, status
+    {"INIT", handle_init, 4},
+    {"VER", handle_ver, 3},
+    // TODO: handle help, status
+};
+
+static const pattern_command_handler_t pattern_commands[] = {
+    {"EON", "EN", handle_eonen},
+    {"EON", "PI", handle_eonpi},
+    {"EON", "PIN", handle_eonpin},
+    {"EON", "PS", handle_eonps},
+    {"EON", "PTY", handle_eonpty},
+    {"EON", "TA", handle_eonta},
 };
 
 static bool process_command_table(const command_handler_t *table, int table_size,
@@ -494,8 +549,31 @@ static bool process_command_table(const command_handler_t *table, int table_size
     return false;
 }
 
+static bool process_pattern_commands(char *cmd, char *arg, char *pattern, char *output, RDSModulator* mod) {
+    size_t cmd_len = strlen(cmd);
+
+    for (int i = 0; i < sizeof(pattern_commands) / sizeof(pattern_command_handler_t); i++) {
+        const pattern_command_handler_t *handler = &pattern_commands[i];
+        size_t prefix_len = strlen(handler->prefix);
+        size_t suffix_len = strlen(handler->suffix);
+
+        if (cmd_len >= (prefix_len + suffix_len) &&
+            strncmp(cmd, handler->prefix, prefix_len) == 0 &&
+            strcmp(cmd + cmd_len - suffix_len, handler->suffix) == 0) {
+
+            pattern = cmd + prefix_len;
+            pattern[cmd_len - suffix_len] = 0;
+
+            handler->handler(arg, pattern, mod, output);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void process_ascii_cmd(RDSModulator* mod, char *str) {
-    char *cmd, *arg;
+    char *cmd, *arg, *pattern = NULL;
     char output[255];
     memset(output, 0, sizeof(output));
     char upper_str[CTL_BUFFER_SIZE];
@@ -622,5 +700,14 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
                                   sizeof(commands_eq10) / sizeof(command_handler_t),
                                   cmd, arg, output, mod)) {
         }
+    }
+
+    char *equals_pos = strchr(upper_str, '=');
+    if (equals_pos != NULL) {
+        *equals_pos = 0;
+        cmd = upper_str;
+        arg = str + (equals_pos - upper_str) + 1;
+
+        process_pattern_commands(cmd, arg, pattern, output, mod);
     }
 }

@@ -339,7 +339,7 @@ static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks) {
 	if (enc->oda_state[enc->program].current >= enc->oda_state[enc->program].count) enc->oda_state[enc->program].current = 0;
 }
 
-static uint8_t get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
+static void get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
 	struct tm *utc, *local_time;
 	time_t now;
 	uint8_t l;
@@ -349,28 +349,20 @@ static uint8_t get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
 	now = time(NULL);
 	utc = gmtime(&now);
 
-	if (utc->tm_min != enc->state[enc->program].last_ct_minute) {
-		enc->state[enc->program].last_ct_minute = utc->tm_min;
+	l = utc->tm_mon <= 1 ? 1 : 0;
+	mjd = 14956 + utc->tm_mday +
+		(uint32_t)((utc->tm_year - l) * 365.25f) +
+		(uint32_t)((utc->tm_mon + (1+1) + l * 12) * 30.6001f);
 
-		l = utc->tm_mon <= 1 ? 1 : 0;
-		mjd = 14956 + utc->tm_mday +
-			(uint32_t)((utc->tm_year - l) * 365.25f) +
-			(uint32_t)((utc->tm_mon + (1+1) + l * 12) * 30.6001f);
+	blocks[1] |= 4 << 12 | (mjd >> 15);
+	blocks[2] = (mjd << 1) | (utc->tm_hour >> 4);
+	blocks[3] = (utc->tm_hour & 0xf) << 12 | utc->tm_min << 6;
 
-		blocks[1] |= 4 << 12 | (mjd >> 15);
-		blocks[2] = (mjd << 1) | (utc->tm_hour >> 4);
-		blocks[3] = (utc->tm_hour & 0xf) << 12 | utc->tm_min << 6;
+	local_time = localtime(&now);
 
-		local_time = localtime(&now);
-
-		offset = local_time->__tm_gmtoff / (30 * 60);
-		if (offset < 0) blocks[3] |= 1 << 5;
-		blocks[3] |= abs(offset);
-
-		return 1;
-	}
-
-	return 0;
+	offset = local_time->__tm_gmtoff / (30 * 60);
+	if (offset < 0) blocks[3] |= 1 << 5;
+	blocks[3] |= abs(offset);
 }
 
 static void get_rds_ptyn_group(RDSEncoder* enc, uint16_t *blocks) {
@@ -446,11 +438,12 @@ static void get_rds_rtplus_group(RDSEncoder* enc, uint16_t *blocks) {
 }
 
 static void get_rds_eon_group(RDSEncoder* enc, uint16_t *blocks) {
-	RDSEON eon = enc->data[enc->program].eon[enc->state[enc->program].eon_index];
+	RDSEON eon;
+get_eon:
+	eon = enc->data[enc->program].eon[enc->state[enc->program].eon_index];
 	blocks[1] |= 14 << 12;
 	blocks[1] |= eon.tp << 4;
 
-	blocks[1] |= enc->state[enc->program].eon_state;
 	switch (enc->state[enc->program].eon_state)
 	{
 	case 0:
@@ -459,15 +452,26 @@ static void get_rds_eon_group(RDSEncoder* enc, uint16_t *blocks) {
 	case 3:
 		blocks[2] = eon.ps[enc->state[enc->program].eon_state*2] << 8;
 		blocks[2] |= eon.ps[enc->state[enc->program].eon_state*2 + 1];
+		blocks[1] |= enc->state[enc->program].eon_state;
 		break;
 	case 4: // 13
+		if(eon.pty == 0 && eon.tp == 0) {
+			enc->state[enc->program].eon_index++;
+			goto get_eon;
+		}
 		blocks[2] = eon.pty << 11;
 		if(eon.tp) blocks[2] |= eon.ta;
+		blocks[1] |= 13;
 		break;
 	case 5: // 14
+		if(eon.pin[0] == 0) {
+			enc->state[enc->program].eon_index++;
+			goto get_eon;
+		}
 		blocks[2] = eon.pin[1] << 11;
 		blocks[2] |= eon.pin[2] << 6;
 		blocks[2] |= eon.pin[3];
+		blocks[1] |= 14;
 		break;
 	// TODO: Add AF
 	}
@@ -476,17 +480,20 @@ static void get_rds_eon_group(RDSEncoder* enc, uint16_t *blocks) {
 
 	if(enc->state[enc->program].eon_state == 5) {
 		enc->state[enc->program].eon_index++;
-		uint8_t is_enabled = 1;
+		
 		uint8_t i = 0;
-		while(!is_enabled) {
-			is_enabled = enc->data[enc->program].eon[enc->state[enc->program].eon_index].enabled;
-			i++;
-			if(i > EONS*2) {
-				return;
+		while(i < EONS && !enc->data[enc->program].eon[enc->state[enc->program].eon_index].enabled) {
+			enc->state[enc->program].eon_index++;
+			if(enc->state[enc->program].eon_index >= EONS) {
+				enc->state[enc->program].eon_index = 0;
 			}
+			i++;
 		}
+		
+		enc->state[enc->program].eon_state = 0;
+	} else {
+		enc->state[enc->program].eon_state++;
 	}
-	enc->state[enc->program].eon_state++;
 }
 // #endregion
 
@@ -508,9 +515,30 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[2] = 0;
 	blocks[3] = 0;
 
-	if (enc->data[enc->program].ct && get_rds_ct_group(enc, blocks)) {
-		goto group_coded;
+	struct tm *utc;
+	time_t now;
+	time(&now);
+	utc = gmtime(&now);
+
+	if (utc->tm_min != enc->state[enc->program].last_ct_minute) {
+		uint8_t eon_has_ta = 0;
+		for (int i = 0; i < EONS; i++) {
+			if (enc->data[enc->program].eon[i].enabled && enc->data[enc->program].eon[i].ta) {
+				eon_has_ta = 1;
+				break;
+			}
+		}
+		if(enc->data[enc->program].tp && enc->data[enc->program].ta && enc->state[enc->program].ta_timeout && !eon_has_ta) {
+			enc->state[enc->program].ta_timeout--;
+			if(enc->state[enc->program].ta_timeout == 0) enc->data[enc->program].ta = 0;
+		}
+		
+		if(enc->data[enc->program].ct) {
+			get_rds_ct_group(enc, blocks);
+			goto group_coded;
+		}
 	}
+	enc->state[enc->program].last_ct_minute = utc->tm_min;
 
 	if(get_rds_custom_groups(enc, blocks)) {
 		goto group_coded;
