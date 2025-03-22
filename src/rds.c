@@ -601,7 +601,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 
 		if(grp == '0') good_group = 1;
 		if(grp == '1' && enc->data[enc->program].ecclic_enabled) good_group = 1;
-		if(grp == '2' && enc->data[enc->program].rt1_enabled || enc->data[enc->program].rt2_enabled) good_group = 1;
+		if(grp == '2' && (enc->data[enc->program].rt1_enabled || enc->data[enc->program].rt2_enabled)) good_group = 1;
 		if(grp == 'A' && enc->data[enc->program].ptyn_enabled) good_group = 1;
 		if(grp == 'E') {
 			for (int i = 0; i < EONS; i++) {
