@@ -8,13 +8,13 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -Wextra -pedantic -O2 -std=c18
 
 # Define sources
 set(SOURCES
-    rds95.c
-    waveforms.c
-    rds.c
-    control_pipe.c
-    modulator.c
-    lib.c
-    ascii_cmd.c
+	rds95.c
+	waveforms.c
+	rds.c
+	control_pipe.c
+	modulator.c
+	lib.c
+	ascii_cmd.c
 )
 
 # Define the executable

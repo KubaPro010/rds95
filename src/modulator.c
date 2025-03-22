@@ -3,58 +3,58 @@
 static float waveform[2][FILTER_SIZE];
 
 void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
-    char encoderPath[256];
-    snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsModulator", getenv("HOME"));
-    FILE *file;
-    
-    RDSModulatorParameters tempEncoder;
-    file = fopen(encoderPath, "rb");
-    if (file != NULL) {
-        fread(&tempEncoder, sizeof(RDSModulatorParameters), 1, file);
-        fclose(file);
-    } else {
-        memcpy(&tempEncoder, emp, sizeof(RDSModulatorParameters));
-    }
-    
-    if (strcmp(option, "LEVEL") == 0) {
-        tempEncoder.level = emp->level;
-    } else if (strcmp(option, "RDSGEN") == 0) {
+	char encoderPath[256];
+	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsModulator", getenv("HOME"));
+	FILE *file;
+	
+	RDSModulatorParameters tempEncoder;
+	file = fopen(encoderPath, "rb");
+	if (file != NULL) {
+		fread(&tempEncoder, sizeof(RDSModulatorParameters), 1, file);
+		fclose(file);
+	} else {
+		memcpy(&tempEncoder, emp, sizeof(RDSModulatorParameters));
+	}
+	
+	if (strcmp(option, "LEVEL") == 0) {
+		tempEncoder.level = emp->level;
+	} else if (strcmp(option, "RDSGEN") == 0) {
 		tempEncoder.rdsgen = emp->rdsgen;
 	} else if (strcmp(option, "ALL") == 0) {
-        tempEncoder.level = emp->level;
+		tempEncoder.level = emp->level;
 		tempEncoder.rdsgen = emp->rdsgen;
-    }
-    
+	}
+	
 	file = fopen(encoderPath, "wb");
-    if (file == NULL) {
-        perror("Error opening file");
-        return;
-    }
-    fwrite(&tempEncoder, sizeof(RDSModulatorParameters), 1, file);
-    fclose(file);
+	if (file == NULL) {
+		perror("Error opening file");
+		return;
+	}
+	fwrite(&tempEncoder, sizeof(RDSModulatorParameters), 1, file);
+	fclose(file);
 }
 
 void Modulator_loadFromFile(RDSModulatorParameters *emp) {
 	char encoderPath[256];
 	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsModulator", getenv("HOME"));
-    FILE *file = fopen(encoderPath, "rb");
-    if (file == NULL) {
-        perror("Error opening file");
-        return;
-    }
-    fread(emp, sizeof(RDSModulatorParameters), 1, file);
-    fclose(file);
+	FILE *file = fopen(encoderPath, "rb");
+	if (file == NULL) {
+		perror("Error opening file");
+		return;
+	}
+	fread(emp, sizeof(RDSModulatorParameters), 1, file);
+	fclose(file);
 }
 
 int modulatorsaved() {
 	char encoderPath[256];
 	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsModulator", getenv("HOME"));
-    FILE *file = fopen(encoderPath, "rb");
-    if (file) {
-        fclose(file);
-        return 1;
-    }
-    return 0;
+	FILE *file = fopen(encoderPath, "rb");
+	if (file) {
+		fclose(file);
+		return 1;
+	}
+	return 0;
 }
 
 void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {

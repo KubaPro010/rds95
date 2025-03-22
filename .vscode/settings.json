@@ -8,5 +8,8 @@
         "common.h": "c",
         "modulator.h": "c",
         "control_pipe.h": "c"
-    }
+    },
+    "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+        "clang-diagnostic-error"
+    ]
 }

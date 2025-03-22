@@ -77,10 +77,13 @@ typedef struct
 	RDSSchedulerItem items[49];
 } RDSScheduler;
 typedef struct {
+	uint16_t pi;
+
+	char ps[PS_LENGTH];
+	char rt1[RT_LENGTH];
+
 	uint8_t dsn;
 	uint8_t psn;
-
-	uint16_t pi;
 
 	uint8_t ecclic_enabled : 1;
 	uint16_t lic : 12;
@@ -92,7 +95,6 @@ typedef struct {
 	uint8_t ms : 1;
 	uint8_t di : 4;
 
-	char ps[PS_LENGTH];
 	char tps[PS_LENGTH];
 
 	uint8_t eqtext1 : 1;
@@ -102,8 +104,7 @@ typedef struct {
 	char dps2[DPS_LENGTH];
 	uint8_t dps1_mode : 2;
 	uint8_t dps2_mode : 2;
-	uint8_t dps1_numberofrepeats : 7;
-	uint8_t dps1_numberofrepeats_clear : 1;
+	uint8_t dps1_numberofrepeats : 8; // last bit will be clear
 	uint8_t dps2_numberofrepeats;
 	uint8_t dps_label_period;
 	uint8_t dps_restart : 1;
@@ -116,8 +117,8 @@ typedef struct {
 	uint8_t rt_type : 2;
 	uint8_t rt_text_timeout;
 	uint8_t rt_switching_period;
+	uint8_t orignal_rt_switching_period;
 	char default_rt[RT_LENGTH];
-	char rt1[RT_LENGTH];
 	char rt2[RT_LENGTH];
 
 	uint8_t ptyn_enabled : 1;
@@ -176,6 +177,8 @@ typedef struct {
 	uint8_t rt_update : 1;
 	uint8_t rt_ab : 1;
 	uint8_t rt_segments : 5;
+	uint8_t rt2_segments : 5;
+	uint8_t current_rt : 1;
 
 	char ptyn_text[RT_LENGTH];
 	uint8_t ptyn_state : 1;
@@ -195,10 +198,12 @@ typedef struct {
 
 	uint8_t last_minute : 6;
 	uint8_t ta_timeout : 7;
+	uint8_t original_ta_timeout : 7;
 
 	uint8_t eon_index : 3;
 	uint8_t eon_state : 4;
 } RDSState;
+
 typedef struct {
 	uint8_t group;
 	uint16_t aid;
@@ -208,15 +213,18 @@ typedef struct {
 	uint8_t current : 4;
 	uint8_t count : 4;
 } RDSODAState;
+
 typedef struct {
 	uint8_t group;
 	uint8_t enabled : 1;
 	uint8_t running : 1;
-	uint8_t toggle : 1;
 	uint8_t type[2];
 	uint8_t start[2];
 	uint8_t len[2];
 } RDSRTPlusData;
+typedef struct {
+	uint8_t toggle : 1;
+} RDSRTPlusState;
 
 typedef struct
 {
@@ -240,6 +248,7 @@ typedef struct {
 	RDSODA odas[PROGRAMS][MAX_ODAS];
 	RDSODAState oda_state[PROGRAMS];
 	RDSRTPlusData rtpData[PROGRAMS];
+	RDSRTPlusState rtpState[PROGRAMS];
 	uint8_t program : 3;
 } RDSEncoder;
 typedef struct {

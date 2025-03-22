@@ -5,86 +5,89 @@
 #include <time.h>
 
 void saveToFile(RDSEncoder *emp, const char *option) {
-    char encoderPath[256];
-    snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
-    FILE *file;
+	char encoderPath[256];
+	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
+	FILE *file;
 
-    RDSEncoder tempEncoder;
-    file = fopen(encoderPath, "rb");
-    if (file != NULL) {
-        fread(&tempEncoder, sizeof(RDSEncoder), 1, file);
-        fclose(file);
-    } else {
-        memcpy(&tempEncoder, emp, sizeof(RDSEncoder));
-    }
+	RDSEncoder tempEncoder;
+	file = fopen(encoderPath, "rb");
+	if (file != NULL) {
+		fread(&tempEncoder, sizeof(RDSEncoder), 1, file);
+		fclose(file);
+	} else {
+		memcpy(&tempEncoder, emp, sizeof(RDSEncoder));
+	}
 
-    if (strcmp(option, "MS") == 0) {
-        tempEncoder.data[emp->program].ms = emp->data[emp->program].ms;
-    } else if (strcmp(option, "PS") == 0) {
-        memcpy(tempEncoder.data[emp->program].ps, emp->data[emp->program].ps, PS_LENGTH);
-    } else if (strcmp(option, "PI") == 0) {
-        tempEncoder.data[emp->program].pi = emp->data[emp->program].pi;
-    } else if (strcmp(option, "PTY") == 0) {
-        tempEncoder.data[emp->program].pty = emp->data[emp->program].pty;
-    } else if (strcmp(option, "TP") == 0) {
-        tempEncoder.data[emp->program].tp = emp->data[emp->program].tp;
-    } else if (strcmp(option, "TA") == 0) {
-        tempEncoder.data[emp->program].ta = emp->data[emp->program].ta;
-    } else if (strcmp(option, "DI") == 0) {
-        tempEncoder.data[emp->program].di = emp->data[emp->program].di;
-    } else if (strcmp(option, "CT") == 0) {
-        tempEncoder.data[emp->program].ct = emp->data[emp->program].ct;
-    } else if (strcmp(option, "RT1") == 0 || strcmp(option, "TEXT") == 0) {
-        memcpy(tempEncoder.data[emp->program].rt1, emp->data[emp->program].rt1, RT_LENGTH);
-        tempEncoder.data[emp->program].rt1_enabled = emp->data[emp->program].rt1_enabled;
-    } else if (strcmp(option, "PTYN") == 0) {
-        memcpy(tempEncoder.data[emp->program].ptyn, emp->data[emp->program].ptyn, PTYN_LENGTH);
-        tempEncoder.data[emp->program].ptyn_enabled = emp->data[emp->program].ptyn_enabled;
-    } else if (strcmp(option, "AF") == 0 || strcmp(option, "AFCH") == 0) {
-        memcpy(&(tempEncoder.data[emp->program].af), &(emp->data[emp->program].af), sizeof(emp->data[emp->program].af));
-    } else if (strcmp(option, "ECC") == 0) {
-        tempEncoder.data[emp->program].ecc = emp->data[emp->program].ecc;
-    } else if (strcmp(option, "LIC") == 0) {
-        tempEncoder.data[emp->program].lic = emp->data[emp->program].lic;
-    } else if (strcmp(option, "ECCEN") == 0) {
-        tempEncoder.data[emp->program].ecclic_enabled = emp->data[emp->program].ecclic_enabled;
-    } else if (strcmp(option, "TPS") == 0) {
-        memcpy(tempEncoder.data[emp->program].tps, emp->data[emp->program].tps, PS_LENGTH);
+	if (strcmp(option, "MS") == 0) {
+		tempEncoder.data[emp->program].ms = emp->data[emp->program].ms;
+	} else if (strcmp(option, "PS") == 0) {
+		memcpy(tempEncoder.data[emp->program].ps, emp->data[emp->program].ps, PS_LENGTH);
+	} else if (strcmp(option, "PI") == 0) {
+		tempEncoder.data[emp->program].pi = emp->data[emp->program].pi;
+	} else if (strcmp(option, "PTY") == 0) {
+		tempEncoder.data[emp->program].pty = emp->data[emp->program].pty;
+	} else if (strcmp(option, "TP") == 0) {
+		tempEncoder.data[emp->program].tp = emp->data[emp->program].tp;
+	} else if (strcmp(option, "TA") == 0) {
+		tempEncoder.data[emp->program].ta = emp->data[emp->program].ta;
+	} else if (strcmp(option, "DI") == 0) {
+		tempEncoder.data[emp->program].di = emp->data[emp->program].di;
+	} else if (strcmp(option, "CT") == 0) {
+		tempEncoder.data[emp->program].ct = emp->data[emp->program].ct;
+	} else if (strcmp(option, "RT1") == 0 || strcmp(option, "TEXT") == 0) {
+		memcpy(tempEncoder.data[emp->program].rt1, emp->data[emp->program].rt1, RT_LENGTH);
+		tempEncoder.data[emp->program].rt1_enabled = emp->data[emp->program].rt1_enabled;
+		memcpy(tempEncoder.data[emp->program].default_rt, emp->data[emp->program].default_rt, RT_LENGTH);
+	} else if (strcmp(option, "RT2") == 0) {
+		memcpy(tempEncoder.data[emp->program].rt2, emp->data[emp->program].rt2, RT_LENGTH);
+		tempEncoder.data[emp->program].rt2_enabled = emp->data[emp->program].rt2_enabled;
+	} else if (strcmp(option, "PTYN") == 0) {
+		memcpy(tempEncoder.data[emp->program].ptyn, emp->data[emp->program].ptyn, PTYN_LENGTH);
+		tempEncoder.data[emp->program].ptyn_enabled = emp->data[emp->program].ptyn_enabled;
+	} else if (strcmp(option, "AF") == 0 || strcmp(option, "AFCH") == 0) {
+		memcpy(&(tempEncoder.data[emp->program].af), &(emp->data[emp->program].af), sizeof(emp->data[emp->program].af));
+	} else if (strcmp(option, "ECC") == 0) {
+		tempEncoder.data[emp->program].ecc = emp->data[emp->program].ecc;
+	} else if (strcmp(option, "LIC") == 0) {
+		tempEncoder.data[emp->program].lic = emp->data[emp->program].lic;
+	} else if (strcmp(option, "ECCEN") == 0) {
+		tempEncoder.data[emp->program].ecclic_enabled = emp->data[emp->program].ecclic_enabled;
+	} else if (strcmp(option, "TPS") == 0) {
+		memcpy(tempEncoder.data[emp->program].tps, emp->data[emp->program].tps, PS_LENGTH);
 	} else if (strcmp(option, "DPS1") == 0) {
-        memcpy(tempEncoder.data[emp->program].dps1, emp->data[emp->program].dps1, DPS_LENGTH);
-        tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
-        tempEncoder.data[emp->program].dps1_numberofrepeats = emp->data[emp->program].dps1_numberofrepeats;
-        tempEncoder.data[emp->program].dps1_numberofrepeats_clear = emp->data[emp->program].dps1_numberofrepeats_clear;
-    } else if (strcmp(option, "DPS1EN") == 0) {
-        tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
-    } else if (strcmp(option, "DPS1MOD") == 0) {
-        tempEncoder.data[emp->program].dps1_mode = emp->data[emp->program].dps1_mode;
-    } else if (strcmp(option, "LABPER") == 0) {
-        tempEncoder.data[emp->program].dps_label_period = emp->data[emp->program].dps_label_period;
-    } else if (strcmp(option, "SPSPER") == 0) {
-        tempEncoder.data[emp->program].static_ps_period = emp->data[emp->program].static_ps_period;
-    } else if (strcmp(option, "LPS") == 0) {
-        memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
-    } else if (strcmp(option, "SHORTRT") == 0) {
-        tempEncoder.data[emp->program].shortrt = emp->data[emp->program].shortrt;
-    } else if (strcmp(option, "PIN") == 0 || strcmp(option, "PINEN") == 0) {
-        memcpy(tempEncoder.data[emp->program].pin, emp->data[emp->program].pin, sizeof(emp->data[emp->program].pin));
-    } else if (strcmp(option, "GRPSEQ") == 0) {
-        memcpy(tempEncoder.data[emp->program].grp_sqc, emp->data[emp->program].grp_sqc, sizeof(emp->data[emp->program].grp_sqc));
-    } else if (strcmp(option, "RTP") == 0) {
+		memcpy(tempEncoder.data[emp->program].dps1, emp->data[emp->program].dps1, DPS_LENGTH);
+		tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
+		tempEncoder.data[emp->program].dps1_numberofrepeats = emp->data[emp->program].dps1_numberofrepeats;
+		tempEncoder.data[emp->program].dps1_numberofrepeats_clear = emp->data[emp->program].dps1_numberofrepeats_clear;
+	} else if (strcmp(option, "DPS1EN") == 0) {
+		tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
+	} else if (strcmp(option, "DPS1MOD") == 0) {
+		tempEncoder.data[emp->program].dps1_mode = emp->data[emp->program].dps1_mode;
+	} else if (strcmp(option, "LABPER") == 0) {
+		tempEncoder.data[emp->program].dps_label_period = emp->data[emp->program].dps_label_period;
+	} else if (strcmp(option, "SPSPER") == 0) {
+		tempEncoder.data[emp->program].static_ps_period = emp->data[emp->program].static_ps_period;
+	} else if (strcmp(option, "LPS") == 0) {
+		memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
+	} else if (strcmp(option, "SHORTRT") == 0) {
+		tempEncoder.data[emp->program].shortrt = emp->data[emp->program].shortrt;
+	} else if (strcmp(option, "PIN") == 0 || strcmp(option, "PINEN") == 0) {
+		memcpy(tempEncoder.data[emp->program].pin, emp->data[emp->program].pin, sizeof(emp->data[emp->program].pin));
+	} else if (strcmp(option, "GRPSEQ") == 0) {
+		memcpy(tempEncoder.data[emp->program].grp_sqc, emp->data[emp->program].grp_sqc, sizeof(emp->data[emp->program].grp_sqc));
+	} else if (strcmp(option, "RTP") == 0) {
 		tempEncoder.rtpData[emp->program].group = emp->rtpData[emp->program].group;
-        memcpy(tempEncoder.rtpData[emp->program].len, emp->rtpData[emp->program].len, sizeof(emp->rtpData[emp->program].len));
-        memcpy(tempEncoder.rtpData[emp->program].start, emp->rtpData[emp->program].start, sizeof(emp->rtpData[emp->program].start));
-        memcpy(tempEncoder.rtpData[emp->program].type, emp->rtpData[emp->program].type, sizeof(emp->rtpData[emp->program].type));
+		memcpy(tempEncoder.rtpData[emp->program].len, emp->rtpData[emp->program].len, sizeof(emp->rtpData[emp->program].len));
+		memcpy(tempEncoder.rtpData[emp->program].start, emp->rtpData[emp->program].start, sizeof(emp->rtpData[emp->program].start));
+		memcpy(tempEncoder.rtpData[emp->program].type, emp->rtpData[emp->program].type, sizeof(emp->rtpData[emp->program].type));
 		memcpy(&(tempEncoder.odas[emp->program]), &(emp->odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
 		memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState));
-		tempEncoder.rtpData[emp->program].toggle = emp->rtpData[emp->program].toggle;
-    } else if (strcmp(option, "UDG1") == 0) {
-        memcpy(tempEncoder.data[emp->program].udg1, emp->data[emp->program].udg1, sizeof(emp->data[emp->program].udg1));
-        tempEncoder.data[emp->program].udg1_len = emp->data[emp->program].udg1_len;
-    } else if (strcmp(option, "UDG2") == 0) {
-        memcpy(tempEncoder.data[emp->program].udg2, emp->data[emp->program].udg2, sizeof(emp->data[emp->program].udg2));
-        tempEncoder.data[emp->program].udg2_len = emp->data[emp->program].udg2_len;
+	} else if (strcmp(option, "UDG1") == 0) {
+		memcpy(tempEncoder.data[emp->program].udg1, emp->data[emp->program].udg1, sizeof(emp->data[emp->program].udg1));
+		tempEncoder.data[emp->program].udg1_len = emp->data[emp->program].udg1_len;
+	} else if (strcmp(option, "UDG2") == 0) {
+		memcpy(tempEncoder.data[emp->program].udg2, emp->data[emp->program].udg2, sizeof(emp->data[emp->program].udg2));
+		tempEncoder.data[emp->program].udg2_len = emp->data[emp->program].udg2_len;
 	} else if(strcmp(option, "RTPRUN") == 0) {
 		tempEncoder.rtpData[emp->program].running = emp->rtpData[emp->program].running;
 		tempEncoder.rtpData[emp->program].enabled = emp->rtpData[emp->program].enabled;
@@ -99,17 +102,17 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	} else if(strcmp(option, "PINEN") == 0) {
 		tempEncoder.data[emp->program].pin[0] = emp->data[emp->program].pin[0];
 	} else if(strcmp(option, "PROGRAM") == 0) {
-        tempEncoder.program = emp->program;
+		tempEncoder.program = emp->program;
 	} else if(strcmp(option, "EON") == 0) {
-        memcpy(&(tempEncoder.data[emp->program].eon), &(emp->data[emp->program].eon), sizeof(RDSEON)*EONS);
+		memcpy(&(tempEncoder.data[emp->program].eon), &(emp->data[emp->program].eon), sizeof(RDSEON)*EONS);
 	} else if (strcmp(option, "ALL") == 0) {
-        memcpy(&(tempEncoder.data[emp->program]), &(emp->data[emp->program]), sizeof(RDSData));
-        memcpy(&(tempEncoder.rtpData[emp->program]), &(emp->rtpData[emp->program]), sizeof(RDSRTPlusData));
+		memcpy(&(tempEncoder.data[emp->program]), &(emp->data[emp->program]), sizeof(RDSData));
+		memcpy(&(tempEncoder.rtpData[emp->program]), &(emp->rtpData[emp->program]), sizeof(RDSRTPlusData));
 		memcpy(&(tempEncoder.odas[emp->program]), &(emp->odas[emp->program]), sizeof(RDSODA)*MAX_ODAS);
 		memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState));
 		memcpy(&(tempEncoder.encoder_data[emp->program]), &(emp->encoder_data[emp->program]), sizeof(RDSODAState));
 		tempEncoder.program = emp->program;
-    }
+	}
 
 	RDSEncoderFile rdsEncoderfile;
 	rdsEncoderfile.file_starter = 225;
@@ -123,12 +126,12 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	rdsEncoderfile.program = tempEncoder.program;
 
 	file = fopen(encoderPath, "wb");
-    if (file == NULL) {
-        perror("Error opening file");
-        return;
-    }
-    fwrite(&rdsEncoderfile, sizeof(RDSEncoderFile), 1, file);
-    fclose(file);
+	if (file == NULL) {
+		perror("Error opening file");
+		return;
+	}
+	fwrite(&rdsEncoderfile, sizeof(RDSEncoderFile), 1, file);
+	fclose(file);
 }
 
 void loadFromFile(RDSEncoder *enc) {
@@ -136,13 +139,13 @@ void loadFromFile(RDSEncoder *enc) {
 
 	char encoderPath[256];
 	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
-    FILE *file = fopen(encoderPath, "rb");
-    if (file == NULL) {
-        perror("Error opening file");
-        return;
-    }
-    fread(&rdsEncoderfile, sizeof(RDSEncoderFile), 1, file);
-    fclose(file);
+	FILE *file = fopen(encoderPath, "rb");
+	if (file == NULL) {
+		perror("Error opening file");
+		return;
+	}
+	fread(&rdsEncoderfile, sizeof(RDSEncoderFile), 1, file);
+	fclose(file);
 
 	if (rdsEncoderfile.file_starter != 225 || rdsEncoderfile.file_ender != 95 || rdsEncoderfile.file_middle != 160) {
 		fprintf(stderr, "Invalid file format\n");
@@ -162,12 +165,12 @@ void loadFromFile(RDSEncoder *enc) {
 int rdssaved() {
 	char encoderPath[256];
 	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
-    FILE *file = fopen(encoderPath, "rb");
-    if (file) {
-        fclose(file);
-        return 1;
-    }
-    return 0;
+	FILE *file = fopen(encoderPath, "rb");
+	if (file) {
+		fclose(file);
+		return 1;
+	}
+	return 0;
 }
 
 static void register_oda(RDSEncoder* enc, uint8_t group, uint16_t aid, uint16_t scb) {
@@ -313,8 +316,22 @@ static void get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
 		enc->state[enc->program].rt_state = 0;
 	}
 
+	uint8_t ab = enc->state[enc->program].rt_ab;
+	switch (enc->data[enc->program].rt_type)
+	{
+	case 0:
+		ab = 0;
+		break;
+	case 1:
+		ab = (enc->state[enc->program].current_rt == 0) ? 1 : 0;
+		break;
+	case 2:
+	default:
+		break;
+	}
+
 	blocks[1] |= 2 << 12;
-	blocks[1] |= enc->state[enc->program].rt_ab << 4;
+	blocks[1] |= ab << 4;
 	blocks[1] |= enc->state[enc->program].rt_state;
 	blocks[2] =  enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4    ] << 8;
 	blocks[2] |= enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4 + 1];
@@ -322,7 +339,8 @@ static void get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[3] |= enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4 + 3];
 
 	enc->state[enc->program].rt_state++;
-	if (enc->state[enc->program].rt_state >= enc->state[enc->program].rt_segments) enc->state[enc->program].rt_state = 0;
+	uint8_t segments = (enc->state[enc->program].current_rt == 1) ? enc->data[enc->program].rt2_segments : enc->data[enc->program].rt_segments;
+	if (enc->state[enc->program].rt_state >= segments) enc->state[enc->program].rt_state = 0;
 }
 
 static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks) {
@@ -425,7 +443,7 @@ static void get_rds_lic_group(RDSEncoder* enc, uint16_t *blocks) {
 static void get_rds_rtplus_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[1] |= GET_GROUP_TYPE(enc->rtpData[enc->program].group) << 12;
 	blocks[1] |= GET_GROUP_VER(enc->rtpData[enc->program].group) << 11;
-	blocks[1] |= enc->rtpData[enc->program].toggle << 4 | enc->rtpData[enc->program].running << 3;
+	blocks[1] |= enc->rtpState[enc->program].toggle << 4 | enc->rtpData[enc->program].running << 3;
 	blocks[1] |= (enc->rtpData[enc->program].type[0] & 0xf8) >> 3;
 
 	blocks[2] =  (enc->rtpData[enc->program].type[0] & 0x07) << 13;
@@ -480,7 +498,7 @@ get_eon:
 
 	if(enc->state[enc->program].eon_state == 5) {
 		enc->state[enc->program].eon_index++;
-		
+
 		uint8_t i = 0;
 		while(i < EONS && !enc->data[enc->program].eon[enc->state[enc->program].eon_index].enabled) {
 			enc->state[enc->program].eon_index++;
@@ -489,7 +507,7 @@ get_eon:
 			}
 			i++;
 		}
-		
+
 		enc->state[enc->program].eon_state = 0;
 		goto get_eon;
 	} else {
@@ -532,7 +550,24 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 		}
 		if(enc->data[enc->program].tp && enc->data[enc->program].ta && enc->state[enc->program].ta_timeout && !eon_has_ta) {
 			enc->state[enc->program].ta_timeout--;
-			if(enc->state[enc->program].ta_timeout == 0) enc->data[enc->program].ta = 0;
+			if(enc->state[enc->program].ta_timeout == 0) {
+				enc->data[enc->program].ta = 0;
+				enc->state[enc->program].ta_timeout = enc->state[enc->program].original_ta_timeout;
+			};
+		}
+
+		if(enc->data[enc->program].rt1_enabled && enc->data[enc->program].rt2_enabled && enc->data[enc->program].rt_switching_period != 0) {
+			enc->data[enc->program].rt_switching_period--;
+			if(enc->data[enc->program].rt_switching_period == 0) {
+				enc->state[enc->program].current_rt ^= 1;
+				if (enc->state[enc->program].current_rt == 1) {
+					memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt2, RT_LENGTH);
+				} else {
+					memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
+				}
+				enc->state[enc->program].rt_state = 0;
+				enc->data[enc->program].rt_switching_period = enc->data[enc->program].original_rt_switching_period;
+			}
 		}
 
 		if(enc->data[enc->program].ct) {
@@ -691,10 +726,12 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	RDSEncoder tempCoder;
 	tempCoder.program = program;
 	memset(&(tempCoder.state[program]), 0, sizeof(RDSState));
+	memset(&(tempCoder.rtpState[program]), 0, sizeof(RDSRTPlusState));
 
 	tempCoder.state[program].rt_ab = 1;
 	tempCoder.state[program].ptyn_ab = 1;
 	set_rds_rt1(&tempCoder, enc->data[program].rt1);
+	set_rds_rt1(&tempCoder, enc->data[program].rt2);
 	set_rds_ps(&tempCoder, enc->data[program].ps);
 	set_rds_dps1(&tempCoder, enc->data[program].dps1);
 	set_rds_tps(&tempCoder, enc->data[program].tps);
@@ -706,13 +743,16 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	time_t now;
 	time(&now);
 	utc = gmtime(&now);
-	enc->state[program].last_minute = utc->tm_min;
+	tempCoder.state[program].last_minute = utc->tm_min;
+
+	tempCoder.rtpState[program].toggle = 0;
 
 	for(int i = 0; i < EONS; i++) {
 		tempCoder.data[program].eon[i].ta = 0;
 	}
 
 	memcpy(&(enc->state[program]), &(tempCoder.state[program]), sizeof(RDSState));
+	memcpy(&(enc->rtpState[program]), &(tempCoder.rtpState[program]), sizeof(RDSRTPlusState));
 }
 
 void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
@@ -740,6 +780,8 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	enc->data[program].static_ps_period = 10;
 	enc->data[program].dps_label_period = 8;
 	enc->data[program].dps1_numberofrepeats = 1;
+
+	enc->data[program].rt_type = 2;
 
 	reset_rds_state(enc, program);
 
@@ -787,6 +829,26 @@ void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 	}
 }
 
+void set_rds_rt2(RDSEncoder* enc, char *rt2) {
+	uint8_t i = 0, len = 0;
+
+	memset(enc->data[enc->program].rt2, ' ', RT_LENGTH);
+	while (*rt2 != 0 && len < RT_LENGTH) enc->data[enc->program].rt2[len++] = *rt2++;
+
+	if (len < RT_LENGTH && enc->data[enc->program].shortrt) {
+		enc->state[enc->program].rt2_segments = 0;
+
+		enc->data[enc->program].rt2[len++] = '\r';
+
+		while (i < len) {
+			i += 4;
+			enc->state[enc->program].rt2_segments++;
+		}
+	} else {
+		enc->state[enc->program].rt2_segments = 16;
+	}
+}
+
 void set_rds_ps(RDSEncoder* enc, char *ps) {
 	uint8_t len = 0;
 
@@ -795,26 +857,26 @@ void set_rds_ps(RDSEncoder* enc, char *ps) {
 	while (*ps != 0 && len < PS_LENGTH) enc->data[enc->program].ps[len++] = *ps++;
 }
 void set_rds_dps1(RDSEncoder* enc, char *dps1) {
-    uint8_t len = 0;
+	uint8_t len = 0;
 
-    enc->state[enc->program].dps1_update = 1;
-    memset(enc->data[enc->program].dps1, ' ', DPS_LENGTH);
-    while (*dps1 != 0 && len < DPS_LENGTH) enc->data[enc->program].dps1[len++] = *dps1++;
-    enc->state[enc->program].dps1_len = len;
+	enc->state[enc->program].dps1_update = 1;
+	memset(enc->data[enc->program].dps1, ' ', DPS_LENGTH);
+	while (*dps1 != 0 && len < DPS_LENGTH) enc->data[enc->program].dps1[len++] = *dps1++;
+	enc->state[enc->program].dps1_len = len;
 
-    enc->state[enc->program].dynamic_ps_position = 0;
-    enc->state[enc->program].dynamic_ps_period = 0;
-    enc->state[enc->program].static_ps_period = 0;
+	enc->state[enc->program].dynamic_ps_position = 0;
+	enc->state[enc->program].dynamic_ps_period = 0;
+	enc->state[enc->program].static_ps_period = 0;
 	enc->state[enc->program].dynamic_ps_scroll_counter = 0;
 }
 
 void set_rds_next_dps1(RDSEncoder* enc, char *dps1) {
-    uint8_t len = 0;
+	uint8_t len = 0;
 
-    enc->state[enc->program].dps1_nexttext_update = 1;
-    memset(enc->state[enc->program].dps1_nexttext, ' ', 127);
-    while (*dps1 != 0 && len < 127) enc->state[enc->program].dps1_nexttext[len++] = *dps1++;
-    enc->state[enc->program].dps1_nexttext_len = len;
+	enc->state[enc->program].dps1_nexttext_update = 1;
+	memset(enc->state[enc->program].dps1_nexttext, ' ', 127);
+	while (*dps1 != 0 && len < 127) enc->state[enc->program].dps1_nexttext[len++] = *dps1++;
+	enc->state[enc->program].dps1_nexttext_len = len;
 }
 
 void set_rds_tps(RDSEncoder* enc, char *tps) {
@@ -868,7 +930,7 @@ void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags) {
 	enc->rtpData[enc->program].start[1]	= tags[4] & 0x3f;
 	enc->rtpData[enc->program].len[1]	= tags[5] & 0x1f;
 
-	enc->rtpData[enc->program].toggle ^= 1;
+	enc->rtpState[enc->program].toggle ^= 1;
 	enc->rtpData[enc->program].running = 1;
 	enc->rtpData[enc->program].enabled = 1;
 }
