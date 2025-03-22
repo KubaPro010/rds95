@@ -466,9 +466,7 @@ get_eon:
 		break;
 	case 5: // 14
 		if(eon.pin[0] == 0) {
-			enc->state[enc->program].eon_state = 0;
-			enc->state[enc->program].eon_index++;
-			goto get_eon;
+			break;
 		}
 		blocks[2] = eon.pin[1] << 11;
 		blocks[2] |= eon.pin[2] << 6;
