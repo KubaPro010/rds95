@@ -100,7 +100,6 @@ int main(int argc, char **argv) {
 
 	buffer.prebuf = 0;
 	buffer.tlength = 12228;
-	buffer.minreq = 12228;
 	buffer.maxlength = 12228;
 
 	rds1_device = pa_simple_new(
