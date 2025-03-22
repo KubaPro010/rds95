@@ -549,7 +549,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 	char grp;
 
 	while(good_group == 0) {
-		uint8_t grp_sqc_idx = enc->state[enc->program].grp_seq_idx[0]++;
+		uint8_t grp_sqc_idx = enc->state[enc->program].grp_seq_idx[0];
 		if(enc->data[enc->program].grp_sqc[grp_sqc_idx] == '\0') {
 			enc->state[enc->program].grp_seq_idx[0] = 0;
 			grp_sqc_idx = 0;
@@ -580,6 +580,8 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 			cant_find_group = 0;
 			break;
 		}
+
+		enc->state[enc->program].grp_seq_idx[0]++;
 	}
 	if(!good_group) grp = '0';
 
@@ -588,7 +590,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 	{
 		default:
 		case '0':
-			if(enc->state[enc->program].grp_seq_idx[1] < 4) (void)0;
+			if(enc->state[enc->program].grp_seq_idx[1] < 4) enc->state[enc->program].grp_seq_idx[0]--;
 			else {
 				enc->state[enc->program].grp_seq_idx[1] = 0;
 
