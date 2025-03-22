@@ -588,7 +588,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 	{
 		default:
 		case '0':
-			if(enc->state[enc->program].grp_seq_idx[1] < 4) enc->state[enc->program].grp_seq_idx[0]--;
+			if(enc->state[enc->program].grp_seq_idx[1] < 4) enc->state[enc->program].grp_seq_idx[0];
 			else {
 				enc->state[enc->program].grp_seq_idx[1] = 0;
 
