@@ -222,7 +222,7 @@ static void handle_af(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_g(char *arg, RDSModulator* mod, char* output) {
-	uint16_t blocks[3];
+	uint16_t blocks[4];
 	int count = sscanf((char *)arg, "%4hx%4hx%4hx%4hx", &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 	if (count == 3) {
 		mod->enc->state[mod->enc->program].custom_group[0] = 1;
