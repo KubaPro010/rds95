@@ -189,6 +189,7 @@ typedef struct {
 	uint8_t lps_segments : 5;
 
 	uint16_t custom_group[GROUP_LENGTH];
+	uint16_t custom_group2[GROUP_LENGTH + 1];
 
 	uint8_t rtp_oda : 1;
 	uint8_t grp_seq_idx[3];

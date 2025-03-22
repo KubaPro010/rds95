@@ -223,12 +223,19 @@ static void handle_af(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_g(char *arg, RDSModulator* mod, char* output) {
 	uint16_t blocks[3];
-	int count = sscanf((char *)arg, "%4hx%4hx%4hx", &blocks[0], &blocks[1], &blocks[2]);
+	int count = sscanf((char *)arg, "%4hx%4hx%4hx%4hx", &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 	if (count == 3) {
 		mod->enc->state[mod->enc->program].custom_group[0] = 1;
 		mod->enc->state[mod->enc->program].custom_group[1] = blocks[0];
 		mod->enc->state[mod->enc->program].custom_group[2] = blocks[1];
 		mod->enc->state[mod->enc->program].custom_group[3] = blocks[2];
+		strcpy(output, "+\0");
+	} else if(count == 4) {
+		mod->enc->state[mod->enc->program].custom_group2[0] = 1;
+		mod->enc->state[mod->enc->program].custom_group2[1] = blocks[0];
+		mod->enc->state[mod->enc->program].custom_group2[2] = blocks[1];
+		mod->enc->state[mod->enc->program].custom_group2[3] = blocks[2];
+		mod->enc->state[mod->enc->program].custom_group2[4] = blocks[3];
 		strcpy(output, "+\0");
 	} else {
 		strcpy(output, "-\0");
