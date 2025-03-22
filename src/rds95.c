@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 	float rds_buffer[NUM_MPX_FRAMES*2];
 
 	while(!stop_rds) {
-		for (uint16_t i = 0; i < NUM_MPX_FRAMES*2; i++) {
+		for (uint16_t i = 0; i < NUM_MPX_FRAMES*2; i += 2) {
 			rds_buffer[i] = get_rds_sample(&rdsModulator, 0);
 			rds_buffer[i+1] = get_rds_sample(&rdsModulator, 1);
 		}
