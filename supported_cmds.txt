@@ -35,7 +35,7 @@ TPS
 INIT
 ALL
 - HELP
-- EON*
+EON*
 - MSG*
 - DPS2MSG
 - RT2MSG
@@ -57,10 +57,10 @@ RDSGEN
 (SPEED)
 - STATUS, ??
 (TIME)
-- VER
+VER
 - ADR *ADR
 - CC
-- DSN*
+DSN*
 ECCEN
 G
 GRPSEQ
@@ -69,7 +69,7 @@ LIC
 PIN
 PINEN
 PROGRAM
-- PSN*
+PSN*
 (PSW)
 RTP
 RTPRUN
@@ -79,90 +79,3 @@ SHORTRT
 UDG1
 UDG2
 - UECP
-
-Magic RDS 4 Pages for PIRA32:
-- Device Setup:
-    - Communication:
-        - Port Speed (will not be added)
-        - UECP (TODO:):
-            - General Enable
-            - Address List
-            - Site List
-    - Analog Control:
-        - RDS Output
-        - Subcarrier:
-            - Refrence (will not be added)
-            - Phase (will not be added)
-    - Date and Time (will not be added)
-    - Special:
-        - Reset (will not be added)
-        - Store ALL
-        - Initialize
-        - No Header off (TODO: find out what this means)
-    - Text messages: TODO:
-    - Internal Scheduler TODO:
-- RDS Content:
-    - Program:
-        - PS
-        - PI
-        - TP
-        - MS
-        - PTY
-        - PTYN
-    - Radiotext:
-        - RT1:
-            - Text
-            - Default RT (save to memory)
-            - Default RT Timeout (TODO: DTTMOUT)
-        - RT2 (TODO:):
-            - Text
-            - Source (TODO: RT2MSG)
-        - Setup:
-            - RT1 Enabled
-            - RT2 Enabled (TODO:)
-            - Radiotext Type Bit (TODO: RTTYPE)
-        - Dynamic PS:
-            - DPS1 Text
-            - DPS1 Setup:
-                - DPS1 Enabled (Default: 0)
-                - DPS1 Mode (Default: 1) (TODO: 2 and 3)
-                - DPS1 Number of repeats (Default: 0, options: CLEAR) (TODO:)
-            - DPS2 (TODO:):
-                - DPS2 Text
-                - DPS2 Source (Default: 0, manual)
-            - DPS Setup (TODO:):
-                - DPS2 Enabled (Default: 0)
-                - DPS2 Mode (Default: 2)
-                - DPS2 Number of repeats (Default: 0)
-            - Common settings:
-                - Static PS period (Default: 16)
-                - DPS String Period (LABPER, Default: 0)
-                - Scrolling Speed (modes 0-3 Default: low)
-                - Restart DPS on change (options: Only if it's running, Always | first is Default) (TODO:)
-    - Alternative Frequency:
-        - AF Method (TODO: AF=A, AF=B)
-        ; A:
-            (list of freqs from 87,6 to 107,9)
-            Sets mode via `AF=A` and sets the af via AFCH
-        ; B:
-            entry for tuned freq
-            same programme AF
-            regional variant AF
-            Sets the AF to A then sets AFCH to tf and pairs, sends these? `*AF=1` `AFCH=` `*AF=2` `AF=B` (no clue)
-    - EON (TODO:):
-        - Other Network X:
-            - Enabled
-            - PI
-            - PS
-            - TP
-            - PTY
-            - AF Freqs (Mode A only)
-    - System:
-        - Group sequence
-        - Misc:
-            - DI
-            - ECC, LIC
-            - CT
-            - RT1=DPS1 (TODO: EQTEXT1)
-            - TPS
-            - TA Timeout (will not be added), TA external control (will not be added)

@@ -459,6 +459,89 @@ static void handle_eontp(char *arg, char *pattern, RDSModulator* mod, char* outp
     strcpy(output, "+\0");
 }
 
+static void handle_psn(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    mod->enc->data[atoi(pattern)-1].psn = atoi(arg);
+    strcpy(output, "+\0");
+}
+
+static void handle_dsn(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    mod->enc->data[atoi(pattern)-1].dsn = atoi(arg);
+    strcpy(output, "+\0");
+}
+
+static void handle_eonaf(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    if (arg[0] == '\0') {
+        memset(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), 0, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
+        strcpy(output, "+\0");
+        return;
+    }
+
+    memset(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), 0, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
+    uint8_t arg_count;
+    RDSAFs new_af;
+    float af[MAX_AFS], *af_iter;
+
+    arg_count = sscanf((char *)arg,
+        "%f,%f,%f,%f,%f,"
+        "%f,%f,%f,%f,%f,"
+        "%f,%f,%f,%f,%f,"
+        "%f,%f,%f,%f,%f,"
+        "%f,%f,%f,%f,%f",
+        &af[0],  &af[1],  &af[2],  &af[3],  &af[4],
+        &af[5],  &af[6],  &af[7],  &af[8],  &af[9],
+        &af[10], &af[11], &af[12], &af[13], &af[14],
+        &af[15], &af[16], &af[17], &af[18], &af[19],
+        &af[20], &af[21], &af[22], &af[23], &af[24]);
+
+    af_iter = af;
+    memset(&new_af, 0, sizeof(RDSAFs));
+
+    while (arg_count-- != 0) {
+        add_rds_af(&new_af, *af_iter++);
+    }
+
+    memcpy(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), &new_af, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
+    strcpy(output, "+\0");
+}
+
+static void handle_eonafch(char *arg, char *pattern, RDSModulator* mod, char* output) {
+    if (arg[0] == '\0') {
+        memset(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), 0, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
+        strcpy(output, "+\0");
+        return;
+    }
+
+    memset(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), 0, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
+    uint8_t arg_count;
+    RDSAFs new_af;
+    uint8_t af[MAX_AFS], *af_iter;
+
+    arg_count = sscanf((char *)arg,
+        "%hhx,%hhx,%hhx,%hhx,%hhx,"
+        "%hhx,%hhx,%hhx,%hhx,%hhx,"
+        "%hhx,%hhx,%hhx,%hhx,%hhx,"
+        "%hhx,%hhx,%hhx,%hhx,%hhx,"
+        "%hhx,%hhx,%hhx,%hhx,%hhx",
+        &af[0],  &af[1],  &af[2],  &af[3],  &af[4],
+        &af[5],  &af[6],  &af[7],  &af[8],  &af[9],
+        &af[10], &af[11], &af[12], &af[13], &af[14],
+        &af[15], &af[16], &af[17], &af[18], &af[19],
+        &af[20], &af[21], &af[22], &af[23], &af[24]);
+
+    af_iter = af;
+    memset(&new_af, 0, sizeof(RDSAFs));
+
+    while (arg_count-- != 0) {
+        uint8_t current_value = *af_iter;
+        float frequency = (875.0 + current_value) / 10.0;
+        add_rds_af(&new_af, frequency);
+        af_iter++;
+    }
+
+    memcpy(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), &new_af, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
+    strcpy(output, "+\0");
+}
+
 static const command_handler_t commands_eq3[] = {
     {"MS", handle_ms, 2},
     {"PS", handle_ps, 2},
@@ -538,6 +621,10 @@ static const pattern_command_handler_t pattern_commands[] = {
     {"EON", "PTY", handle_eonpty},
     {"EON", "TA", handle_eonta},
     {"EON", "TP", handle_eontp},
+    {"EON", "AF", handle_eonaf},
+    {"EON", "AFCH", handle_eonafch},
+    {"PSN", "", handle_psn},
+    {"DSN", "", handle_dsn},
 };
 
 static bool process_command_table(const command_handler_t *table, int table_size,
