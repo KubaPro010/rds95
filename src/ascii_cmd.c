@@ -401,7 +401,7 @@ static void handle_ver(char *arg, RDSModulator* mod, char* output) {
     strcpy(output, "Firmware v. 0.0a - (C) 2025 radio95\0");
 }
 
-static void handle_eonen(char *arg, char *pattern,, RDSModulator* mod, char* output) {
+static void handle_eonen(char *arg, char *pattern, RDSModulator* mod, char* output) {
     mod->enc->data[mod->enc->program].eon[atoi(pattern)].enabled = atoi(arg);
     strcpy(output, "+\0");
 }
@@ -536,6 +536,7 @@ static const pattern_command_handler_t pattern_commands[] = {
     {"EON", "PS", handle_eonps},
     {"EON", "PTY", handle_eonpty},
     {"EON", "TA", handle_eonta},
+    {"EON", "TP", handle_eontp},
 };
 
 static bool process_command_table(const command_handler_t *table, int table_size,
@@ -552,7 +553,7 @@ static bool process_command_table(const command_handler_t *table, int table_size
 static bool process_pattern_commands(char *cmd, char *arg, char *pattern, char *output, RDSModulator* mod) {
     size_t cmd_len = strlen(cmd);
 
-    for (int i = 0; i < sizeof(pattern_commands) / sizeof(pattern_command_handler_t); i++) {
+    for (size_t i = 0; i < sizeof(pattern_commands) / sizeof(pattern_command_handler_t); i++) {
         const pattern_command_handler_t *handler = &pattern_commands[i];
         size_t prefix_len = strlen(handler->prefix);
         size_t suffix_len = strlen(handler->suffix);
