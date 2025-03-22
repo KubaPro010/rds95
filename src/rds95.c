@@ -55,8 +55,8 @@ int main(int argc, char **argv) {
 
 	char control_pipe[51] = "\0";
 
-	pa_simple *rds1_device;
-	pa_simple *rds2_device;
+	pa_simple *rds1_device = NULL;
+	pa_simple *rds2_device = ;
 	pa_sample_spec format;
 	pa_buffer_attr buffer;
 
@@ -183,8 +183,12 @@ exit:
 	}
 
 	pthread_attr_destroy(&attr);
-	pa_simple_free(rds1_device);
-	pa_simple_free(rds2_device);
+	if (rds1_device != NULL) {
+		pa_simple_free(rds1_device);
+	}
+	if (rds2_device != NULL) {
+		pa_simple_free(rds2_device);
+	}
 
 	return 0;
 }
