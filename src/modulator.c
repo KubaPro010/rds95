@@ -84,7 +84,7 @@ float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 	float sample;
 	if (rdsMod->data[stream].sample_count == SAMPLES_PER_BIT) {
 		if (rdsMod->data[stream].bit_pos == BITS_PER_GROUP) {
-			get_rds_bits(rdsMod->enc, rdsMod->data[stream].bit_buffer);
+			get_rds_bits(rdsMod->enc, rdsMod->data[stream].bit_buffer, stream);
 			rdsMod->data[stream].bit_pos = 0;
 		}
 
