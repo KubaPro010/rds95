@@ -36,11 +36,9 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		tempEncoder.data[emp->program].ct = emp->data[emp->program].ct;
 	} else if (strcmp(option, "RT1") == 0 || strcmp(option, "TEXT") == 0) {
 		memcpy(tempEncoder.data[emp->program].rt1, emp->data[emp->program].rt1, RT_LENGTH);
-		tempEncoder.data[emp->program].rt1_enabled = emp->data[emp->program].rt1_enabled;
 		memcpy(tempEncoder.data[emp->program].default_rt, emp->data[emp->program].default_rt, RT_LENGTH);
 	} else if (strcmp(option, "RT2") == 0) {
 		memcpy(tempEncoder.data[emp->program].rt2, emp->data[emp->program].rt2, RT_LENGTH);
-		tempEncoder.data[emp->program].rt2_enabled = emp->data[emp->program].rt2_enabled;
 	} else if (strcmp(option, "PTYN") == 0) {
 		memcpy(tempEncoder.data[emp->program].ptyn, emp->data[emp->program].ptyn, PTYN_LENGTH);
 		tempEncoder.data[emp->program].ptyn_enabled = emp->data[emp->program].ptyn_enabled;
@@ -58,7 +56,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		memcpy(tempEncoder.data[emp->program].dps1, emp->data[emp->program].dps1, DPS_LENGTH);
 		tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
 		tempEncoder.data[emp->program].dps1_numberofrepeats = emp->data[emp->program].dps1_numberofrepeats;
-		tempEncoder.data[emp->program].dps1_numberofrepeats_clear = emp->data[emp->program].dps1_numberofrepeats_clear;
 	} else if (strcmp(option, "DPS1EN") == 0) {
 		tempEncoder.data[emp->program].dps1_enabled = emp->data[emp->program].dps1_enabled;
 	} else if (strcmp(option, "DPS1MOD") == 0) {
@@ -99,6 +96,8 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		tempEncoder.data[emp->program].ecclic_enabled = emp->data[emp->program].ecclic_enabled;
 	} else if(strcmp(option, "RT1EN") == 0) {
 		tempEncoder.data[emp->program].rt1_enabled = emp->data[emp->program].rt1_enabled;
+	} else if(strcmp(option, "RT2EN") == 0) {
+		tempEncoder.data[emp->program].rt2_enabled = emp->data[emp->program].rt2_enabled;
 	} else if(strcmp(option, "PINEN") == 0) {
 		tempEncoder.data[emp->program].pin[0] = emp->data[emp->program].pin[0];
 	} else if(strcmp(option, "PROGRAM") == 0) {
