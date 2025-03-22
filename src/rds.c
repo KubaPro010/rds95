@@ -612,7 +612,15 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 		if(get_rds_custom_groups2(enc, blocks)) {
 			return;
 		}
-		return;
+		if(enc->encoder_data.rds2_mode == 0) { // tunneling
+			blocks[0] = enc->state->last_stream0_group[0];
+			blocks[1] = enc->state->last_stream0_group[1];
+			blocks[2] = enc->state->last_stream0_group[2];
+			blocks[3] = enc->state->last_stream0_group[3];
+			return;
+		} else {
+			// TODO: add store command
+		}
 	}
 
 	if(get_rds_custom_groups(enc, blocks)) {
@@ -745,6 +753,11 @@ group_coded:
 	if (IS_TYPE_B(blocks)) {
 		blocks[2] = enc->data[enc->program].pi;
 	}
+
+	enc->state[enc->program].last_stream0_group[0] = blocks[0];
+	enc->state[enc->program].last_stream0_group[1] = blocks[1];
+	enc->state[enc->program].last_stream0_group[2] = blocks[2];
+	enc->state[enc->program].last_stream0_group[3] = blocks[3];
 }
 
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits, uint8_t stream) {

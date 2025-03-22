@@ -200,6 +200,8 @@ typedef struct {
 
 	uint8_t eon_index : 3;
 	uint8_t eon_state : 4;
+
+	uint16_t last_stream0_group[GROUP_LENGTH];
 } RDSState;
 
 typedef struct {
