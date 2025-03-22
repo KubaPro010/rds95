@@ -175,6 +175,7 @@ typedef struct {
 	char rt_text[RT_LENGTH];
 	uint8_t rt_state : 5;
 	uint8_t rt_update : 1;
+	uint8_t rt2_update : 1;
 	uint8_t rt_ab : 1;
 	uint8_t rt_segments : 5;
 	uint8_t rt2_segments : 5;
@@ -332,6 +333,7 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program);
 void init_rds_encoder(RDSEncoder* enc);
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits);
 void set_rds_rt1(RDSEncoder* enc, char *rt1);
+void set_rds_rt2(RDSEncoder* enc, char *rt2);
 void set_rds_dps1(RDSEncoder* enc, char *dps1);
 void set_rds_next_dps1(RDSEncoder* enc, char *dps1);
 void set_rds_ps(RDSEncoder* enc, char *ps);

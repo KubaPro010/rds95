@@ -74,6 +74,12 @@ static void handle_rt1(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
+static void handle_rt2(char *arg, RDSModulator* mod, char* output) {
+	arg[RT_LENGTH * 2] = 0;
+	set_rds_rt2(mod->enc, xlat(arg));
+	strcpy(output, "+\0");
+}
+
 static void handle_dps1(char *arg, RDSModulator* mod, char* output) {
 	arg[DPS_LENGTH * 2] = 0;
 	set_rds_dps1(mod->enc, xlat(arg));
@@ -239,6 +245,17 @@ static void handle_rt1en(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
+static void handle_rt2en(char *arg, RDSModulator* mod, char* output) {
+	mod->enc->data[mod->enc->program].rt2_enabled = atoi(arg);
+	strcpy(output, "+\0");
+}
+
+static void handle_rtper(char *arg, RDSModulator* mod, char* output) {
+	mod->enc->data[mod->enc->program].rt_switching_period = atoi(arg);
+	mod->enc->data[mod->enc->program].orignal_rt_switching_period = atoi(arg);
+	strcpy(output, "+\0");
+}
+
 static void handle_dps1en(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].dps1_enabled = atoi(arg);
 	mod->enc->state[mod->enc->program].ps_update = 1;
@@ -387,6 +404,11 @@ static void handle_udg2(char *arg, RDSModulator* mod, char* output) {
 	if(bad_format) strcpy(output, "-\0");
 	else if(all_scanned) strcpy(output, "+\0");
 	else strcpy(output, "/\0");
+}
+
+static void handle_rttype(char *arg, RDSModulator* mod, char* output) {
+	mod->enc->data[mod->enc->program].rt_type = atoi(arg);
+	strcpy(output, "+\0");
 }
 
 static void handle_init(char *arg, RDSModulator* mod, char* output) {
@@ -556,6 +578,7 @@ static const command_handler_t commands_eq3[] = {
 static const command_handler_t commands_eq4[] = {
 	{"TPS", handle_tps, 3},
 	{"RT1", handle_rt1, 3},
+	{"RT2", handle_rt2, 3},
 	{"PTY", handle_pty, 3},
 	{"ECC", handle_ecc, 3},
 	{"LIC", handle_lic, 3},
@@ -581,6 +604,8 @@ static const command_handler_t commands_eq2[] = {
 static const command_handler_t commands_eq6[] = {
 	{"PINEN", handle_pinen, 5},
 	{"RT1EN", handle_rt1en, 5},
+	{"RT2EN", handle_rt2en, 5},
+	{"RTPER", handle_rtper, 5},
 	{"ECCEN", handle_eccen, 5},
 	{"LEVEL", handle_level, 5},
 	{"RESET", handle_reset, 5},
@@ -594,6 +619,7 @@ static const command_handler_t commands_eq7[] = {
 	{"DPS1EN", handle_dps1en, 6},
 	{"LABPER", handle_labper, 6},
 	{"SPSPER", handle_spsper, 6},
+	{"RTTYPE", handle_rttype, 6},
 };
 
 static const command_handler_t commands_eq8[] = {

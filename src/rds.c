@@ -308,11 +308,19 @@ encode:
 }
 
 static void get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
-	if (enc->state[enc->program].rt_update) {
+	if (enc->state[enc->program].rt_update && enc->data[enc->program].rt1_enabled) {
 		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
 		enc->state[enc->program].rt_ab ^= 1;
 		enc->state[enc->program].rt_update = 0;
 		enc->state[enc->program].rt_state = 0;
+		enc->state[enc->program].current_rt = 0;
+	}
+	if(enc->state[enc->program].rt2_update && enc->data[enc->program].rt2_enabled && !enc->data[enc->program].rt1_enabled) {
+		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt2, RT_LENGTH);
+		enc->state[enc->program].rt_ab ^= 1;
+		enc->state[enc->program].rt2_update = 0;
+		enc->state[enc->program].rt_state = 0;
+		enc->state[enc->program].current_rt = 1;
 	}
 
 	uint8_t ab = enc->state[enc->program].rt_ab;
@@ -830,6 +838,8 @@ void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 
 void set_rds_rt2(RDSEncoder* enc, char *rt2) {
 	uint8_t i = 0, len = 0;
+
+	enc->state[enc->program].rt2_update = 1;
 
 	memset(enc->data[enc->program].rt2, ' ', RT_LENGTH);
 	while (*rt2 != 0 && len < RT_LENGTH) enc->data[enc->program].rt2[len++] = *rt2++;

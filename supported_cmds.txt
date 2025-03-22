@@ -21,10 +21,10 @@ PTYN
 PTYNEN
 RT1 | TEXT
 RT1EN
-- RT2
-- RT2EN
-- RTPER
-- RTTYPE
+RT2
+RT2EN
+RTPER
+RTTYPE
 - RSTDPS
 SCRLSPD
 SPSPER
@@ -42,21 +42,21 @@ EON*
 - SLIST
 - SEN
 - Sxx*
-(COMSPD)
+(COMSPD) - No COM
 CT
-(DATE)
+(DATE) - Date is taken from system time
 - ECHO
-(EXTSYNC)
+(EXTSYNC) - No Sync
 LEVEL
-(LTO)
-(PHASE)
-(MJD)
-(PILOT)
+(LTO) - Time is taken from system
+(PHASE) - No phase control
+(MJD) - Data is taken...
+(PILOT) - No info
 RDSGEN
-(RESET)
-(SPEED)
+RESET
+(SPEED) - No COM
 - STATUS, ??
-(TIME)
+(TIME) - Time is taken...
 VER
 - ADR *ADR
 - CC
@@ -70,7 +70,7 @@ PIN
 PINEN
 PROGRAM
 PSN*
-(PSW)
+(PSW) - Could be
 RTP
 RTPRUN
 SHORTRT
