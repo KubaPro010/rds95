@@ -13,6 +13,7 @@ DPS1MOD (partial)
 - DTTMOUT
 - EQTEXT1
 LABPER
+LPS - P232 Only
 MS
 PI
 PS
@@ -52,8 +53,11 @@ LEVEL
 (PHASE) - No phase control
 (MJD) - Data is taken...
 (PILOT) - No info
-RDSGEN
+ - PSNMAIN
+ - RDS2MOD
+RDSGEN - Partial
 RESET
+- SETFEAT
 (SPEED) - No COM
 - STATUS, ??
 (TIME) - Time is taken...
@@ -62,7 +66,7 @@ VER
 - CC
 DSN*
 ECCEN
-G
+G - Partial
 GRPSEQ
 LIC
 - NOHDR
@@ -73,9 +77,12 @@ PSN*
 (PSW) - Could be
 RTP
 RTPRUN
+- SETSPY
 SHORTRT
 - SEL
 - SITE *SITE
+- STORE
 UDG1
 UDG2
 - UECP
+- XCMD

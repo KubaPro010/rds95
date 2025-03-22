@@ -278,7 +278,13 @@ static void handle_ptynen(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_rtprun(char *arg, RDSModulator* mod, char* output) {
-	set_rds_rtplus_flags(mod->enc, atoi(arg));
+	int flag1, flag2;
+	if (sscanf(arg, "%d,%d", &flag1, &flag2) == 2) {
+		set_rds_rtplus_flags(mod->enc, flag1);
+		if(flag2) mod->enc->rtpState[mod->enc->program].toggle ^= 1;
+	} else {
+		set_rds_rtplus_flags(mod->enc, atoi(arg));
+	}
 	strcpy(output, "+\0");
 }
 

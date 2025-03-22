@@ -367,6 +367,14 @@ static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks) {
 	if (enc->oda_state[enc->program].current >= enc->oda_state[enc->program].count) enc->oda_state[enc->program].current = 0;
 }
 
+static void get_rds_rtp_oda_group(RDSEncoder* enc, uint16_t *blocks) {
+	blocks[1] |= 3 << 12;
+
+	blocks[1] |= GET_GROUP_TYPE(enc->rtpData[enc->program].group) << 1;
+	blocks[1] |= GET_GROUP_VER(enc->rtpData[enc->program].group);
+	blocks[3] = ODA_AID_RTPLUS;
+}
+
 static void get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
 	(void)enc;
 	struct tm *utc, *local_time;
@@ -696,7 +704,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 			if(enc->state[enc->program].rtp_oda == 0) {
 				get_rds_rtplus_group(enc, blocks);
 			} else {
-				get_rds_oda_group(enc, blocks);
+				get_rds_rtp_oda_group(enc, blocks);
 			}
 			enc->state[enc->program].rtp_oda ^= 1;
 			goto group_coded;
@@ -725,7 +733,6 @@ void get_rds_bits(RDSEncoder* enc, uint8_t *bits) {
 }
 
 static void init_rtplus(RDSEncoder* enc, uint8_t group, uint8_t program) {
-	register_oda(enc, group, ODA_AID_RTPLUS, 0);
 	enc->rtpData[program].group = group;
 	enc->rtpData[program].enabled = 0;
 }

@@ -142,9 +142,6 @@ typedef struct {
 	uint16_t udg2[8][3];
 
 	RDSEON eon[EONS];
-
-	RDSMessages messages;
-	RDSScheduler schedule;
 } RDSData;
 typedef struct {
 	uint8_t ecc_or_lic : 1;
@@ -194,7 +191,7 @@ typedef struct {
 	uint16_t custom_group[GROUP_LENGTH];
 
 	uint8_t rtp_oda : 1;
-	uint8_t grp_seq_idx[2];
+	uint8_t grp_seq_idx[3];
 	uint8_t udg_idxs[2];
 
 	uint8_t last_minute : 6;
@@ -241,6 +238,10 @@ typedef struct {
 	uint16_t site_addr[2];
 	RDSEncoderASCIIData ascii_data;
 	RDSEncoderUECPData uecp_data;
+	uint16_t special_features;
+	RDSScheduler schedule;
+	RDSMessages messages;
+	// uint8_t rds2_buffer[16384];
 } RDSEncoderData;
 typedef struct {
 	RDSEncoderData encoder_data[PROGRAMS];

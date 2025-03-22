@@ -31,7 +31,7 @@ void poll_control_pipe(RDSModulator* mod) {
 	if (bytes_read <= 0) return;
 	
 	token = strtok((char *)pipe_buf, "\r\n");
-	if(token == NULL) token = strtok((char *)pipe_buf, "\x1A");
+	if(token == NULL) token = strtok((char *)pipe_buf, "\r");
 	while (token != NULL) {
 		size_t cmd_len = strlen(token);
 		if (cmd_len > 0 && cmd_len < CMD_BUFFER_SIZE) {
@@ -40,7 +40,7 @@ void poll_control_pipe(RDSModulator* mod) {
 			process_ascii_cmd(mod, cmd_buf);
 		}
 		token = strtok(NULL, "\r\n");
-		if(token == NULL) token = strtok(NULL, "\x1A");
+		if(token == NULL) token = strtok(NULL, "\r");
 	}
 }
 
