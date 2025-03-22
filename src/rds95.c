@@ -99,8 +99,9 @@ int main(int argc, char **argv) {
 	format.rate = RDS_SAMPLE_RATE;
 
 	buffer.prebuf = 0;
-	buffer.tlength = 8192;
-	buffer.maxlength = 8192;
+	buffer.tlength = 12228;
+	buffer.minreq = 12228;
+	buffer.maxlength = 12228;
 
 	rds1_device = pa_simple_new(
 		NULL,
