@@ -619,6 +619,15 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
         return;
     }
 
+    char *equals_pos = strchr(upper_str, '=');
+    if (equals_pos != NULL) {
+        cmd = upper_str;
+        cmd[equals_pos - upper_str] = 0;
+        arg = equals_pos + 1;
+
+        process_pattern_commands(cmd, arg, output, mod);
+    }
+
     if (cmd_len > 1 && str[1] == '=') {
         cmd = upper_str;
         cmd[1] = 0;
@@ -705,14 +714,5 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
                                   sizeof(commands_eq10) / sizeof(command_handler_t),
                                   cmd, arg, output, mod)) {
         }
-    }
-
-    char *equals_pos = strchr(upper_str, '=');
-    if (equals_pos != NULL) {
-        cmd = upper_str;
-        cmd[equals_pos - upper_str] = 0;
-        arg = equals_pos + 1;
-
-        process_pattern_commands(cmd, arg, output, mod);
     }
 }
