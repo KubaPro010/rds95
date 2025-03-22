@@ -559,13 +559,6 @@ static uint8_t get_rds_custom_groups2(RDSEncoder* enc, uint16_t *blocks) {
 
 static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 	blocks[0] = enc->data[enc->program].pi;
-	if(stream != 0) {
-		blocks[0] = 0;
-		if(get_rds_custom_groups2(enc, blocks)) {
-			goto group_coded;
-		}
-		return;
-	}
 	blocks[1] = 0;
 	blocks[2] = 0;
 	blocks[3] = 0;
@@ -606,10 +599,18 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 			}
 		}
 
-		if(enc->data[enc->program].ct) {
+		if(enc->data[enc->program].ct && stream == 0) {
 			get_rds_ct_group(enc, blocks);
 			goto group_coded;
 		}
+	}
+
+	if(stream != 0) {
+		blocks[0] = 0;
+		if(get_rds_custom_groups2(enc, blocks)) {
+			goto group_coded;
+		}
+		return;
 	}
 
 	if(get_rds_custom_groups(enc, blocks)) {
