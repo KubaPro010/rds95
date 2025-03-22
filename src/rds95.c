@@ -14,7 +14,7 @@
 #define RDS_DEVICE "RDS"
 #define RDS2_DEVICE "RDS2"
 
-#define NUM_MPX_FRAMES	2048
+#define NUM_MPX_FRAMES	512
 
 static uint8_t stop_rds;
 
@@ -97,10 +97,6 @@ int main(int argc, char **argv) {
 	format.format = PA_SAMPLE_FLOAT32NE;
 	format.channels = 1;
 	format.rate = RDS_SAMPLE_RATE;
-
-	buffer.prebuf = 0;
-	buffer.tlength = 12228;
-	buffer.maxlength = 12228;
 
 	rds1_device = pa_simple_new(
 		NULL,
