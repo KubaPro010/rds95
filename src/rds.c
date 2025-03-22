@@ -823,6 +823,10 @@ void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 	memset(enc->data[enc->program].rt1, ' ', RT_LENGTH);
 	while (*rt1 != 0 && len < RT_LENGTH) enc->data[enc->program].rt1[len++] = *rt1++;
 
+	while (len > 0 && enc->data[enc->program].rt1[len - 1] == ' ') {
+        len--;
+    }
+
 	if (len < RT_LENGTH && enc->data[enc->program].shortrt) {
 		enc->state[enc->program].rt_segments = 0;
 
@@ -844,6 +848,10 @@ void set_rds_rt2(RDSEncoder* enc, char *rt2) {
 
 	memset(enc->data[enc->program].rt2, ' ', RT_LENGTH);
 	while (*rt2 != 0 && len < RT_LENGTH) enc->data[enc->program].rt2[len++] = *rt2++;
+
+	while (len > 0 && enc->data[enc->program].rt2[len - 1] == ' ') {
+		len--;
+	}
 
 	if (len < RT_LENGTH && enc->data[enc->program].shortrt) {
 		enc->state[enc->program].rt2_segments = 0;
