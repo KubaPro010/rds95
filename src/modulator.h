@@ -5,7 +5,6 @@
 
 #define STREAMS 2
 
-#pragma pack(1)
 typedef struct
 {
 	float level;
@@ -30,7 +29,6 @@ typedef struct {
 	RDSModulatorParameters params;
 	RDSEncoder* enc;
 } RDSModulator;
-#pragma pack()
 
 void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option);
 void Modulator_loadFromFile(RDSModulatorParameters *emp);

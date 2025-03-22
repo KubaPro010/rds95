@@ -36,7 +36,6 @@
 // List of ODAs: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
 #define	ODA_AID_RTPLUS	0x4bd7
 
-#pragma pack(1)
 typedef struct {
 	uint8_t num_entries : 6;
 	uint8_t num_afs : 5;
@@ -266,7 +265,6 @@ typedef struct {
 	uint8_t program : 3;
 	uint8_t file_ender; // Always is 95 my freq
 } RDSEncoderFile;
-#pragma pack()
 
 #define GROUP_TYPE_0	( 0 << 4)
 #define GROUP_TYPE_1	( 1 << 4)
