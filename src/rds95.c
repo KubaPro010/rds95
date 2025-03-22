@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 
 	pa_simple *rds1_device;
 	#ifdef RDS2_DEVICE
-	pa_simple *rds2_device;
+	pa_simple *rds2_device = NULL;
 	#endif
 	pa_sample_spec format;
 	pa_buffer_attr buffer;
