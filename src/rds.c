@@ -807,8 +807,8 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 
 	init_rtplus(enc, GROUP_11A, program);
 
-	enc->encoder_data->ascii_data.expected_encoder_addr = 255;
-	enc->encoder_data->ascii_data.expected_site_addr = 255;
+	enc->encoder_data.ascii_data.expected_encoder_addr = 255;
+	enc->encoder_data.ascii_data.expected_site_addr = 255;
 }
 
 void init_rds_encoder(RDSEncoder* enc) {

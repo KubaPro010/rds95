@@ -112,5 +112,11 @@ float get_rds_sample(RDSModulator* rdsMod, bool rds2) {
 	rdsMod->sample_buffer[rdsMod->out_sample_index++] = 0;
 	if (rdsMod->out_sample_index == SAMPLE_BUFFER_SIZE)
 		rdsMod->out_sample_index = 0;
-	return sample*rdsMod->params.level*rdsMod->params.rdsgen;
+	float out = sample*rdsMod->params.level;
+	if (rdsMod->params.rdsgen == 0) {
+		out = 0;
+	} else if (rdsMod->params.rdsgen == 1 && rds2) {
+		out = 0;
+	}
+	return out;
 }
