@@ -333,7 +333,7 @@ static void get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
 		ab = 0;
 		break;
 	case 1:
-		ab = (enc->state[enc->program].current_rt == 0) ? 1 : 0;
+		ab = (enc->state[enc->program].current_rt == 0) ? 0 : 1;
 		break;
 	case 2:
 	default:
