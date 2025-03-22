@@ -339,7 +339,7 @@ static void get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[3] |= enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4 + 3];
 
 	enc->state[enc->program].rt_state++;
-	uint8_t segments = (enc->state[enc->program].current_rt == 1) ? enc->data[enc->program].rt2_segments : enc->data[enc->program].rt_segments;
+	uint8_t segments = (enc->state[enc->program].current_rt == 1) ? enc->state[enc->program].rt2_segments : enc->state[enc->program].rt_segments;
 	if (enc->state[enc->program].rt_state >= segments) enc->state[enc->program].rt_state = 0;
 }
 
@@ -566,7 +566,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 					memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
 				}
 				enc->state[enc->program].rt_state = 0;
-				enc->data[enc->program].rt_switching_period = enc->data[enc->program].original_rt_switching_period;
+				enc->data[enc->program].rt_switching_period = enc->data[enc->program].orignal_rt_switching_period;
 			}
 		}
 
