@@ -550,8 +550,9 @@ static bool process_command_table(const command_handler_t *table, int table_size
     return false;
 }
 
-static bool process_pattern_commands(char *cmd, char *arg, char *pattern, char *output, RDSModulator* mod) {
+static bool process_pattern_commands(char *cmd, char *arg, char *output, RDSModulator* mod) {
     size_t cmd_len = strlen(cmd);
+    char pattern_buffer[16] = {0};
 
     for (size_t i = 0; i < sizeof(pattern_commands) / sizeof(pattern_command_handler_t); i++) {
         const pattern_command_handler_t *handler = &pattern_commands[i];
@@ -562,11 +563,14 @@ static bool process_pattern_commands(char *cmd, char *arg, char *pattern, char *
             strncmp(cmd, handler->prefix, prefix_len) == 0 &&
             strcmp(cmd + cmd_len - suffix_len, handler->suffix) == 0) {
 
-            pattern = cmd + prefix_len;
-            pattern[cmd_len - suffix_len] = 0;
-
-            handler->handler(arg, pattern, mod, output);
-            return true;
+            size_t pattern_len = cmd_len - prefix_len - suffix_len;
+            if (pattern_len < sizeof(pattern_buffer)) {
+                strncpy(pattern_buffer, cmd + prefix_len, pattern_len);
+                pattern_buffer[pattern_len] = 0;
+                
+                handler->handler(arg, pattern_buffer, mod, output);
+                return true;
+            }
         }
     }
 
@@ -574,7 +578,7 @@ static bool process_pattern_commands(char *cmd, char *arg, char *pattern, char *
 }
 
 void process_ascii_cmd(RDSModulator* mod, char *str) {
-    char *cmd, *arg, *pattern = NULL;
+    char *cmd, *arg;
     char output[255];
     memset(output, 0, sizeof(output));
     char upper_str[CTL_BUFFER_SIZE];
@@ -709,6 +713,6 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
         cmd[equals_pos - upper_str] = 0;
         arg = equals_pos + 1;
 
-        process_pattern_commands(cmd, arg, pattern, output, mod);
+        process_pattern_commands(cmd, arg, output, mod);
     }
 }
