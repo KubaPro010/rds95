@@ -741,14 +741,8 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
 			copy_len = sizeof(option) - 1;
 		memcpy(option, option_str, copy_len);
 		option[copy_len] = '\0';
-		if (strcmp(option, "RDSGEN") == 0 || strcmp(option, "LEVEL") == 0) {
-			Modulator_saveToFile(&mod->params, option);
-		} else {
-			saveToFile(mod->enc, option);
-			if (strcmp(option, "ALL") == 0) {
-				Modulator_saveToFile(&mod->params, option);
-			}
-		}
+		saveToFile(mod->enc, option);
+		Modulator_saveToFile(&mod->params, option);
 		return;
 	}
 

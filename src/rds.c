@@ -114,6 +114,8 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState));
 		memcpy(&(tempEncoder.encoder_data), &(emp->encoder_data), sizeof(RDSEncoderData));
 		tempEncoder.program = emp->program;
+	} else {
+		return;
 	}
 
 	RDSEncoderFile rdsEncoderfile;
