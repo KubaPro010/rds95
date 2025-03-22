@@ -340,6 +340,7 @@ static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks) {
 }
 
 static void get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
+	(void)enc;
 	struct tm *utc, *local_time;
 	time_t now;
 	uint8_t l;
@@ -532,7 +533,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 			enc->state[enc->program].ta_timeout--;
 			if(enc->state[enc->program].ta_timeout == 0) enc->data[enc->program].ta = 0;
 		}
-		
+
 		if(enc->data[enc->program].ct) {
 			get_rds_ct_group(enc, blocks);
 			goto group_coded;
