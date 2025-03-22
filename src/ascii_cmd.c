@@ -402,23 +402,23 @@ static void handle_ver(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_eonen(char *arg, char *pattern, RDSModulator* mod, char* output) {
-    mod->enc->data[mod->enc->program].eon[atoi(pattern)].enabled = atoi(arg);
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].enabled = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_eonpi(char *arg, char *pattern, RDSModulator* mod, char* output) {
-    mod->enc->data[mod->enc->program].eon[atoi(pattern)].pi = strtoul(arg, NULL, 16);
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pi = strtoul(arg, NULL, 16);
     strcpy(output, "+\0");
 }
 
 static void handle_eonpin(char *arg, char *pattern, RDSModulator* mod, char* output) {
     if (arg[0] == '\0') {
-        mod->enc->data[mod->enc->program].eon[atoi(pattern)].pin[0] = 0;
+        mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pin[0] = 0;
     } else {
         uint8_t pin[3];
         if (sscanf((char *)arg, "%hhu,%hhu,%hhu", &pin[0], &pin[1], &pin[2]) == 3) {
             for (int i = 0; i < 3; i++) {
-                mod->enc->data[mod->enc->program].eon[atoi(pattern)].pin[i + 1] = pin[i];
+                mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pin[i + 1] = pin[i];
             }
         }
     }
@@ -428,7 +428,7 @@ static void handle_eonpin(char *arg, char *pattern, RDSModulator* mod, char* out
 static void handle_eonps(char *arg, char *pattern, RDSModulator* mod, char* output) {
     arg[PS_LENGTH * 2] = 0;
 
-    RDSEON *eon = &mod->enc->data[mod->enc->program].eon[atoi(pattern)];
+    RDSEON *eon = &mod->enc->data[mod->enc->program].eon[atoi(pattern)-1];
     memset(eon->ps, ' ', sizeof(eon->ps));
 
     uint16_t len = 0;
@@ -438,23 +438,23 @@ static void handle_eonps(char *arg, char *pattern, RDSModulator* mod, char* outp
 }
 
 static void handle_eonpty(char *arg, char *pattern, RDSModulator* mod, char* output) {
-    mod->enc->data[mod->enc->program].eon[atoi(pattern)].pty = atoi(arg);
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pty = atoi(arg);
     strcpy(output, "+\0");
 }
 
 static void handle_eonta(char *arg, char *pattern, RDSModulator* mod, char* output) {
-    if (!mod->enc->data[mod->enc->program].eon[atoi(pattern)].enabled || 
-        !mod->enc->data[mod->enc->program].eon[atoi(pattern)].tp) {
+    if (!mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].enabled || 
+        !mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].tp) {
         strcpy(output, "-\0");
         return;
     }
-    mod->enc->data[mod->enc->program].eon[atoi(pattern)].ta = atoi(arg);
-    if(mod->enc->data[mod->enc->program].eon[atoi(pattern)].ta) mod->enc->data[mod->enc->program].ta = 1;
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].ta = atoi(arg);
+    if(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].ta) mod->enc->data[mod->enc->program].ta = 1;
     strcpy(output, "+\0");
 }
 
 static void handle_eontp(char *arg, char *pattern, RDSModulator* mod, char* output) {
-    mod->enc->data[mod->enc->program].eon[atoi(pattern)].tp = atoi(arg);
+    mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].tp = atoi(arg);
     strcpy(output, "+\0");
 }
 
@@ -705,9 +705,9 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
 
     char *equals_pos = strchr(upper_str, '=');
     if (equals_pos != NULL) {
-        *equals_pos = 0;
         cmd = upper_str;
-        arg = str + (equals_pos - upper_str) + 1;
+        cmd[equals_pos - upper_str] = 0;
+        arg = equals_pos + 1;
 
         process_pattern_commands(cmd, arg, pattern, output, mod);
     }

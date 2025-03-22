@@ -578,10 +578,10 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks) {
 		else cant_find_group = 0;
 		if(!good_group && cant_find_group == 23) {
 			cant_find_group = 0;
-			get_rds_ps_group(enc, blocks);
 			break;
 		}
 	}
+	if(!good_group) grp = '0';
 
 	uint8_t udg_idx;
 	switch (grp)
