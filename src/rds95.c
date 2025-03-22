@@ -14,7 +14,7 @@
 #define RDS_DEVICE "RDS"
 #define RDS2_DEVICE "RDS2"
 
-#define NUM_MPX_FRAMES	512
+#define NUM_MPX_FRAMES	2048
 
 static uint8_t stop_rds;
 
