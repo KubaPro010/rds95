@@ -738,7 +738,6 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 
 	tempCoder.state[program].rt_ab = 1;
 	tempCoder.state[program].ptyn_ab = 1;
-	tempCoder.state[program].current_rt = 0;
 	set_rds_rt1(&tempCoder, enc->data[program].rt1);
 	set_rds_rt2(&tempCoder, enc->data[program].rt2);
 	set_rds_ps(&tempCoder, enc->data[program].ps);
@@ -784,7 +783,7 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	strcpy((char *)enc->data[program].ps, "* RDS * ");
 	enc->data[program].rt1_enabled = 1;
 
-	memset(enc->data[program].rt1, ' ', 64);
+	memset(enc->data[program].rt1, ' ', 59);
 
 	enc->data[program].static_ps_period = 10;
 	enc->data[program].dps_label_period = 8;
