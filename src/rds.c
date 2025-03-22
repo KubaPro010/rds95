@@ -608,7 +608,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 	if(stream != 0) {
 		blocks[0] = 0;
 		if(get_rds_custom_groups2(enc, blocks)) {
-			goto group_coded;
+			return;
 		}
 		return;
 	}
