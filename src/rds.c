@@ -175,14 +175,14 @@ int rdssaved() {
 	return 0;
 }
 
-static void register_oda(RDSEncoder* enc, uint8_t group, uint16_t aid, uint16_t scb) {
-	if (enc->oda_state[enc->program].count >= MAX_ODAS) return;
+// static void register_oda(RDSEncoder* enc, uint8_t group, uint16_t aid, uint16_t scb) {
+// 	if (enc->oda_state[enc->program].count >= MAX_ODAS) return;
 
-	enc->odas[enc->program][enc->oda_state[enc->program].count].group = group;
-	enc->odas[enc->program][enc->oda_state[enc->program].count].aid = aid;
-	enc->odas[enc->program][enc->oda_state[enc->program].count].scb = scb;
-	enc->oda_state[enc->program].count++;
-}
+// 	enc->odas[enc->program][enc->oda_state[enc->program].count].group = group;
+// 	enc->odas[enc->program][enc->oda_state[enc->program].count].aid = aid;
+// 	enc->odas[enc->program][enc->oda_state[enc->program].count].scb = scb;
+// 	enc->oda_state[enc->program].count++;
+// }
 
 static uint16_t get_next_af(RDSEncoder* enc) {
 	static uint8_t af_state;
