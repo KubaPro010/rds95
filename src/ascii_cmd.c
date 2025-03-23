@@ -268,11 +268,6 @@ static void handle_rtprun(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
-static void handle_shortrt(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].shortrt = arg[0];
-	strcpy(output, "+\0");
-}
-
 static void handle_program(char *arg, RDSModulator* mod, char* output) {
 	int16_t program = atoi(arg)-1;
 	if(program == '\0') {
@@ -584,7 +579,6 @@ static const command_handler_t commands_eq7[] = {
 };
 
 static const command_handler_t commands_eq8[] = {
-	{"SHORTRT", handle_shortrt, 7},
 	{"PROGRAM", handle_program, 7},
 	{"DPS1MOD", handle_dps1mod, 7},
 	{"SCRLSPD", handle_scrlspd, 7},

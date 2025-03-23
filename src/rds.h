@@ -106,7 +106,6 @@ typedef struct {
 	uint8_t dps_speed : 1;
 	uint8_t static_ps_period;
 
-	uint8_t shortrt : 1;
 	uint8_t rt1_enabled : 1;
 	uint8_t rt2_enabled : 1;
 	uint8_t rt_type : 2;

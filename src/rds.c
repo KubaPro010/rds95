@@ -60,8 +60,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		tempEncoder.data[emp->program].static_ps_period = emp->data[emp->program].static_ps_period;
 	} else if (strcmp(option, "LPS") == 0) {
 		memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
-	} else if (strcmp(option, "SHORTRT") == 0) {
-		tempEncoder.data[emp->program].shortrt = emp->data[emp->program].shortrt;
 	} else if (strcmp(option, "GRPSEQ") == 0) {
 		memcpy(tempEncoder.data[emp->program].grp_sqc, emp->data[emp->program].grp_sqc, sizeof(emp->data[emp->program].grp_sqc));
 	} else if (strcmp(option, "RTP") == 0) {
@@ -816,11 +814,11 @@ void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 	memset(enc->data[enc->program].rt1, ' ', RT_LENGTH);
 	while (*rt1 != 0 && len < RT_LENGTH) enc->data[enc->program].rt1[len++] = *rt1++;
 
-	while (len > 0 && enc->data[enc->program].rt1[len - 1] == ' ' && enc->data[enc->program].shortrt) {
+	while (len > 0 && enc->data[enc->program].rt1[len - 1] == ' ') {
         len--;
     }
 
-	if (len < RT_LENGTH && enc->data[enc->program].shortrt) {
+	if (len < RT_LENGTH) {
 		enc->state[enc->program].rt_segments = 0;
 
 		enc->data[enc->program].rt1[len++] = '\r';
@@ -842,11 +840,11 @@ void set_rds_rt2(RDSEncoder* enc, char *rt2) {
 	memset(enc->data[enc->program].rt2, ' ', RT_LENGTH);
 	while (*rt2 != 0 && len < RT_LENGTH) enc->data[enc->program].rt2[len++] = *rt2++;
 
-	while (len > 0 && enc->data[enc->program].rt2[len - 1] == ' ' && enc->data[enc->program].shortrt) {
+	while (len > 0 && enc->data[enc->program].rt2[len - 1] == ' ') {
 		len--;
 	}
 
-	if (len < RT_LENGTH && enc->data[enc->program].shortrt) {
+	if (len < RT_LENGTH) {
 		enc->state[enc->program].rt2_segments = 0;
 
 		enc->data[enc->program].rt2[len++] = '\r';
