@@ -100,6 +100,7 @@ typedef struct {
 	char lps[LPS_LENGTH];
 
 	char grp_sqc[24];
+	char grp_sqc_rds2[24];
 
 	uint8_t udg1_len : 4;
 	uint8_t udg2_len : 4;
@@ -139,7 +140,7 @@ typedef struct {
 	uint16_t custom_group2[GROUP_LENGTH + 1];
 
 	uint8_t rtp_oda : 1;
-	uint8_t grp_seq_idx[3];
+	uint8_t grp_seq_idx[4];
 	uint8_t udg_idxs[2];
 
 	uint8_t last_minute : 6;
@@ -291,5 +292,6 @@ void set_rds_rtplus_flags(RDSEncoder* enc, uint8_t flags);
 void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags);
 void set_rds_ptyn(RDSEncoder* enc, char *ptyn);
 void set_rds_grpseq(RDSEncoder* enc, char *grpseq);
+void set_rds_grpseq2(RDSEncoder* enc, char *grpseq2);
 
 #endif

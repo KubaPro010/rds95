@@ -243,11 +243,24 @@ static void handle_program(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
+static void handle_rds2mod(char *arg, RDSModulator* mod, char* output) {
+	mod->enc->encoder_data.rds2_mode = atoi(arg);
+	strcpy(output, "+\0");
+}
+
 static void handle_grpseq(char *arg, RDSModulator* mod, char* output) {
 	if (arg[0] == '\0') {
 		set_rds_grpseq(mod->enc, DEFAULT_GRPSQC);
 	} else {
 		set_rds_grpseq(mod->enc, arg);
+	}
+	strcpy(output, "+\0");
+}
+static void handle_grpseq2(char *arg, RDSModulator* mod, char* output) {
+	if (arg[0] == '\0') {
+		set_rds_grpseq2(mod->enc, "\0");
+	} else {
+		set_rds_grpseq2(mod->enc, arg);
 	}
 	strcpy(output, "+\0");
 }
@@ -536,6 +549,8 @@ static const command_handler_t commands_eq7[] = {
 
 static const command_handler_t commands_eq8[] = {
 	{"PROGRAM", handle_program, 7},
+	{"RDS2MOD", handle_rds2mod, 7},
+	{"GRPSEQ2", handle_grpseq2, 7},
 };
 static const command_handler_t commands_exact[] = {
 	{"INIT", handle_init, 4},
