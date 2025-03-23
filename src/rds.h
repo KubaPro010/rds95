@@ -47,7 +47,6 @@ typedef struct {
 	uint8_t ta : 1;
 	uint8_t tp : 1;
 	uint8_t pty : 5;
-	uint8_t pin[4];
 	char ps[8];
 	RDSAFs af;
 } RDSEON;
@@ -84,14 +83,11 @@ typedef struct {
 	uint8_t dsn;
 	uint8_t psn;
 
-	uint8_t ecclic_enabled : 1;
-	uint16_t lic : 12;
 	uint8_t ecc;
 
 	uint8_t ta : 1;
 	uint8_t pty : 5;
 	uint8_t tp : 1;
-	uint8_t ms : 1;
 	uint8_t di : 4;
 
 	char tps[PS_LENGTH];
@@ -130,8 +126,6 @@ typedef struct {
 
 	char lps[LPS_LENGTH];
 
-	uint8_t pin[4];
-
 	char grp_sqc[24];
 
 	uint8_t udg1_len : 4;
@@ -143,8 +137,6 @@ typedef struct {
 	RDSEON eon[EONS];
 } RDSData;
 typedef struct {
-	uint8_t ecc_or_lic : 1;
-
 	uint8_t ps_update : 1;
 	uint8_t tps_update : 1;
 	char ps_text[PS_LENGTH];

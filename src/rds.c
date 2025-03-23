@@ -18,9 +18,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		memcpy(&tempEncoder, emp, sizeof(RDSEncoder));
 	}
 
-	if (strcmp(option, "MS") == 0) {
-		tempEncoder.data[emp->program].ms = emp->data[emp->program].ms;
-	} else if (strcmp(option, "PS") == 0) {
+	if (strcmp(option, "PS") == 0) {
 		memcpy(tempEncoder.data[emp->program].ps, emp->data[emp->program].ps, PS_LENGTH);
 	} else if (strcmp(option, "PI") == 0) {
 		tempEncoder.data[emp->program].pi = emp->data[emp->program].pi;
@@ -46,10 +44,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		memcpy(&(tempEncoder.data[emp->program].af), &(emp->data[emp->program].af), sizeof(emp->data[emp->program].af));
 	} else if (strcmp(option, "ECC") == 0) {
 		tempEncoder.data[emp->program].ecc = emp->data[emp->program].ecc;
-	} else if (strcmp(option, "LIC") == 0) {
-		tempEncoder.data[emp->program].lic = emp->data[emp->program].lic;
-	} else if (strcmp(option, "ECCEN") == 0) {
-		tempEncoder.data[emp->program].ecclic_enabled = emp->data[emp->program].ecclic_enabled;
 	} else if (strcmp(option, "TPS") == 0) {
 		memcpy(tempEncoder.data[emp->program].tps, emp->data[emp->program].tps, PS_LENGTH);
 	} else if (strcmp(option, "DPS1") == 0) {
@@ -68,8 +62,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
 	} else if (strcmp(option, "SHORTRT") == 0) {
 		tempEncoder.data[emp->program].shortrt = emp->data[emp->program].shortrt;
-	} else if (strcmp(option, "PIN") == 0 || strcmp(option, "PINEN") == 0) {
-		memcpy(tempEncoder.data[emp->program].pin, emp->data[emp->program].pin, sizeof(emp->data[emp->program].pin));
 	} else if (strcmp(option, "GRPSEQ") == 0) {
 		memcpy(tempEncoder.data[emp->program].grp_sqc, emp->data[emp->program].grp_sqc, sizeof(emp->data[emp->program].grp_sqc));
 	} else if (strcmp(option, "RTP") == 0) {
@@ -92,8 +84,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState));
 	} else if(strcmp(option, "PTYNEN") == 0) {
 		tempEncoder.data[emp->program].ptyn_enabled = emp->data[emp->program].ptyn_enabled;
-	} else if(strcmp(option, "ECCEN") == 0) {
-		tempEncoder.data[emp->program].ecclic_enabled = emp->data[emp->program].ecclic_enabled;
 	} else if(strcmp(option, "RT1EN") == 0) {
 		tempEncoder.data[emp->program].rt1_enabled = emp->data[emp->program].rt1_enabled;
 	} else if(strcmp(option, "RT2EN") == 0) {
@@ -101,8 +91,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	} else if(strcmp(option, "RTPER") == 0) {
 		tempEncoder.data[emp->program].rt_switching_period = emp->data[emp->program].rt_switching_period;
 		tempEncoder.data[emp->program].orignal_rt_switching_period = emp->data[emp->program].orignal_rt_switching_period;
-	} else if(strcmp(option, "PINEN") == 0) {
-		tempEncoder.data[emp->program].pin[0] = emp->data[emp->program].pin[0];
 	} else if(strcmp(option, "PROGRAM") == 0) {
 		tempEncoder.program = emp->program;
 	} else if(strcmp(option, "EON") == 0) {
@@ -298,7 +286,7 @@ get_ps:
 
 encode:
 	blocks[1] |= enc->data[enc->program].ta << 4;
-	blocks[1] |= enc->data[enc->program].ms << 3;
+	blocks[1] |= 1 << 3; // MS was removed from the standard, this is to keep compatibility with old receivers
 	blocks[1] |= ((enc->data[enc->program].di >> (3 - enc->state[enc->program].ps_csegment)) & 1) << 2;
 	blocks[1] |= enc->state[enc->program].ps_csegment;
 	blocks[2] = get_next_af(enc);
@@ -441,23 +429,6 @@ static void get_rds_lps_group(RDSEncoder* enc, uint16_t *blocks) {
 static void get_rds_ecc_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[1] |= 1 << 12;
 	blocks[2] = enc->data[enc->program].ecc;
-
-	if(enc->data[enc->program].pin[0]) {
-		blocks[3] = enc->data[enc->program].pin[1] << 11;
-		blocks[3] |= enc->data[enc->program].pin[2] << 6;
-		blocks[3] |= enc->data[enc->program].pin[3];
-	}
-}
-
-static void get_rds_lic_group(RDSEncoder* enc, uint16_t *blocks) {
-	blocks[1] |= 1 << 12;
-	blocks[2] = 0x3000 | enc->data[enc->program].lic;
-
-	if(enc->data[enc->program].pin[0]) {
-		blocks[3] = enc->data[enc->program].pin[1] << 11; // day
-		blocks[3] |= enc->data[enc->program].pin[2] << 6; // hour
-		blocks[3] |= enc->data[enc->program].pin[3]; // minute
-	}
 }
 
 static void get_rds_rtplus_group(RDSEncoder* enc, uint16_t *blocks) {
@@ -495,28 +466,18 @@ get_eon:
 		break;
 	case 4: // 13
 		if(eon.pty == 0 && eon.tp == 0) {
-			enc->state[enc->program].eon_state++;
-			goto get_eon;
+			break;
 		}
 		blocks[2] = eon.pty << 11;
 		if(eon.tp) blocks[2] |= eon.ta;
 		blocks[1] |= 13;
-		break;
-	case 5: // 14
-		if(eon.pin[0] == 0) {
-			break;
-		}
-		blocks[2] = eon.pin[1] << 11;
-		blocks[2] |= eon.pin[2] << 6;
-		blocks[2] |= eon.pin[3];
-		blocks[1] |= 14;
 		break;
 	// TODO: Add AF
 	}
 
 	blocks[3] = eon.pi;
 
-	if(enc->state[enc->program].eon_state == 5) {
+	if(enc->state[enc->program].eon_state == 4) {
 		enc->state[enc->program].eon_index++;
 
 		uint8_t i = 0;
@@ -610,12 +571,18 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 	if(stream != 0) {
 		blocks[0] = 0;
 		if(get_rds_custom_groups2(enc, blocks)) {
+			if (blocks[0] == 0 && IS_TYPE_B(blocks)) {
+				blocks[2] = enc->data[enc->program].pi;
+			}
 			return;
 		}
 		if(enc->encoder_data.rds2_mode == 0) { // tunneling
 			blocks[1] = enc->state->last_stream0_group[0];
 			blocks[2] = enc->state->last_stream0_group[1];
 			blocks[3] = enc->state->last_stream0_group[2];
+			if (IS_TYPE_B(blocks)) {
+				blocks[2] = enc->data[enc->program].pi;
+			}
 			return;
 		} else {
 			// TODO: add store command
@@ -639,7 +606,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 		grp = enc->data[enc->program].grp_sqc[grp_sqc_idx];
 
 		if(grp == '0') good_group = 1;
-		if(grp == '1' && enc->data[enc->program].ecclic_enabled) good_group = 1;
+		if(grp == '1' && enc->data[enc->program].ecc != 0) good_group = 1;
 		if(grp == '2' && (enc->data[enc->program].rt1_enabled || enc->data[enc->program].rt2_enabled)) good_group = 1;
 		if(grp == 'A' && enc->data[enc->program].ptyn_enabled) good_group = 1;
 		if(grp == 'E') {
@@ -694,18 +661,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 			get_rds_ps_group(enc, blocks);
 			goto group_coded;
 		case '1':
-			if(enc->data[enc->program].ecc && enc->data[enc->program].lic) {
-				if(enc->state[enc->program].ecc_or_lic == 0) {
-					get_rds_ecc_group(enc, blocks);
-				} else {
-					get_rds_lic_group(enc, blocks);
-				}
-				enc->state[enc->program].ecc_or_lic ^= 1;
-			} else if(enc->data[enc->program].lic) {
-				get_rds_lic_group(enc, blocks);
-			} else {
-				get_rds_ecc_group(enc, blocks);
-			}
+			get_rds_ecc_group(enc, blocks);
 			goto group_coded;
 		case '2':
 			get_rds_rt_group(enc, blocks);
@@ -814,9 +770,7 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 
 	enc->data[program].ct = 1;
 	enc->data[program].di = 1;
-	enc->data[program].ecclic_enabled = 1;
 	strcpy((char *)enc->data[program].grp_sqc, DEFAULT_GRPSQC);
-	enc->data[program].ms = 1;
 	enc->data[program].tp = 1;
 	enc->data[program].pi = 0xFFFF;
 	strcpy((char *)enc->data[program].ps, "* RDS * ");
