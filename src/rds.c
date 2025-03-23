@@ -563,6 +563,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 
 	uint8_t good_group = 0;
 	uint8_t cant_find_group = 0;
+	uint8_t grp_sqc_idx = 0;
 	char grp;
 
 	if(stream != 0) {
@@ -577,7 +578,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 			goto group_coded_rds2;
 		} else if(enc->encoder_data.rds2_mode == 1) { // independent tunneling
 			while(good_group == 0) {
-				uint8_t grp_sqc_idx = enc->state[enc->program].grp_seq_idx[2];
+				grp_sqc_idx = enc->state[enc->program].grp_seq_idx[2];
 				if(enc->data[enc->program].grp_sqc_rds2[grp_sqc_idx] == '\0') {
 					enc->state[enc->program].grp_seq_idx[2] = 0;
 					grp_sqc_idx = 0;
@@ -608,7 +609,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 	}
 
 	while(good_group == 0) {
-		uint8_t grp_sqc_idx = enc->state[enc->program].grp_seq_idx[0];
+		grp_sqc_idx = enc->state[enc->program].grp_seq_idx[0];
 		if(enc->data[enc->program].grp_sqc[grp_sqc_idx] == '\0') {
 			enc->state[enc->program].grp_seq_idx[0] = 0;
 			grp_sqc_idx = 0;
@@ -646,6 +647,7 @@ group_coded:
 	enc->state[enc->program].last_stream0_group[0] = blocks[1];
 	enc->state[enc->program].last_stream0_group[1] = blocks[2];
 	enc->state[enc->program].last_stream0_group[2] = blocks[3];
+	return;
 }
 
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits, uint8_t stream) {
