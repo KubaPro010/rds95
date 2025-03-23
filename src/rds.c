@@ -437,7 +437,7 @@ static uint8_t get_rds_custom_groups2(RDSEncoder* enc, uint16_t *blocks) {
 
 static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char* grp) {
 	uint8_t udg_idx;
-	switch (grp)
+	switch (*grp)
 	{
 		default:
 		case '0':
@@ -493,11 +493,11 @@ group_coded:
 
 static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp) {
 	uint8_t good_group = 0;
-	if(grp == '0') good_group = 1;
-	if(grp == '1' && enc->data[enc->program].ecc != 0) good_group = 1;
-	if(grp == '2' && (enc->data[enc->program].rt1_enabled || enc->data[enc->program].rt2_enabled)) good_group = 1;
-	if(grp == 'A' && enc->data[enc->program].ptyn_enabled) good_group = 1;
-	if(grp == 'E') {
+	if(*grp == '0') good_group = 1;
+	if(*grp == '1' && enc->data[enc->program].ecc != 0) good_group = 1;
+	if(*grp == '2' && (enc->data[enc->program].rt1_enabled || enc->data[enc->program].rt2_enabled)) good_group = 1;
+	if(*grp == 'A' && enc->data[enc->program].ptyn_enabled) good_group = 1;
+	if(*grp == 'E') {
 		for (int i = 0; i < EONS; i++) {
 			if (enc->data[enc->program].eon[i].enabled) {
 				good_group = 1;
@@ -505,11 +505,11 @@ static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp) {
 			}
 		}
 	}
-	if(grp == 'X' && enc->data[enc->program].udg1_len != 0) good_group = 1;
-	if(grp == 'Y' && enc->data[enc->program].udg2_len != 0) good_group = 1;
-	if(grp == 'R' && enc->rtpData[enc->program].enabled) good_group = 1;
-	if(grp == '3' && enc->oda_state[enc->program].count != 0) good_group = 1;
-	if(grp == 'F' && enc->data[enc->program].lps[0] != '\0') good_group = 1;
+	if(*grp == 'X' && enc->data[enc->program].udg1_len != 0) good_group = 1;
+	if(*grp == 'Y' && enc->data[enc->program].udg2_len != 0) good_group = 1;
+	if(*grp == 'R' && enc->rtpData[enc->program].enabled) good_group = 1;
+	if(*grp == '3' && enc->oda_state[enc->program].count != 0) good_group = 1;
+	if(*grp == 'F' && enc->data[enc->program].lps[0] != '\0') good_group = 1;
 	return good_group;
 }
 
