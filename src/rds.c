@@ -435,16 +435,17 @@ static uint8_t get_rds_custom_groups2(RDSEncoder* enc, uint16_t *blocks) {
 	return 0;
 }
 
-static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char* grp) {
+static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char* grp, uint8_t stream) {
 	uint8_t udg_idx;
+	uint8_t idx_seq = (stream == 0) ? 1 : 2;
 	switch (*grp)
 	{
 		default:
 		case '0':
-			if(enc->state[enc->program].grp_seq_idx[1] < 4) enc->state[enc->program].grp_seq_idx[0]--;
-			else enc->state[enc->program].grp_seq_idx[1] = 0;
+			if(enc->state[enc->program].grp_seq_idx[idx_seq] < 4) enc->state[enc->program].grp_seq_idx[0]--;
+			else enc->state[enc->program].grp_seq_idx[idx_seq] = 0;
 
-			enc->state[enc->program].grp_seq_idx[1]++;
+			enc->state[enc->program].grp_seq_idx[idx_seq]++;
 			get_rds_ps_group(enc, blocks);
 			goto group_coded;
 		case '1':
@@ -598,7 +599,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 			}
 			if(!good_group) grp = '0';
 		
-			get_rds_sequence_group(enc, blocks, &grp);
+			get_rds_sequence_group(enc, blocks, &grp, stream);
 
 			goto group_coded_rds2;
 		}
@@ -629,7 +630,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 	}
 	if(!good_group) grp = '0';
 
-	get_rds_sequence_group(enc, blocks, &grp);
+	get_rds_sequence_group(enc, blocks, &grp, stream);
 
 group_coded_rds2:
 	if (blocks[0] == 0 && IS_TYPE_B(blocks) && stream != 0) {
