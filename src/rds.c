@@ -438,11 +438,12 @@ static uint8_t get_rds_custom_groups2(RDSEncoder* enc, uint16_t *blocks) {
 static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char* grp, uint8_t stream) {
 	uint8_t udg_idx;
 	uint8_t idx_seq = (stream == 0) ? 1 : 3;
+	uint8_t idx2_seq = (stream == 0) ? 0 : 2;
 	switch (*grp)
 	{
 		default:
 		case '0':
-			if(enc->state[enc->program].grp_seq_idx[idx_seq] < 4) enc->state[enc->program].grp_seq_idx[0]--;
+			if(enc->state[enc->program].grp_seq_idx[idx_seq] < 4) enc->state[enc->program].grp_seq_idx[idx2_seq]--;
 			else enc->state[enc->program].grp_seq_idx[idx_seq] = 0;
 
 			enc->state[enc->program].grp_seq_idx[idx_seq]++;
