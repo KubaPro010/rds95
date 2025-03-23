@@ -634,10 +634,15 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 group_coded_rds2:
 	if (blocks[0] == 0 && IS_TYPE_B(blocks)) {
 		blocks[2] = enc->data[enc->program].pi;
+		return;
+	} else if(blocks[0] == enc->data[enc->program].pi) {
+		goto group_coded;
 	}
-	return;
 
 group_coded:
+	if(blocks[0] == 0 && enc->data[enc->program].pi != 0) {
+		goto group_coded_rds2;
+	}
 	blocks[1] |= enc->data[enc->program].tp << 10;
 	blocks[1] |= enc->data[enc->program].pty << 5;
 	if (IS_TYPE_B(blocks)) {
