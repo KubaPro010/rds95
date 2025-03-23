@@ -674,6 +674,7 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	set_rds_ptyn(&tempCoder, enc->data[program].ptyn);
 	set_rds_lps(&tempCoder, enc->data[program].lps);
 	set_rds_grpseq(&tempCoder, enc->data[program].grp_sqc);
+	set_rds_grpseq2(&tempCoder, enc->data[program].grp_sqc_rds2);
 
 	struct tm *utc;
 	time_t now;
