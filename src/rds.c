@@ -437,7 +437,7 @@ static uint8_t get_rds_custom_groups2(RDSEncoder* enc, uint16_t *blocks) {
 
 static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char* grp, uint8_t stream) {
 	uint8_t udg_idx;
-	uint8_t idx_seq = (stream == 0) ? 1 : 2;
+	uint8_t idx_seq = (stream == 0) ? 1 : 3;
 	switch (*grp)
 	{
 		default:
