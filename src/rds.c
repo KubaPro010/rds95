@@ -436,7 +436,7 @@ static uint8_t get_rds_custom_groups2(RDSEncoder* enc, uint16_t *blocks) {
 }
 
 static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char grp) {
-	static uint8_t udg_idx;
+	uint8_t udg_idx;
 	switch (grp)
 	{
 		default:
@@ -492,7 +492,7 @@ group_coded:
 }
 
 static uint8_t check_rds_good_group(RDSEncoder* enc, char grp) {
-	static uint8_t good_group = 0;
+	uint8_t good_group = 0;
 	if(grp == '0') good_group = 1;
 	if(grp == '1' && enc->data[enc->program].ecc != 0) good_group = 1;
 	if(grp == '2' && (enc->data[enc->program].rt1_enabled || enc->data[enc->program].rt2_enabled)) good_group = 1;
