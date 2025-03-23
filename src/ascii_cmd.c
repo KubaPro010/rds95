@@ -112,11 +112,6 @@ static void handle_ecc(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
-static void handle_lic(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].lic = strtoul(arg, NULL, 16);
-	strcpy(output, "+\0");
-}
-
 static void handle_rtp(char *arg, RDSModulator* mod, char* output) {
 	uint8_t tags[6];
 
@@ -132,18 +127,6 @@ static void handle_lps(char *arg, RDSModulator* mod, char* output) {
 	arg[LPS_LENGTH] = 0;
 	set_rds_lps(mod->enc, arg);
 	strcpy(output, "+\0");
-}
-
-static void handle_pin(char *arg, RDSModulator* mod, char* output) {
-	uint8_t pin[3];
-	if (sscanf((char *)arg, "%hhu,%hhu,%hhu", &pin[0], &pin[1], &pin[2]) == 3) {
-		for (int i = 0; i < 3; i++) {
-			mod->enc->data[mod->enc->program].pin[i+1] = pin[i];
-		}
-		strcpy(output, "+\0");
-	} else {
-		strcpy(output, "-\0");
-	}
 }
 
 static void handle_ps(char *arg, RDSModulator* mod, char* output) {
@@ -170,11 +153,6 @@ static void handle_tp(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_ta(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].ta = atoi(arg);
-	strcpy(output, "+\0");
-}
-
-static void handle_ms(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].ms = atoi(arg);
 	strcpy(output, "+\0");
 }
 
@@ -242,11 +220,6 @@ static void handle_g(char *arg, RDSModulator* mod, char* output) {
 	}
 }
 
-static void handle_pinen(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].pin[0] = atoi(arg);
-	strcpy(output, "+\0");
-}
-
 static void handle_rt1en(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].rt1_enabled = atoi(arg);
 	strcpy(output, "+\0");
@@ -292,11 +265,6 @@ static void handle_rtprun(char *arg, RDSModulator* mod, char* output) {
 	} else {
 		set_rds_rtplus_flags(mod->enc, atoi(arg));
 	}
-	strcpy(output, "+\0");
-}
-
-static void handle_eccen(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].ecclic_enabled = arg[0];
 	strcpy(output, "+\0");
 }
 
@@ -446,21 +414,6 @@ static void handle_eonpi(char *arg, char *pattern, RDSModulator* mod, char* outp
 	strcpy(output, "+\0");
 }
 
-static void handle_eonpin(char *arg, char *pattern, RDSModulator* mod, char* output) {
-	if (arg[0] == '\0') {
-		mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pin[0] = 0;
-	} else {
-		mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pin[0] = 1;
-		uint8_t pin[3];
-		if (sscanf((char *)arg, "%hhu,%hhu,%hhu", &pin[0], &pin[1], &pin[2]) == 3) {
-			for (int i = 0; i < 3; i++) {
-				mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pin[i + 1] = pin[i];
-			}
-		}
-	}
-	strcpy(output, "+\0");
-}
-
 static void handle_eonps(char *arg, char *pattern, RDSModulator* mod, char* output) {
 	arg[PS_LENGTH * 2] = 0;
 
@@ -578,7 +531,6 @@ static void handle_eonafch(char *arg, char *pattern, RDSModulator* mod, char* ou
 }
 
 static const command_handler_t commands_eq3[] = {
-	{"MS", handle_ms, 2},
 	{"PS", handle_ps, 2},
 	{"PI", handle_pi, 2},
 	{"TP", handle_tp, 2},
@@ -594,10 +546,8 @@ static const command_handler_t commands_eq4[] = {
 	{"RT2", handle_rt2, 3},
 	{"PTY", handle_pty, 3},
 	{"ECC", handle_ecc, 3},
-	{"LIC", handle_lic, 3},
 	{"RTP", handle_rtp, 3},
 	{"LPS", handle_lps, 3},
-	{"PIN", handle_pin, 3},
 	{"DPS", handle_dps1, 3},
 };
 
@@ -615,11 +565,9 @@ static const command_handler_t commands_eq2[] = {
 };
 
 static const command_handler_t commands_eq6[] = {
-	{"PINEN", handle_pinen, 5},
 	{"RT1EN", handle_rt1en, 5},
 	{"RT2EN", handle_rt2en, 5},
 	{"RTPER", handle_rtper, 5},
-	{"ECCEN", handle_eccen, 5},
 	{"LEVEL", handle_level, 5},
 	{"RESET", handle_reset, 5},
 };
@@ -655,7 +603,6 @@ static const command_handler_t commands_exact[] = {
 static const pattern_command_handler_t pattern_commands[] = {
 	{"EON", "EN", handle_eonen},
 	{"EON", "PI", handle_eonpi},
-	{"EON", "PIN", handle_eonpin},
 	{"EON", "PS", handle_eonps},
 	{"EON", "PTY", handle_eonpty},
 	{"EON", "TA", handle_eonta},
