@@ -46,8 +46,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		tempEncoder.data[emp->program].ecc = emp->data[emp->program].ecc;
 	} else if (strcmp(option, "TPS") == 0) {
 		memcpy(tempEncoder.data[emp->program].tps, emp->data[emp->program].tps, PS_LENGTH);
-	} else if (strcmp(option, "SPSPER") == 0) {
-		tempEncoder.data[emp->program].static_ps_period = emp->data[emp->program].static_ps_period;
 	} else if (strcmp(option, "LPS") == 0) {
 		memcpy(tempEncoder.data[emp->program].lps, emp->data[emp->program].lps, LPS_LENGTH);
 	} else if (strcmp(option, "GRPSEQ") == 0) {
@@ -678,8 +676,6 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	enc->data[program].rt1_enabled = 1;
 
 	memset(enc->data[program].rt1, ' ', 59);
-
-	enc->data[program].static_ps_period = 10;
 
 	enc->data[program].rt_type = 2;
 
