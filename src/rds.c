@@ -435,7 +435,7 @@ static uint8_t get_rds_custom_groups2(RDSEncoder* enc, uint16_t *blocks) {
 	return 0;
 }
 
-static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char grp) {
+static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char* grp) {
 	uint8_t udg_idx;
 	switch (grp)
 	{
@@ -491,7 +491,7 @@ group_coded:
 	return;
 }
 
-static uint8_t check_rds_good_group(RDSEncoder* enc, char grp) {
+static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp) {
 	uint8_t good_group = 0;
 	if(grp == '0') good_group = 1;
 	if(grp == '1' && enc->data[enc->program].ecc != 0) good_group = 1;
@@ -561,9 +561,9 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 		}
 	}
 
-	static uint8_t good_group = 0;
-	static uint8_t cant_find_group = 0;
-	static char grp;
+	uint8_t good_group = 0;
+	uint8_t cant_find_group = 0;
+	char grp;
 
 	if(stream != 0) {
 		blocks[0] = 0;
@@ -584,7 +584,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 				}
 				grp = enc->data[enc->program].grp_sqc[grp_sqc_idx];
 		
-				good_group = check_rds_good_group(enc, grp);
+				good_group = check_rds_good_group(enc, &grp);
 		
 				if(!good_group) cant_find_group++;
 				else cant_find_group = 0;
@@ -597,7 +597,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 			}
 			if(!good_group) grp = '0';
 
-			get_rds_sequence_group(enc, blocks, grp);
+			get_rds_sequence_group(enc, blocks, &grp);
 
 			goto group_coded_rds2;
 		}
@@ -615,7 +615,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 		}
 		grp = enc->data[enc->program].grp_sqc[grp_sqc_idx];
 
-		good_group = check_rds_good_group(enc, grp);
+		good_group = check_rds_good_group(enc, &grp);
 
 		if(!good_group) cant_find_group++;
 		else cant_find_group = 0;
@@ -628,7 +628,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 	}
 	if(!good_group) grp = '0';
 
-	get_rds_sequence_group(enc, blocks, grp);
+	get_rds_sequence_group(enc, blocks, &grp);
 
 group_coded_rds2:
 	if (blocks[0] == 0 && IS_TYPE_B(blocks)) {
