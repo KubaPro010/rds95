@@ -190,7 +190,6 @@ typedef struct {
 	RDSEncoderUECPData uecp_data;
 	uint16_t special_features;
 	RDSScheduler schedule;
-	RDSMessages messages;
 	uint8_t rds2_mode : 1;
 	// uint8_t rds2_buffer[16384];
 } RDSEncoderData;
