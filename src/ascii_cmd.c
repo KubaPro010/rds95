@@ -70,35 +70,12 @@ static void handle_tps(char *arg, RDSModulator* mod, char* output) {
 static void handle_rt1(char *arg, RDSModulator* mod, char* output) {
 	arg[RT_LENGTH * 2] = 0;
 	set_rds_rt1(mod->enc, xlat(arg));
-	if(mod->enc->data[mod->enc->program].eqtext1) set_rds_dps1(mod->enc, xlat(arg));
 	strcpy(output, "+\0");
 }
 
 static void handle_rt2(char *arg, RDSModulator* mod, char* output) {
 	arg[RT_LENGTH * 2] = 0;
 	set_rds_rt2(mod->enc, xlat(arg));
-	strcpy(output, "+\0");
-}
-
-static void handle_dps1(char *arg, RDSModulator* mod, char* output) {
-	arg[DPS_LENGTH * 2] = 0;
-	set_rds_dps1(mod->enc, xlat(arg));
-	if(mod->enc->data[mod->enc->program].eqtext1) set_rds_rt1(mod->enc, xlat(arg));
-	strcpy(output, "+\0");
-}
-static void handle_dps1mod(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].dps1_mode = atoi(arg);
-	strcpy(output, "+\0");
-}
-
-static void handle_scrlspd(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].dps_speed = atoi(arg);
-	strcpy(output, "+\0");
-}
-
-static void handle_dps1enq(char *arg, RDSModulator* mod, char* output) {
-	arg[127 * 2] = 0;
-	set_rds_next_dps1(mod->enc, xlat(arg));
 	strcpy(output, "+\0");
 }
 
@@ -233,22 +210,6 @@ static void handle_rt2en(char *arg, RDSModulator* mod, char* output) {
 static void handle_rtper(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].rt_switching_period = atoi(arg);
 	mod->enc->data[mod->enc->program].orignal_rt_switching_period = atoi(arg);
-	strcpy(output, "+\0");
-}
-
-static void handle_dps1en(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].dps1_enabled = atoi(arg);
-	mod->enc->state[mod->enc->program].ps_update = 1;
-	strcpy(output, "+\0");
-}
-
-static void handle_labper(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].dps_label_period = atoi(arg);
-	strcpy(output, "+\0");
-}
-
-static void handle_spsper(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].static_ps_period = atoi(arg);
 	strcpy(output, "+\0");
 }
 
@@ -543,12 +504,10 @@ static const command_handler_t commands_eq4[] = {
 	{"ECC", handle_ecc, 3},
 	{"RTP", handle_rtp, 3},
 	{"LPS", handle_lps, 3},
-	{"DPS", handle_dps1, 3},
 };
 
 static const command_handler_t commands_eq5[] = {
 	{"TEXT", handle_rt1, 4},
-	{"DPS1", handle_dps1, 4},
 	{"PTYN", handle_ptyn, 4},
 	{"AFCH", handle_afch, 4},
 	{"UDG1", handle_udg1, 4},
@@ -572,22 +531,12 @@ static const command_handler_t commands_eq7[] = {
 	{"RTPRUN", handle_rtprun, 6},
 	{"GRPSEQ", handle_grpseq, 6},
 	{"RDSGEN", handle_rdsgen, 6},
-	{"DPS1EN", handle_dps1en, 6},
-	{"LABPER", handle_labper, 6},
-	{"SPSPER", handle_spsper, 6},
 	{"RTTYPE", handle_rttype, 6},
 };
 
 static const command_handler_t commands_eq8[] = {
 	{"PROGRAM", handle_program, 7},
-	{"DPS1MOD", handle_dps1mod, 7},
-	{"SCRLSPD", handle_scrlspd, 7},
-	{"DPS1ENQ", handle_dps1enq, 7},
 };
-static const command_handler_t commands_eq10[] = {
-	{"PS_SCROLL", handle_dps1enq, 9},
-};
-
 static const command_handler_t commands_exact[] = {
 	{"INIT", handle_init, 4},
 	{"VER", handle_ver, 3},
@@ -769,17 +718,6 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
 
 		if (process_command_table(commands_eq8,
 								  sizeof(commands_eq8) / sizeof(command_handler_t),
-								  cmd, arg, output, mod)) {
-		}
-	}
-
-	if (cmd_len > 9 && str[9] == '=') {
-		cmd = upper_str;
-		cmd[9] = 0;
-		arg = str + 10;
-
-		if (process_command_table(commands_eq10,
-								  sizeof(commands_eq10) / sizeof(command_handler_t),
 								  cmd, arg, output, mod)) {
 		}
 	}

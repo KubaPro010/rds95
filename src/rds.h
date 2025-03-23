@@ -18,7 +18,6 @@
 
 #define RT_LENGTH	64
 #define PS_LENGTH	8
-#define DPS_LENGTH	255
 #define PTYN_LENGTH	8
 #define LPS_LENGTH	32
 #define DEFAULT_GRPSQC "002222XY"
@@ -50,17 +49,6 @@ typedef struct {
 	char ps[8];
 	RDSAFs af;
 } RDSEON;
-typedef struct {
-	uint8_t destination : 4;
-	char text[255];
-} RDSMessage;
-typedef struct {
-	uint8_t dps2msg : 7;
-	uint8_t dps2msg_auto : 1;
-	uint8_t rt2msg : 7;
-	uint8_t rt2msg_auto : 1;
-	RDSMessage messages[100];
-} RDSMessages;
 typedef struct
 {
 	uint8_t days : 7; // let's say that here it will be stored by bits, so 0b1000000 is monday and so on
@@ -91,20 +79,6 @@ typedef struct {
 	uint8_t di : 4;
 
 	char tps[PS_LENGTH];
-
-	uint8_t eqtext1 : 1;
-	uint8_t dps1_enabled : 1;
-	uint8_t dps2_enabled : 1;
-	char dps1[DPS_LENGTH];
-	char dps2[DPS_LENGTH];
-	uint8_t dps1_mode : 2;
-	uint8_t dps2_mode : 2;
-	uint8_t dps1_numberofrepeats : 8; // last bit will be clear
-	uint8_t dps2_numberofrepeats;
-	uint8_t dps_label_period;
-	uint8_t dps_restart : 1;
-	uint8_t dps_speed : 1;
-	uint8_t static_ps_period;
 
 	uint8_t rt1_enabled : 1;
 	uint8_t rt2_enabled : 1;
@@ -141,23 +115,6 @@ typedef struct {
 	char ps_text[PS_LENGTH];
 	char tps_text[PS_LENGTH];
 	uint8_t ps_csegment : 4;
-
-	uint8_t dps1_update : 1;
-	uint8_t dps2_update : 1;
-	uint8_t dps1_len;
-	uint8_t dps2_len;
-	uint8_t dps1_nexttext_update : 1;
-	uint8_t dps1_nexttext_len;
-	char dps1_text[DPS_LENGTH];
-	char dps1_nexttext[127];
-	char dps2_text[DPS_LENGTH];
-	uint8_t dps1_repeat_count;
-	uint8_t dps2_repeat_count;
-	uint8_t static_ps_period;
-	uint8_t dynamic_ps_period;
-	uint8_t dynamic_ps_position;
-	uint8_t dynamic_ps_state : 2;
-	uint8_t dynamic_ps_scroll_counter : 7;
 
 	char rt_text[RT_LENGTH];
 	uint8_t rt_state : 5;
@@ -328,8 +285,6 @@ void init_rds_encoder(RDSEncoder* enc);
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits, uint8_t stream);
 void set_rds_rt1(RDSEncoder* enc, char *rt1);
 void set_rds_rt2(RDSEncoder* enc, char *rt2);
-void set_rds_dps1(RDSEncoder* enc, char *dps1);
-void set_rds_next_dps1(RDSEncoder* enc, char *dps1);
 void set_rds_ps(RDSEncoder* enc, char *ps);
 void set_rds_tps(RDSEncoder* enc, char *tps);
 void set_rds_lps(RDSEncoder* enc, char *lps);
