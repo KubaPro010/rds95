@@ -13,6 +13,10 @@ The newer standard which is the IEC one, removes these features:
 - LIC
 - DI (partially, only dynamic pty is left)
 
+## Unique features
+
+RDS95 is the only RDS2 encoder to have a independent tunneling feature, where you can pick the group sequence from the RDS2 stream in order to speed up the transmission of RT or LPS (in my tests, this helps a lot)
+
 ## Commands
 
 ### PS
