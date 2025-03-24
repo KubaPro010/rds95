@@ -7,6 +7,7 @@ if PLOT: import matplotlib.pyplot as plt
 if FFT: import numpy as np  # Import numpy for FFT
 
 DATA_RATE = 1187.5
+SIZE_RATIO = 1
 
 ratio = 16
 sample_rate = DATA_RATE*ratio
@@ -84,10 +85,10 @@ def generate():
             highest_idx = i
     middle = int((lowest_idx+highest_idx)/2)
 
-    out = shapedSamples[middle-int(ratio):middle+int(ratio)]
+    out = shapedSamples[middle-int(ratio*SIZE_RATIO):middle+int(ratio*SIZE_RATIO)]
     out = [2 * (i - min(out)) / (max(out) - min(out)) - 1 for i in out]
     if max(out) > 1 or min(out) < -1: raise Exception("Clipped")
-    print(f"{len(out)=} {len(out)/sample_rate/2=} {1/DATA_RATE=}")
+    print(f"{len(out)=} {len(out)/sample_rate=} {(len(out)/sample_rate)/(1/DATA_RATE)=} {1/DATA_RATE=}")
 
     if PLOT:
         # Plot the waveform
