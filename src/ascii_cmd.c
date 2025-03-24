@@ -94,7 +94,12 @@ static void handle_ta(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_pi(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].pi = strtoul(arg, NULL, 16);
+	uint16_t pi_value = strtoul(arg, NULL, 16);
+	if ((pi_value & 0xF000) == 0) {
+		strcpy(output, "-\0");
+		return;
+	}
+	mod->enc->data[mod->enc->program].pi = pi_value;
 	strcpy(output, "+\0");
 }
 
