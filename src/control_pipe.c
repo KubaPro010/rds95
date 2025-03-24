@@ -37,7 +37,7 @@ void poll_control_pipe(RDSModulator* mod) {
 		if (cmd_len > 0 && cmd_len < CMD_BUFFER_SIZE) {
 			memset(cmd_buf, 0, CMD_BUFFER_SIZE);
 			strncpy((char *)cmd_buf, token, CMD_BUFFER_SIZE - 1);
-			process_ascii_cmd(mod, cmd_buf);
+			process_ascii_cmd(mod, cmd_buf, NULL);
 		}
 		token = strtok(NULL, "\r\n");
 		if(token == NULL) token = strtok(NULL, "\r");

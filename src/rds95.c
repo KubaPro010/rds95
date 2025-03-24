@@ -13,7 +13,7 @@
 
 #define RDS_DEVICE "RDS"
 
-#define NUM_MPX_FRAMES	512
+#define NUM_MPX_FRAMES	256
 
 static uint8_t stop_rds;
 
@@ -34,7 +34,7 @@ static void *control_pipe_worker(void* modulator) {
 }
 
 static void show_version() {
-	printf("rds95 (a RDS encoder by radio95) version 1.2\n");
+	printf("rds95 (a RDS encoder by radio95) version %.1f\n", VERSION);
 }
 
 static void show_help(char *name) {

@@ -62,7 +62,7 @@ static void handle_rtp(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_lps(char *arg, RDSModulator* mod, char* output) {
-	arg[LPS_LENGTH] = 0;
+	arg[LPS_LENGTH * 2] = 0;
 	set_rds_lps(mod->enc, arg);
 	strcpy(output, "+\0");
 }
@@ -74,7 +74,6 @@ static void handle_ps(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_ct(char *arg, RDSModulator* mod, char* output) {
-	arg[2] = 1;
 	mod->enc->data[mod->enc->program].ct = atoi(arg);
 	strcpy(output, "+\0");
 }
@@ -170,7 +169,7 @@ static void handle_rt2en(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_rtper(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].rt_switching_period = atoi(arg);
-	mod->enc->data[mod->enc->program].orignal_rt_switching_period = atoi(arg);
+	mod->enc->data[mod->enc->program].orignal_rt_switching_period = mod->enc->data[mod->enc->program].rt_switching_period;
 	strcpy(output, "+\0");
 }
 
@@ -303,7 +302,7 @@ static void handle_init(char *arg, RDSModulator* mod, char* output) {
 static void handle_ver(char *arg, RDSModulator* mod, char* output) {
 	(void)arg;
 	(void)mod;
-	strcpy(output, "Firmware v. 1.1a - (C) 2025 radio95\0");
+	sprintf(output, "Firmware v. %.1f - (C) 2025 radio95", VERSION);
 }
 
 static void handle_eonen(char *arg, char *pattern, RDSModulator* mod, char* output) {
@@ -501,7 +500,7 @@ static bool process_pattern_commands(char *cmd, char *arg, char *output, RDSModu
 	return false;
 }
 
-void process_ascii_cmd(RDSModulator* mod, char *str) {
+void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 	char *cmd, *arg;
 	char output[255];
 	memset(output, 0, sizeof(output));
@@ -628,4 +627,6 @@ void process_ascii_cmd(RDSModulator* mod, char *str) {
 								  cmd, arg, output, mod)) {
 		}
 	}
+
+	if (cmd_output != NULL) strcpy(cmd_output, output);
 }

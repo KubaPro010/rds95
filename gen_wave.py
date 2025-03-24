@@ -8,7 +8,7 @@ if FFT: import numpy as np  # Import numpy for FFT
 
 DATA_RATE = 1187.5
 
-ratio = 14
+ratio = 16
 sample_rate = DATA_RATE*ratio
 print(f"{sample_rate=}")
 if not sample_rate.is_integer(): raise ValueError("Need a even value")
@@ -84,9 +84,10 @@ def generate():
             highest_idx = i
     middle = int((lowest_idx+highest_idx)/2)
 
-    out = shapedSamples[middle-int(ratio*2):middle+int(ratio*2)]
+    out = shapedSamples[middle-int(ratio):middle+int(ratio)]
     out = [2 * (i - min(out)) / (max(out) - min(out)) - 1 for i in out]
     if max(out) > 1 or min(out) < -1: raise Exception("Clipped")
+    print(f"{len(out)=} {len(out)/sample_rate/2=} {1/DATA_RATE=}")
 
     if PLOT:
         # Plot the waveform

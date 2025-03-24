@@ -10,10 +10,9 @@
 
 #define GROUP_LENGTH		4
 #define BITS_PER_GROUP		(GROUP_LENGTH * (BLOCK_SIZE + POLY_DEG))
-// Higher sample rate makes you more synchronized so you stay at the 11.4 GPS (group per sec) but lesser sample rate gives a smaller amount of cpu usage
-#define RDS_SAMPLE_RATE		16625 // pira's m32 works at 361 khz, which is a ratio of 304, but this does a ratio of 14, while the m232 does a ratio of about 500
-#define SAMPLES_PER_BIT     14 // this would be your ratio
-#define FILTER_SIZE	 56
+#define RDS_SAMPLE_RATE		19000
+#define SAMPLES_PER_BIT     16
+#define FILTER_SIZE	 32
 #define SAMPLE_BUFFER_SIZE	(SAMPLES_PER_BIT + FILTER_SIZE)
 
 #define RT_LENGTH	64
