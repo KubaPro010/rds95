@@ -7,7 +7,7 @@ if PLOT: import matplotlib.pyplot as plt
 if FFT: import numpy as np  # Import numpy for FFT
 
 DATA_RATE = 1187.5
-SIZE_RATIO = 1
+SIZE_RATIO = 2
 
 ratio = 16
 sample_rate = DATA_RATE*ratio
