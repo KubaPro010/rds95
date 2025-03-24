@@ -76,7 +76,7 @@ typedef struct {
 	uint8_t ta : 1;
 	uint8_t pty : 5;
 	uint8_t tp : 1;
-	uint8_t di : 4;
+	uint8_t dpty : 1;
 
 	char tps[PS_LENGTH];
 

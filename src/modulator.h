@@ -13,6 +13,13 @@ typedef struct
 
 typedef struct
 {
+	uint8_t symbol_shift: 7;
+	float sample_buffer[SAMPLE_BUFFER_SIZE];
+	uint8_t sample_buffer_idx : 7;
+} RDSModulatorSymbolShifting;
+
+typedef struct
+{
 	uint8_t bit_buffer[BITS_PER_GROUP];
 	uint8_t bit_pos : 7;
 	float sample_buffer[SAMPLE_BUFFER_SIZE];
@@ -22,6 +29,7 @@ typedef struct
 	uint8_t sample_count;
 	uint16_t in_sample_index;
 	uint16_t out_sample_index;
+	RDSModulatorSymbolShifting symbol_shifting;
 } RDSModulatorModulationData;
 
 typedef struct {

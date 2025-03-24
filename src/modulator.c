@@ -66,6 +66,8 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 
 	rdsMod->enc = enc;
 
+	if(STREAMS > 0) rdsMod->data[1].symbol_shifting.symbol_shift = SAMPLES_PER_BIT / 2;
+
 	for (uint8_t i = 0; i < 2; i++) {
 		for (uint16_t j = 0; j < FILTER_SIZE; j++) {
 			waveform[i][j] = i ?
@@ -109,7 +111,15 @@ float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 	}
 	rdsMod->data[stream].sample_count++;
 
-	sample = rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index];
+	if(rdsMod->data[stream].symbol_shifting.symbol_shift != 0) {
+		rdsMod->data[stream].symbol_shifting.sample_buffer[rdsMod->data[stream].symbol_shifting.sample_buffer_idx++] = rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index];
+
+		if (rdsMod->data[stream].symbol_shifting.sample_buffer_idx == rdsMod->data[stream].symbol_shifting.symbol_shift) rdsMod->data[stream].symbol_shifting.sample_buffer_idx = 0;
+
+		sample = rdsMod->data[stream].symbol_shifting.sample_buffer[rdsMod->data[stream].symbol_shifting.sample_buffer_idx];
+	} else {
+		sample = rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index];
+	}
 
 	rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index++] = 0;
 	if (rdsMod->data[stream].out_sample_index == SAMPLE_BUFFER_SIZE)

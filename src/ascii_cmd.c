@@ -118,8 +118,8 @@ static void handle_ct(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
-static void handle_di(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].di = atoi(arg);
+static void handle_dpty(char *arg, RDSModulator* mod, char* output) {
+	mod->enc->data[mod->enc->program].dpty = atoi(arg);
 	strcpy(output, "+\0");
 }
 
@@ -504,7 +504,6 @@ static const command_handler_t commands_eq3[] = {
 	{"PI", handle_pi, 2},
 	{"TP", handle_tp, 2},
 	{"TA", handle_ta, 2},
-	{"DI", handle_di, 2},
 	{"CT", handle_ct, 2},
 	{"AF", handle_af, 2}
 };
@@ -525,6 +524,7 @@ static const command_handler_t commands_eq5[] = {
 	{"AFCH", handle_afch, 4},
 	{"UDG1", handle_udg1, 4},
 	{"UDG2", handle_udg2, 4},
+	{"DPTY", handle_dpty, 4},
 };
 
 static const command_handler_t commands_eq2[] = {

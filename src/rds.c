@@ -28,8 +28,8 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 		tempEncoder.data[emp->program].tp = emp->data[emp->program].tp;
 	} else if (strcmp(option, "TA") == 0) {
 		tempEncoder.data[emp->program].ta = emp->data[emp->program].ta;
-	} else if (strcmp(option, "DI") == 0) {
-		tempEncoder.data[emp->program].di = emp->data[emp->program].di;
+	} else if (strcmp(option, "DPTY") == 0) {
+		tempEncoder.data[emp->program].dpty = emp->data[emp->program].dpty;
 	} else if (strcmp(option, "CT") == 0) {
 		tempEncoder.data[emp->program].ct = emp->data[emp->program].ct;
 	} else if (strcmp(option, "RT1") == 0 || strcmp(option, "TEXT") == 0) {
@@ -201,8 +201,7 @@ static void get_rds_ps_group(RDSEncoder* enc, uint16_t *blocks) {
 	}
 
 	blocks[1] |= enc->data[enc->program].ta << 4;
-	blocks[1] |= 1 << 3; // MS was removed from the standard, this is to keep compatibility with old receivers
-	blocks[1] |= ((enc->data[enc->program].di >> (3 - enc->state[enc->program].ps_csegment)) & 1) << 2;
+	if(enc->state[enc->program].ps_csegment == 0) blocks[1] |= enc->data[enc->program].dpty << 2;
 	blocks[1] |= enc->state[enc->program].ps_csegment;
 	blocks[2] = get_next_af(enc);
 	if(enc->data[enc->program].ta && enc->state[enc->program].tps_text[0] != '\0') {
@@ -712,7 +711,6 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	enc->encoder_data.encoder_addr[1] = 255;
 
 	enc->data[program].ct = 1;
-	enc->data[program].di = 1;
 	strcpy((char *)enc->data[program].grp_sqc, DEFAULT_GRPSQC);
 	enc->data[program].tp = 1;
 	enc->data[program].pi = 0xFFFF;
