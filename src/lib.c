@@ -28,7 +28,7 @@ void add_checkwords(uint16_t *blocks, uint8_t *bits, uint8_t stream)
 {
 	uint16_t offset_word;
 	bool group_type_b = IS_TYPE_B(blocks);
-	bool rds2_tunneling = !((blocks[0] & 0xFE00) && (stream != 0));
+	bool rds2_tunneling = ((blocks[0] & 0xFE00)^1 && (stream != 0));
 
 	for (uint8_t i = 0; i < GROUP_LENGTH; i++) {
 		offset_word = offset_words[i];
