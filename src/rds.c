@@ -425,10 +425,10 @@ static uint8_t get_rds_custom_groups(RDSEncoder* enc, uint16_t *blocks) {
 static uint8_t get_rds_custom_groups2(RDSEncoder* enc, uint16_t *blocks) {
 	if(enc->state[enc->program].custom_group2[0] == 1) {
 		enc->state[enc->program].custom_group2[0] = 0;
-		blocks[0] = enc->state[enc->program].custom_group[1];
-		blocks[1] = enc->state[enc->program].custom_group[2];
-		blocks[2] = enc->state[enc->program].custom_group[3];
-		blocks[3] = enc->state[enc->program].custom_group[4];
+		blocks[0] = enc->state[enc->program].custom_group2[1];
+		blocks[1] = enc->state[enc->program].custom_group2[2];
+		blocks[2] = enc->state[enc->program].custom_group2[3];
+		blocks[3] = enc->state[enc->program].custom_group2[4];
 		return 1;
 	}
 	return 0;
