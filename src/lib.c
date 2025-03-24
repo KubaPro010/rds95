@@ -12,8 +12,7 @@ void msleep(unsigned long ms) {
 
 int _strnlen(const char *s, int maxlen) {
 	int len = 0;
-	while (s[len] != 0 && len < maxlen)
-		len++;
+	while (s[len] != 0 && len < maxlen) len++;
 	return len;
 }
 
@@ -25,24 +24,23 @@ static uint16_t offset_words[] = {
 	0x350  /*  C' */
 };
 
-void add_checkwords(uint16_t *blocks, uint8_t *bits)
+void add_checkwords(uint16_t *blocks, uint8_t *bits, uint8_t stream)
 {
-	uint8_t i, j, bit, msb;
-	uint16_t block, block_crc, check, offset_word;
-	bool group_type_b = false;
-	if (IS_TYPE_B(blocks))
-		group_type_b = true;
+	uint16_t offset_word;
+	bool group_type_b = IS_TYPE_B(blocks);
+	bool rds2_tunneling = (blocks[0] & 0xFE00) && (stream != 0);
 
-	for (i = 0; i < GROUP_LENGTH; i++) {
-		if (i == 2 && group_type_b) {
+	for (uint8_t i = 0; i < GROUP_LENGTH; i++) {
+		offset_word = offset_words[i];
+		if ((i == 2 && group_type_b && stream == 0) ||
+			(i == 2 && group_type_b && rds2_tunneling)) {
 			offset_word = offset_words[4];
-		} else {
-			offset_word = offset_words[i];
 		}
 
-		block = blocks[i];
+		uint16_t block = blocks[i];
 
-		block_crc = 0;
+		uint16_t block_crc = 0;
+		uint8_t j, bit, msb;
 		for (j = 0; j < BLOCK_SIZE; j++) {
 			bit = (block & (0x8000 >> j)) != 0;
 			msb = (block_crc >> (POLY_DEG - 1)) & 1;
@@ -50,7 +48,7 @@ void add_checkwords(uint16_t *blocks, uint8_t *bits)
 			if (msb ^ bit) block_crc ^= POLY;
 			*bits++ = bit;
 		}
-		check = block_crc ^ offset_word;
+		uint16_t check = block_crc ^ offset_word;
 		for (j = 0; j < POLY_DEG; j++) {
 			*bits++ = (check & ((1 << (POLY_DEG - 1)) >> j)) != 0;
 		}
@@ -59,15 +57,11 @@ void add_checkwords(uint16_t *blocks, uint8_t *bits)
 
 uint8_t add_rds_af(RDSAFs *af_list, float freq) {
 	uint16_t af;
+
 	uint8_t entries_reqd = 1;
+	if (freq < 87.6f || freq > 107.9f) entries_reqd = 2;
 
-	if (freq < 87.6f || freq > 107.9f) {
-		entries_reqd = 2;
-	}
-
-	if (af_list->num_afs + entries_reqd > MAX_AFS) {
-		return 1;
-	}
+	if (af_list->num_afs + entries_reqd > MAX_AFS) return 1;
 
 	if (freq >= 87.6f && freq <= 107.9f) {
 		af = (uint16_t)(freq * 10.0f) - 875;

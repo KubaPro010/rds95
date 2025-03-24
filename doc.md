@@ -12,6 +12,10 @@ The newer standard which is the IEC one, removes these features:
 - PIN
 - LIC
 - DI (partially, only dynamic pty is left)
+- EWS (now ODA)
+- IH (now ODA)
+- RP
+- TDC (now ODA)
 
 ## Unique features
 

@@ -659,7 +659,7 @@ group_coded:
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits, uint8_t stream) {
 	static uint16_t out_blocks[GROUP_LENGTH];
 	get_rds_group(enc, out_blocks, stream);
-	add_checkwords(out_blocks, bits);
+	add_checkwords(out_blocks, bits, stream);
 }
 
 static void init_rtplus(RDSEncoder* enc, uint8_t group, uint8_t program) {
