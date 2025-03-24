@@ -302,7 +302,7 @@ static void handle_init(char *arg, RDSModulator* mod, char* output) {
 static void handle_ver(char *arg, RDSModulator* mod, char* output) {
 	(void)arg;
 	(void)mod;
-	sprintf(output, "Firmware v. %.1f - (C) 2025 radio95", VERSION);
+	sprintf(output, "Firmware v. 1.2 - (C) 2025 radio95");
 }
 
 static void handle_eonen(char *arg, char *pattern, RDSModulator* mod, char* output) {
