@@ -633,8 +633,10 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 	get_rds_sequence_group(enc, blocks, &grp, stream);
 
 group_coded_rds2:
-	if (blocks[0] == 0 && IS_TYPE_B(blocks) && stream != 0) {
-		blocks[2] = enc->data[enc->program].pi;
+	if (blocks[0] == 0 && stream != 0) {
+		if(IS_TYPE_B(blocks)) blocks[2] = enc->data[enc->program].pi;
+		blocks[1] |= enc->data[enc->program].tp << 10;
+		blocks[1] |= enc->data[enc->program].pty << 5;
 	} else if(stream == 0) {
 		goto group_coded;
 	}
@@ -646,9 +648,7 @@ group_coded:
 	}
 	blocks[1] |= enc->data[enc->program].tp << 10;
 	blocks[1] |= enc->data[enc->program].pty << 5;
-	if (IS_TYPE_B(blocks)) {
-		blocks[2] = enc->data[enc->program].pi;
-	}
+	if (IS_TYPE_B(blocks)) blocks[2] = enc->data[enc->program].pi;
 
 	enc->state[enc->program].last_stream0_group[0] = blocks[1];
 	enc->state[enc->program].last_stream0_group[1] = blocks[2];
