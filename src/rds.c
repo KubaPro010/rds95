@@ -136,7 +136,7 @@ void loadFromFile(RDSEncoder *enc) {
 		memcpy(&(enc->odas[i]), &(rdsEncoderfile.odas[i]), sizeof(RDSODA) * MAX_ODAS);
 		memcpy(&(enc->oda_state[i]), &(rdsEncoderfile.oda_state[i]), sizeof(RDSODAState));
 	}
-	memcpy(&(enc->encoder_data), &(rdsEncoderfile.encoder_data), sizeof(RDSODAState));
+	memcpy(&(enc->encoder_data), &(rdsEncoderfile.encoder_data), sizeof(RDSEncoderData));
 	enc->program = rdsEncoderfile.program;
 }
 
