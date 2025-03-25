@@ -18,25 +18,25 @@ typedef struct {
 
 static void handle_ptyn(char *arg, RDSModulator* mod, char* output) {
 	arg[PTYN_LENGTH] = 0;
-	set_rds_ptyn(mod->enc, xlat(arg));
+	set_rds_ptyn(mod->enc, convert_to_rds_charset(arg));
 	strcpy(output, "+\0");
 }
 
 static void handle_tps(char *arg, RDSModulator* mod, char* output) {
 	arg[PS_LENGTH * 2] = 0;
-	set_rds_tps(mod->enc, xlat(arg));
+	set_rds_tps(mod->enc, convert_to_rds_charset(arg));
 	strcpy(output, "+\0");
 }
 
 static void handle_rt1(char *arg, RDSModulator* mod, char* output) {
 	arg[RT_LENGTH * 2] = 0;
-	set_rds_rt1(mod->enc, xlat(arg));
+	set_rds_rt1(mod->enc, convert_to_rds_charset(arg));
 	strcpy(output, "+\0");
 }
 
 static void handle_rt2(char *arg, RDSModulator* mod, char* output) {
 	arg[RT_LENGTH * 2] = 0;
-	set_rds_rt2(mod->enc, xlat(arg));
+	set_rds_rt2(mod->enc, convert_to_rds_charset(arg));
 	strcpy(output, "+\0");
 }
 
@@ -69,7 +69,7 @@ static void handle_lps(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_ps(char *arg, RDSModulator* mod, char* output) {
 	arg[PS_LENGTH * 2] = 0;
-	set_rds_ps(mod->enc, xlat(arg));
+	set_rds_ps(mod->enc, convert_to_rds_charset(arg));
 	strcpy(output, "+\0");
 }
 

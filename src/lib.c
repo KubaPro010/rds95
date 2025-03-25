@@ -86,12 +86,11 @@ uint8_t add_rds_af(RDSAFs *af_list, float freq) {
 	return 0;
 }
 
-#define XLATSTRLEN	255
-char *xlat(char *str) {
-	static char new_str[XLATSTRLEN];
+char *convert_to_rds_charset(char *str) {
+	static char new_str[255];
 	uint8_t i = 0;
 
-	while (*str != 0 && i < XLATSTRLEN) {
+	while (*str != 0 && i < 255) {
 		switch (*str) {
 		case 0xc2:
 			str++;
