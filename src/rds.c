@@ -826,17 +826,11 @@ void set_rds_lps(RDSEncoder* enc, char *lps) {
 		memset(enc->data[enc->program].lps, 0, LPS_LENGTH);
 		return;
 	}
-	memset(enc->data[enc->program].lps, ' ', LPS_LENGTH);
+	memset(enc->data[enc->program].lps, '\r', LPS_LENGTH);
 	while (*lps != 0 && len < LPS_LENGTH) enc->data[enc->program].lps[len++] = *lps++;
-
-	while (len > 0 && enc->data[enc->program].lps[len - 1] == ' ') {
-		len--;
-	}
 
 	if (len < LPS_LENGTH) {
 		enc->state[enc->program].lps_segments = 0;
-
-		enc->data[enc->program].lps[len++] = '\r';
 
 		while (i < len) {
 			i += 4;
