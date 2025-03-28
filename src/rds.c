@@ -336,8 +336,8 @@ static void get_rds_lps_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[3] =  enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 2] << 8;
 	blocks[3] |= enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 3];
 
-	enc->state[enc->program].lps_state++;
 	if (enc->state[enc->program].lps_state == enc->state[enc->program].lps_segments) enc->state[enc->program].lps_state = 0;
+	enc->state[enc->program].lps_state++;
 }
 
 static void get_rds_ecc_group(RDSEncoder* enc, uint16_t *blocks) {
