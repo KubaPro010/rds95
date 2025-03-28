@@ -746,7 +746,6 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	enc->data[program].rt1_enabled = 1;
 
 	memset(enc->data[program].rt1, ' ', 59);
-	memset(enc->data[program].ert, ' ', 59);
 
 	enc->data[program].rt_type = 2;
 
