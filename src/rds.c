@@ -253,8 +253,8 @@ static void get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[3] |= enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4 + 3];
 
 	uint8_t segments = (enc->state[enc->program].current_rt == 1) ? enc->state[enc->program].rt2_segments : enc->state[enc->program].rt_segments;
-	if (enc->state[enc->program].rt_state == segments) enc->state[enc->program].rt_state = 0;
 	enc->state[enc->program].rt_state++;
+	if (enc->state[enc->program].rt_state == segments) enc->state[enc->program].rt_state = 0;
 }
 
 static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
