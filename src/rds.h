@@ -114,12 +114,12 @@ typedef struct {
 	uint8_t ps_csegment : 3;
 
 	char rt_text[RT_LENGTH];
-	uint8_t rt_state : 4;
+	uint8_t rt_state : 5;
 	uint8_t rt_update : 1;
 	uint8_t rt2_update : 1;
 	uint8_t rt_ab : 1;
-	uint8_t rt_segments : 4;
-	uint8_t rt2_segments : 4;
+	uint8_t rt_segments : 5;
+	uint8_t rt2_segments : 5;
 	uint8_t current_rt : 1;
 
 	char ert_text[ERT_LENGTH];
@@ -131,9 +131,9 @@ typedef struct {
 	uint8_t ptyn_ab : 1;
 
 	char lps_text[LPS_LENGTH];
-	uint8_t lps_state : 3;
+	uint8_t lps_state : 4;
 	uint8_t lps_update : 1;
-	uint8_t lps_segments : 3;
+	uint8_t lps_segments : 4;
 
 	uint16_t custom_group[GROUP_LENGTH];
 	uint16_t custom_group2[GROUP_LENGTH + 1];

@@ -336,8 +336,8 @@ static void get_rds_lps_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[3] =  enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 2] << 8;
 	blocks[3] |= enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 3];
 
-	if (enc->state[enc->program].lps_state == enc->state[enc->program].lps_segments) enc->state[enc->program].lps_state = 0;
 	enc->state[enc->program].lps_state++;
+	if (enc->state[enc->program].lps_state == enc->state[enc->program].lps_segments) enc->state[enc->program].lps_state = 0;
 }
 
 static void get_rds_ecc_group(RDSEncoder* enc, uint16_t *blocks) {
@@ -764,10 +764,10 @@ void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 
 		while (i < len) {
 			i += 4;
-			if (i != 4) enc->state[enc->program].rt_segments++;
+			enc->state[enc->program].rt_segments++;
 		}
 	} else {
-		enc->state[enc->program].rt_segments = 15;
+		enc->state[enc->program].rt_segments = 16;
 	}
 }
 
@@ -790,10 +790,10 @@ void set_rds_rt2(RDSEncoder* enc, char *rt2) {
 
 		while (i < len) {
 			i += 4;
-			if (i != 4) enc->state[enc->program].rt2_segments++;
+			enc->state[enc->program].rt2_segments++;
 		}
 	} else {
-		enc->state[enc->program].rt2_segments = 15;
+		enc->state[enc->program].rt2_segments = 16;
 	}
 }
 
@@ -834,10 +834,10 @@ void set_rds_lps(RDSEncoder* enc, char *lps) {
 
 		while (i < len) {
 			i += 4;
-			if (i != 4) enc->state[enc->program].lps_segments++;
+			enc->state[enc->program].lps_segments++;
 		}
 	} else {
-		enc->state[enc->program].lps_segments = 7;
+		enc->state[enc->program].lps_segments = 8;
 	}
 }
 
