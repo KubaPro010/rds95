@@ -111,7 +111,7 @@ typedef struct {
 	uint8_t tps_update : 1;
 	char ps_text[PS_LENGTH];
 	char tps_text[PS_LENGTH];
-	uint8_t ps_csegment : 2;
+	uint8_t ps_csegment : 3;
 
 	char rt_text[RT_LENGTH];
 	uint8_t rt_state : 4;
