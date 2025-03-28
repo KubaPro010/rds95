@@ -143,6 +143,7 @@ Sets the group sequence for stream0, available groups:
 - X: UDG1
 - Y: UDG2
 - R: RT+
+- S: ERT
 - 3: ODA
 - F: LPS
 

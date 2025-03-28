@@ -36,6 +36,7 @@
 #define MAX_ODAS	8
 // List of ODAs: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
 #define	ODA_AID_RTPLUS	0x4bd7
+#define	ODA_AID_ERT		0x6552
 
 typedef struct {
 	uint8_t num_entries : 6;
@@ -79,11 +80,9 @@ typedef struct {
 	char default_rt[RT_LENGTH];
 	char rt2[RT_LENGTH];
 
-	uint8_t ert_enabled : 1;
 	uint8_t ert_switching_period;
 	uint8_t orignal_ert_switching_period;
 	char ert[ERT_LENGTH];
-	char ert2[ERT_LENGTH];
 
 	uint8_t ptyn_enabled : 1;
 	char ptyn[PTYN_LENGTH];
@@ -123,7 +122,9 @@ typedef struct {
 	uint8_t current_rt : 1;
 
 	char ert_text[ERT_LENGTH];
-	// uint8_t ert_state
+	uint8_t ert_state : 6;
+	uint8_t ert_update : 1;
+	uint8_t ert_segments : 6;
 
 	char ptyn_text[PTYN_LENGTH];
 	uint8_t ptyn_state : 1;
@@ -139,6 +140,7 @@ typedef struct {
 	uint16_t custom_group2[GROUP_LENGTH + 1];
 
 	uint8_t rtp_oda : 1;
+	uint8_t ert_oda : 1;
 	uint8_t grp_seq_idx[4];
 	uint8_t udg_idxs[2];
 
@@ -163,7 +165,6 @@ typedef struct {
 } RDSODAState;
 
 typedef struct {
-	uint8_t group;
 	uint8_t enabled : 1;
 	uint8_t running : 1;
 	uint8_t type[2];
@@ -176,7 +177,7 @@ typedef struct {
 
 typedef struct
 {
-	uint8_t expected_encoder_addr;	
+	uint8_t expected_encoder_addr;
 	uint16_t expected_site_addr : 10;
 } RDSEncoderASCIIData;
 typedef struct
@@ -274,7 +275,8 @@ void set_rds_rt2(RDSEncoder* enc, char *rt2);
 void set_rds_ps(RDSEncoder* enc, char *ps);
 void set_rds_tps(RDSEncoder* enc, char *tps);
 void set_rds_lps(RDSEncoder* enc, char *lps);
-void set_rds_rtplus_flags(RDSEncoder* enc, uint8_t flags);
+void set_rds_ert(RDSEncoder *enc, char *ert);
+void set_rds_rtplus_flags(RDSEncoder *enc, uint8_t flags);
 void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags);
 void set_rds_ptyn(RDSEncoder* enc, char *ptyn);
 void set_rds_grpseq(RDSEncoder* enc, char *grpseq);

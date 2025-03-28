@@ -51,7 +51,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	} else if (strcmp(option, "GRPSEQ") == 0) {
 		memcpy(tempEncoder.data[emp->program].grp_sqc, emp->data[emp->program].grp_sqc, sizeof(emp->data[emp->program].grp_sqc));
 	} else if (strcmp(option, "RTP") == 0) {
-		tempEncoder.rtpData[emp->program].group = emp->rtpData[emp->program].group;
 		memcpy(tempEncoder.rtpData[emp->program].len, emp->rtpData[emp->program].len, sizeof(emp->rtpData[emp->program].len));
 		memcpy(tempEncoder.rtpData[emp->program].start, emp->rtpData[emp->program].start, sizeof(emp->rtpData[emp->program].start));
 		memcpy(tempEncoder.rtpData[emp->program].type, emp->rtpData[emp->program].type, sizeof(emp->rtpData[emp->program].type));
@@ -274,9 +273,16 @@ static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream)
 static void get_rds_rtp_oda_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[1] |= 3 << 12;
 
-	blocks[1] |= GET_GROUP_TYPE(enc->rtpData[enc->program].group) << 1;
-	blocks[1] |= GET_GROUP_VER(enc->rtpData[enc->program].group);
+	blocks[1] |= 11 << 1;
 	blocks[3] = ODA_AID_RTPLUS;
+}
+
+static void get_rds_ert_oda_group(RDSEncoder* enc, uint16_t *blocks) {
+	blocks[1] |= 3 << 12;
+
+	blocks[1] |= 12 << 1;
+	blocks[2] = 1; // UTF-8
+	blocks[3] = ODA_AID_ERT;
 }
 
 static void get_rds_ct_group(RDSEncoder* enc, uint16_t *blocks) {
@@ -409,6 +415,22 @@ get_eon:
 		enc->state[enc->program].eon_state++;
 	}
 }
+
+static void get_rds_ert_group(RDSEncoder* enc, uint16_t *blocks) {
+	if (enc->state[enc->program].ert_state == 0 && enc->state[enc->program].ert_update) {
+		memcpy(enc->state[enc->program].ert_text, enc->data[enc->program].ert, ERT_LENGTH);
+		enc->state[enc->program].ert_update = 0;
+	}
+	
+	blocks[1] |= 12 << 12 | (enc->state[enc->program].ert_state & 31);
+	blocks[2] =  enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4    ] << 8;
+	blocks[2] |= enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4 + 1];
+	blocks[3] =  enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4 + 2] << 8;
+	blocks[3] |= enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4 + 3];
+
+	enc->state[enc->program].ert_state++;
+	if (enc->state[enc->program].ert_state == enc->state[enc->program].ert_state) enc->state[enc->program].ert_state = 0;
+}
 // #endregion
 
 static uint8_t get_rds_custom_groups(RDSEncoder* enc, uint16_t *blocks) {
@@ -480,6 +502,14 @@ static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char* grp,
 			}
 			enc->state[enc->program].rtp_oda ^= 1;
 			goto group_coded;
+		case 'S':
+			if(enc->state[enc->program].ert_oda == 0) {
+				get_rds_ert_group(enc, blocks);
+			} else {
+				get_rds_ert_oda_group(enc, blocks);
+			}
+			enc->state[enc->program].ert_oda ^= 1;
+			goto group_coded;
 		// TODO: add uecp
 		case '3':
 			get_rds_oda_group(enc, blocks, stream);
@@ -509,6 +539,7 @@ static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp, uint8_t stream) 
 	if(*grp == 'X' && enc->data[enc->program].udg1_len != 0) good_group = 1;
 	if(*grp == 'Y' && enc->data[enc->program].udg2_len != 0) good_group = 1;
 	if(*grp == 'R' && enc->rtpData[enc->program].enabled) good_group = 1;
+	if(*grp == 'S' && enc->data[enc->program].ert[0] != '\0') good_group = 1;
 	if(*grp == '3' && enc->oda_state[enc->program][stream].count != 0) good_group = 1;
 	if(*grp == 'F' && enc->data[enc->program].lps[0] != '\0') good_group = 1;
 	return good_group;
@@ -662,11 +693,6 @@ void get_rds_bits(RDSEncoder* enc, uint8_t *bits, uint8_t stream) {
 	add_checkwords(out_blocks, bits, stream);
 }
 
-static void init_rtplus(RDSEncoder* enc, uint8_t group, uint8_t program) {
-	enc->rtpData[program].group = group;
-	enc->rtpData[program].enabled = 0;
-}
-
 void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	RDSEncoder tempCoder;
 	tempCoder.program = program;
@@ -677,6 +703,7 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	tempCoder.state[program].ptyn_ab = 1;
 	set_rds_rt1(&tempCoder, enc->data[program].rt1);
 	set_rds_rt2(&tempCoder, enc->data[program].rt2);
+	set_rds_ert(&tempCoder, enc->data[program].ert);
 	set_rds_ps(&tempCoder, enc->data[program].ps);
 	set_rds_tps(&tempCoder, enc->data[program].tps);
 	set_rds_ptyn(&tempCoder, enc->data[program].ptyn);
@@ -718,12 +745,13 @@ void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	enc->data[program].rt1_enabled = 1;
 
 	memset(enc->data[program].rt1, ' ', 59);
+	memset(enc->data[program].ert, ' ', 59);
 
 	enc->data[program].rt_type = 2;
 
 	reset_rds_state(enc, program);
 
-	init_rtplus(enc, GROUP_11A, program);
+	enc->rtpData[program].enabled = 0;
 
 	enc->encoder_data.ascii_data.expected_encoder_addr = 255;
 	enc->encoder_data.ascii_data.expected_site_addr = 255;
@@ -838,6 +866,32 @@ void set_rds_lps(RDSEncoder* enc, char *lps) {
 		}
 	} else {
 		enc->state[enc->program].lps_segments = 8;
+	}
+}
+
+void set_rds_ert(RDSEncoder* enc, char *ert) {
+	uint8_t i = 0, len = 0;
+
+	enc->state[enc->program].ert_update = 1;
+
+	memset(enc->data[enc->program].ert, ' ', RT_LENGTH);
+	while (*ert != 0 && len < RT_LENGTH) enc->data[enc->program].ert[len++] = *ert++;
+
+	while (len > 0 && enc->data[enc->program].ert[len - 1] == ' ') {
+		len--;
+	}
+
+	if (len < RT_LENGTH) {
+		enc->state[enc->program].ert_segments = 0;
+
+		enc->data[enc->program].ert[len++] = '\r';
+
+		while (i < len) {
+			i += 4;
+			enc->state[enc->program].ert_segments++;
+		}
+	} else {
+		enc->state[enc->program].ert_segments = 32;
 	}
 }
 
