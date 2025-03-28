@@ -87,6 +87,10 @@ TODO: RTP
 Sets the LPS: `LPS=NovaFM❤️`  
 *Note that LPS does UTF-8, while PS, RT don't*  
 
+### ERT
+
+TODO: ERT
+
 ### PTYN
 
 Sets the programme type name: `PTYN=Football`

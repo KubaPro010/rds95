@@ -67,6 +67,12 @@ static void handle_lps(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
+static void handle_ert(char *arg, RDSModulator* mod, char* output) {
+	arg[EPS_LENGTH * 2] = 0;
+	set_rds_ert(mod->enc, arg);
+	strcpy(output, "+\0");
+}
+
 static void handle_ps(char *arg, RDSModulator* mod, char* output) {
 	arg[PS_LENGTH * 2] = 0;
 	set_rds_ps(mod->enc, convert_to_rds_charset(arg));
@@ -415,6 +421,7 @@ static const command_handler_t commands_eq4[] = {
 	{"ECC", handle_ecc, 3},
 	{"RTP", handle_rtp, 3},
 	{"LPS", handle_lps, 3},
+	{"ERT", handle_ert, 3},
 };
 
 static const command_handler_t commands_eq5[] = {
