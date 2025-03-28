@@ -68,7 +68,7 @@ static void handle_lps(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_ert(char *arg, RDSModulator* mod, char* output) {
-	arg[EPS_LENGTH * 2] = 0;
+	arg[ERT_LENGTH * 2] = 0;
 	set_rds_ert(mod->enc, arg);
 	strcpy(output, "+\0");
 }
