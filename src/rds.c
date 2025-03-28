@@ -271,6 +271,7 @@ static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream)
 }
 
 static void get_rds_rtp_oda_group(RDSEncoder* enc, uint16_t *blocks) {
+	(void)enc;
 	blocks[1] |= 3 << 12;
 
 	blocks[1] |= 11 << 1;
@@ -278,6 +279,7 @@ static void get_rds_rtp_oda_group(RDSEncoder* enc, uint16_t *blocks) {
 }
 
 static void get_rds_ert_oda_group(RDSEncoder* enc, uint16_t *blocks) {
+	(void)enc;
 	blocks[1] |= 3 << 12;
 
 	blocks[1] |= 12 << 1;
@@ -352,8 +354,7 @@ static void get_rds_ecc_group(RDSEncoder* enc, uint16_t *blocks) {
 }
 
 static void get_rds_rtplus_group(RDSEncoder* enc, uint16_t *blocks) {
-	blocks[1] |= GET_GROUP_TYPE(enc->rtpData[enc->program].group) << 12;
-	blocks[1] |= GET_GROUP_VER(enc->rtpData[enc->program].group) << 11;
+	blocks[1] |= 11 << 12;
 	blocks[1] |= enc->rtpState[enc->program].toggle << 4 | enc->rtpData[enc->program].running << 3;
 	blocks[1] |= (enc->rtpData[enc->program].type[0] & 0xf8) >> 3;
 
@@ -429,7 +430,7 @@ static void get_rds_ert_group(RDSEncoder* enc, uint16_t *blocks) {
 	blocks[3] |= enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4 + 3];
 
 	enc->state[enc->program].ert_state++;
-	if (enc->state[enc->program].ert_state == enc->state[enc->program].ert_state) enc->state[enc->program].ert_state = 0;
+	if (enc->state[enc->program].ert_state == enc->state[enc->program].ert_segments) enc->state[enc->program].ert_state = 0;
 }
 // #endregion
 
