@@ -3,8 +3,6 @@
 #include "rds.h"
 #include "waveforms.h"
 
-#define STREAMS 2
-
 typedef struct
 {
 	float level;

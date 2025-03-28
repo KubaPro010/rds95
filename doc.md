@@ -111,4 +111,51 @@ Sends a custom group to the next group available: `G=F100FFFFFFFF` or `G=0000200
 
 Enables RT 1: `RT1EN=1`  
 
-TODO: Rest of commands
+### RT2EN
+
+Enables RT 2: `RT1EN=2`  
+
+### RTPER
+
+RT Switching period, in minutes: `RTPER=5`
+
+### LEVEL
+
+Sets the RDS output level: `LEVEL=255`
+
+### RESET
+
+Resets the internal state of the encoder: `RESET`
+
+### PTYNEN
+
+Enables PTYN: `PTYNEN=1`
+
+### GRPSEQ
+
+Sets the group sequence for stream0, available groups:
+
+- 0: 4 PSs
+- 1: ECC
+- 2: RT
+- A: PTYN
+- E: EON
+- X: UDG1
+- Y: UDG2
+- R: RT+
+- 3: ODA
+- F: LPS
+
+`GRPSEQ=002222`
+
+### RDSGEN
+
+Sets the rds generator level:
+
+- 0: No streams
+- 1: Stream 0 only
+- 2: Stream 0 and 1
+
+`RDSGEN=1`
+
+TODO: Rest of the cmds

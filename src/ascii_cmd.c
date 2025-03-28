@@ -432,7 +432,6 @@ static const command_handler_t commands_eq6[] = {
 	{"RT2EN", handle_rt2en, 5},
 	{"RTPER", handle_rtper, 5},
 	{"LEVEL", handle_level, 5},
-	{"RESET", handle_reset, 5},
 };
 
 static const command_handler_t commands_eq7[] = {
@@ -451,6 +450,7 @@ static const command_handler_t commands_eq8[] = {
 static const command_handler_t commands_exact[] = {
 	{"INIT", handle_init, 4},
 	{"VER", handle_ver, 3},
+	{"RESET", handle_reset, 5},
 	// TODO: handle help, status
 };
 

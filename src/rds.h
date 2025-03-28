@@ -15,7 +15,10 @@
 #define FILTER_SIZE	 64
 #define SAMPLE_BUFFER_SIZE	(SAMPLES_PER_BIT + FILTER_SIZE)
 
+#define STREAMS 2
+
 #define RT_LENGTH	64
+#define ERT_LENGTH	128
 #define PS_LENGTH	8
 #define PTYN_LENGTH	8
 #define LPS_LENGTH	32
@@ -48,19 +51,6 @@ typedef struct {
 	char ps[8];
 	RDSAFs af;
 } RDSEON;
-typedef struct
-{
-	uint8_t days : 7; // let's say that here it will be stored by bits, so 0b1000000 is monday and so on
-	uint8_t pty: 5;
-	uint16_t execution_hours[12];
-	uint16_t execution_minutes[12];
-	char command[35];
-} RDSSchedulerItem;
-typedef struct
-{
-	uint8_t enabled : 1;
-	RDSSchedulerItem items[49];
-} RDSScheduler;
 typedef struct {
 	uint16_t pi;
 
@@ -83,10 +73,17 @@ typedef struct {
 	uint8_t rt2_enabled : 1;
 	uint8_t rt_type : 2;
 	uint8_t rt_text_timeout;
+	uint8_t original_rt_text_timeout;
 	uint8_t rt_switching_period;
 	uint8_t orignal_rt_switching_period;
 	char default_rt[RT_LENGTH];
 	char rt2[RT_LENGTH];
+
+	uint8_t ert_enabled : 1;
+	uint8_t ert_switching_period;
+	uint8_t orignal_ert_switching_period;
+	char ert[ERT_LENGTH];
+	char ert2[ERT_LENGTH];
 
 	uint8_t ptyn_enabled : 1;
 	char ptyn[PTYN_LENGTH];
@@ -114,16 +111,19 @@ typedef struct {
 	uint8_t tps_update : 1;
 	char ps_text[PS_LENGTH];
 	char tps_text[PS_LENGTH];
-	uint8_t ps_csegment : 4;
+	uint8_t ps_csegment : 2;
 
 	char rt_text[RT_LENGTH];
-	uint8_t rt_state : 5;
+	uint8_t rt_state : 4;
 	uint8_t rt_update : 1;
 	uint8_t rt2_update : 1;
 	uint8_t rt_ab : 1;
-	uint8_t rt_segments : 5;
-	uint8_t rt2_segments : 5;
+	uint8_t rt_segments : 4;
+	uint8_t rt2_segments : 4;
 	uint8_t current_rt : 1;
+
+	char ert_text[ERT_LENGTH];
+	// uint8_t ert_state
 
 	char ptyn_text[PTYN_LENGTH];
 	uint8_t ptyn_state : 1;
@@ -131,9 +131,9 @@ typedef struct {
 	uint8_t ptyn_ab : 1;
 
 	char lps_text[LPS_LENGTH];
-	uint8_t lps_state : 5;
+	uint8_t lps_state : 3;
 	uint8_t lps_update : 1;
-	uint8_t lps_segments : 5;
+	uint8_t lps_segments : 3;
 
 	uint16_t custom_group[GROUP_LENGTH];
 	uint16_t custom_group2[GROUP_LENGTH + 1];
@@ -155,11 +155,11 @@ typedef struct {
 typedef struct {
 	uint8_t group;
 	uint16_t aid;
-	uint16_t scb;
+	uint16_t data;
 } RDSODA;
 typedef struct {
-	uint8_t current : 4;
-	uint8_t count : 4;
+	uint8_t current : 3;
+	uint8_t count : 3;
 } RDSODAState;
 
 typedef struct {
@@ -189,7 +189,6 @@ typedef struct {
 	RDSEncoderASCIIData ascii_data;
 	RDSEncoderUECPData uecp_data;
 	uint16_t special_features;
-	RDSScheduler schedule;
 	uint8_t rds2_mode : 1;
 	// uint8_t rds2_buffer[16384];
 } RDSEncoderData;
@@ -197,8 +196,8 @@ typedef struct {
 	RDSEncoderData encoder_data;
 	RDSData data[PROGRAMS];
 	RDSState state[PROGRAMS];
-	RDSODA odas[PROGRAMS][MAX_ODAS];
-	RDSODAState oda_state[PROGRAMS];
+	RDSODA odas[PROGRAMS][STREAMS][MAX_ODAS];
+	RDSODAState oda_state[PROGRAMS][STREAMS];
 	RDSRTPlusData rtpData[PROGRAMS];
 	RDSRTPlusState rtpState[PROGRAMS];
 	uint8_t program : 3;
@@ -207,9 +206,9 @@ typedef struct {
 	uint8_t file_starter; // Always is 225 first polish radio programme am frequency
 	RDSData data[PROGRAMS];
 	RDSRTPlusData rtpData[PROGRAMS];
-	RDSODA odas[PROGRAMS][MAX_ODAS];
+	RDSODA odas[PROGRAMS][STREAMS][MAX_ODAS];
 	uint8_t file_middle; // Always is 160, average of both
-	RDSODAState oda_state[PROGRAMS];
+	RDSODAState oda_state[PROGRAMS][STREAMS];
 	RDSEncoderData encoder_data;
 	uint8_t program : 3;
 	uint8_t file_ender; // Always is 95 my freq
