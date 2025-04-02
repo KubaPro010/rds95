@@ -492,6 +492,7 @@ group_coded:
 }
 
 static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp, uint8_t stream) {
+	(void)stream;
 	uint8_t good_group = 0;
 	if(*grp == '0') good_group = 1;
 	if(*grp == '1' && enc->data[enc->program].ecc != 0) good_group = 1;
