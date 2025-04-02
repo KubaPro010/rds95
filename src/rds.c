@@ -75,7 +75,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	} else if(strcmp(option, "PROGRAM") == 0) {
 		tempEncoder.program = emp->program;
 	} else if(strcmp(option, "EON") == 0) {
-		memcpy(&(tempEncoder.data[emp->program].eon), &(emp->data[emp->program].eon), sizeof(RDSEON)*EONS);
+		memcpy(&(tempEncoder.data[emp->program].eon), &(emp->data[emp->program].eon), sizeof(RDSEON)*4);
 	} else if (strcmp(option, "RDS2MOD") == 0) {
 		tempEncoder.encoder_data.rds2_mode = emp->encoder_data.rds2_mode;
 	} else if (strcmp(option, "GRPSEQ2") == 0) {
@@ -83,8 +83,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	} else if (strcmp(option, "ALL") == 0) {
 		memcpy(&(tempEncoder.data[emp->program]), &(emp->data[emp->program]), sizeof(RDSData));
 		memcpy(&(tempEncoder.rtpData[emp->program]), &(emp->rtpData[emp->program]), sizeof(RDSRTPlusData));
-		memcpy(&(tempEncoder.odas[emp->program]), &(emp->odas[emp->program]), sizeof(RDSODA)*MAX_ODAS*STREAMS);
-		memcpy(&(tempEncoder.oda_state[emp->program]), &(emp->oda_state[emp->program]), sizeof(RDSODAState)*STREAMS);
 		memcpy(&(tempEncoder.encoder_data), &(emp->encoder_data), sizeof(RDSEncoderData));
 		tempEncoder.program = emp->program;
 	} else {
@@ -97,8 +95,6 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	rdsEncoderfile.file_ender = 95;
 	memcpy(&(rdsEncoderfile.data[emp->program]), &(tempEncoder.data[emp->program]), sizeof(RDSData));
 	memcpy(&(rdsEncoderfile.rtpData[emp->program]), &(tempEncoder.rtpData[emp->program]), sizeof(RDSRTPlusData));
-	memcpy(&(rdsEncoderfile.odas[emp->program]), &(tempEncoder.odas[emp->program]), sizeof(RDSODA)*MAX_ODAS*STREAMS);
-	memcpy(&(rdsEncoderfile.oda_state[emp->program]), &(tempEncoder.oda_state[emp->program]), sizeof(RDSODAState)*STREAMS);
 	memcpy(&(rdsEncoderfile.encoder_data), &(tempEncoder.encoder_data), sizeof(RDSEncoderData));
 	rdsEncoderfile.program = tempEncoder.program;
 
@@ -132,8 +128,6 @@ void loadFromFile(RDSEncoder *enc) {
 	for (int i = 0; i < PROGRAMS; i++) {
 		memcpy(&(enc->data[i]), &(rdsEncoderfile.data[i]), sizeof(RDSData));
 		memcpy(&(enc->rtpData[i]), &(rdsEncoderfile.rtpData[i]), sizeof(RDSRTPlusData));
-		memcpy(&(enc->odas[i]), &(rdsEncoderfile.odas[i]), sizeof(RDSODA) * MAX_ODAS * STREAMS);
-		memcpy(&(enc->oda_state[i]), &(rdsEncoderfile.oda_state[i]), sizeof(RDSODAState) * STREAMS);
 	}
 	memcpy(&(enc->encoder_data), &(rdsEncoderfile.encoder_data), sizeof(RDSEncoderData));
 	enc->program = rdsEncoderfile.program;
@@ -149,15 +143,6 @@ int rdssaved() {
 	}
 	return 0;
 }
-
-// static void register_oda(RDSEncoder* enc, uint8_t stream, uint8_t group, uint16_t aid, uint16_t data) {
-// 	if (enc->oda_state[enc->program].count >= MAX_ODAS) return;
-
-// 	enc->odas[enc->program][stream][enc->oda_state[enc->program].count].group = group;
-// 	enc->odas[enc->program][stream][enc->oda_state[enc->program].count].aid = aid;
-// 	enc->odas[enc->program][stream][enc->oda_state[enc->program].count].data = data;
-// 	enc->oda_state[enc->program].count++;
-// }
 
 static uint16_t get_next_af(RDSEncoder* enc) {
 	static uint8_t af_state;
@@ -255,21 +240,6 @@ static void get_rds_rt_group(RDSEncoder* enc, uint16_t *blocks) {
 	enc->state[enc->program].rt_state++;
 	if (enc->state[enc->program].rt_state == segments) enc->state[enc->program].rt_state = 0;
 }
-
-static void get_rds_oda_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
-	RDSODA this_oda = enc->odas[enc->program][stream][enc->oda_state[enc->program][stream].current];
-
-	blocks[1] |= 3 << 12;
-
-	blocks[1] |= GET_GROUP_TYPE(this_oda.group) << 1;
-	blocks[1] |= GET_GROUP_VER(this_oda.group);
-	blocks[2] = this_oda.data;
-	blocks[3] = this_oda.aid;
-
-	if (enc->oda_state[enc->program][stream].current == enc->oda_state[enc->program][stream].count) enc->oda_state[enc->program][stream].current = 0;
-	enc->oda_state[enc->program][stream].current++;
-}
-
 static void get_rds_rtp_oda_group(RDSEncoder* enc, uint16_t *blocks) {
 	(void)enc;
 	blocks[1] |= 3 << 12;
@@ -402,9 +372,9 @@ get_eon:
 		enc->state[enc->program].eon_index++;
 
 		uint8_t i = 0;
-		while(i < EONS && !enc->data[enc->program].eon[enc->state[enc->program].eon_index].enabled) {
+		while(i < 4 && !enc->data[enc->program].eon[enc->state[enc->program].eon_index].enabled) {
 			enc->state[enc->program].eon_index++;
-			if(enc->state[enc->program].eon_index >= EONS) {
+			if(enc->state[enc->program].eon_index >= 4) {
 				enc->state[enc->program].eon_index = 0;
 			}
 			i++;
@@ -512,9 +482,7 @@ static void get_rds_sequence_group(RDSEncoder* enc, uint16_t *blocks, char* grp,
 			enc->state[enc->program].ert_oda ^= 1;
 			goto group_coded;
 		// TODO: add uecp
-		case '3':
-			get_rds_oda_group(enc, blocks, stream);
-			goto group_coded;
+		// TODO: readd ODA
 		case 'F':
 			get_rds_lps_group(enc, blocks);
 			goto group_coded;
@@ -530,7 +498,7 @@ static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp, uint8_t stream) 
 	if(*grp == '2' && (enc->data[enc->program].rt1_enabled || enc->data[enc->program].rt2_enabled)) good_group = 1;
 	if(*grp == 'A' && enc->data[enc->program].ptyn_enabled) good_group = 1;
 	if(*grp == 'E') {
-		for (int i = 0; i < EONS; i++) {
+		for (int i = 0; i < 4; i++) {
 			if (enc->data[enc->program].eon[i].enabled) {
 				good_group = 1;
 				break;
@@ -541,7 +509,6 @@ static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp, uint8_t stream) 
 	if(*grp == 'Y' && enc->data[enc->program].udg2_len != 0) good_group = 1;
 	if(*grp == 'R' && enc->rtpData[enc->program].enabled) good_group = 1;
 	if(*grp == 'S' && enc->data[enc->program].ert[0] != '\0') good_group = 1;
-	if(*grp == '3' && enc->oda_state[enc->program][stream].count != 0) good_group = 1;
 	if(*grp == 'F' && enc->data[enc->program].lps[0] != '\0') good_group = 1;
 	return good_group;
 }
@@ -560,7 +527,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 	if (utc->tm_min != enc->state[enc->program].last_minute) {
 		enc->state[enc->program].last_minute = utc->tm_min;
 		uint8_t eon_has_ta = 0;
-		for (int i = 0; i < EONS; i++) {
+		for (int i = 0; i < 4; i++) {
 			if (enc->data[enc->program].eon[i].enabled && enc->data[enc->program].eon[i].ta) {
 				eon_has_ta = 1;
 				break;
@@ -720,7 +687,7 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 
 	tempCoder.rtpState[program].toggle = 0;
 
-	for(int i = 0; i < EONS; i++) {
+	for(int i = 0; i < 4; i++) {
 		tempCoder.data[program].eon[i].ta = 0;
 	}
 
@@ -730,8 +697,6 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 
 void set_rds_defaults(RDSEncoder* enc, uint8_t program) {
 	memset(&(enc->data[program]), 0, sizeof(RDSData));
-	memset(&(enc->oda_state[program]), 0, sizeof(RDSODAState)*STREAMS);
-	memset(&(enc->odas[program]), 0, sizeof(RDSODA)*MAX_ODAS*STREAMS);
 	memset(&(enc->rtpData[program]), 0, sizeof(RDSRTPlusData));
 	memset(&(enc->encoder_data), 0, sizeof(RDSEncoderData));
 

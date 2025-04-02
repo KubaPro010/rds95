@@ -31,9 +31,7 @@
 #define AF_CODE_LFMF_FOLLOWS	250
 
 #define PROGRAMS 2
-#define EONS 4
 
-#define MAX_ODAS	8
 // List of ODAs: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
 #define	ODA_AID_RTPLUS	0x4bd7
 #define	ODA_AID_ERT		0x6552
@@ -103,7 +101,7 @@ typedef struct {
 	uint16_t udg1[8][3];
 	uint16_t udg2[8][3];
 
-	RDSEON eon[EONS];
+	RDSEON eon[4];
 } RDSData;
 typedef struct {
 	uint8_t ps_update : 1;
@@ -155,16 +153,6 @@ typedef struct {
 } RDSState;
 
 typedef struct {
-	uint8_t group;
-	uint16_t aid;
-	uint16_t data;
-} RDSODA;
-typedef struct {
-	uint8_t current : 3;
-	uint8_t count : 3;
-} RDSODAState;
-
-typedef struct {
 	uint8_t enabled : 1;
 	uint8_t running : 1;
 	uint8_t type[2];
@@ -197,8 +185,6 @@ typedef struct {
 	RDSEncoderData encoder_data;
 	RDSData data[PROGRAMS];
 	RDSState state[PROGRAMS];
-	RDSODA odas[PROGRAMS][STREAMS][MAX_ODAS];
-	RDSODAState oda_state[PROGRAMS][STREAMS];
 	RDSRTPlusData rtpData[PROGRAMS];
 	RDSRTPlusState rtpState[PROGRAMS];
 	uint8_t program : 3;
@@ -207,9 +193,7 @@ typedef struct {
 	uint8_t file_starter; // Always is 225 first polish radio programme am frequency
 	RDSData data[PROGRAMS];
 	RDSRTPlusData rtpData[PROGRAMS];
-	RDSODA odas[PROGRAMS][STREAMS][MAX_ODAS];
 	uint8_t file_middle; // Always is 160, average of both
-	RDSODAState oda_state[PROGRAMS][STREAMS];
 	RDSEncoderData encoder_data;
 	uint8_t program : 3;
 	uint8_t file_ender; // Always is 95 my freq

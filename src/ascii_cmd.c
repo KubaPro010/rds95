@@ -17,7 +17,7 @@ typedef struct {
 } pattern_command_handler_t;
 
 static void handle_ptyn(char *arg, RDSModulator* mod, char* output) {
-	arg[PTYN_LENGTH] = 0;
+	arg[PTYN_LENGTH * 2] = 0;
 	set_rds_ptyn(mod->enc, convert_to_rds_charset(arg));
 	strcpy(output, "+\0");
 }

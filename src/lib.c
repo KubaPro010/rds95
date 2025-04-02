@@ -1,6 +1,7 @@
 #include "common.h"
 #include "rds.h"
 #include <time.h>
+#include "lib.h"
 
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
 void msleep(unsigned long ms) {
@@ -14,6 +15,19 @@ int _strnlen(const char *s, int maxlen) {
 	int len = 0;
 	while (s[len] != 0 && len < maxlen) len++;
 	return len;
+}
+
+// For RDS2 RFT, and UECP
+uint16_t crc16_ccitt(char* data, uint16_t len) {
+	uint16_t i, crc=0xFFFF;
+	for (i=0; i < len; i++ ) {
+		crc = (unsigned char)(crc >> 8) | (crc << 8);
+		crc ^= data[i];
+		crc ^= (unsigned char)(crc & 0xff) >> 4;
+		crc ^= (crc << 8) << 4;
+		crc ^= ((crc & 0xff) << 4) << 1;
+	}
+	return ((crc ^= 0xFFFF) & 0xFFFF);
 }
 
 static uint16_t offset_words[] = {
