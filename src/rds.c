@@ -162,11 +162,12 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 			enc->state[enc->program].af_state += 1;
 		} else {
 			out = enc->data[enc->program].af.afs[enc->state[enc->program].af_state] << 8;
-			if (enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1])
+			if (enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1]) {
 				out |= enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1];
-			else
+			} else {
 				out |= AF_CODE_FILLER;
 				enc->state[enc->program].af_state += 2;
+			}
 		}
 		if (enc->state[enc->program].af_state >= enc->data[enc->program].af.num_entries) enc->state[enc->program].af_state = 0;
 	} else {
@@ -186,11 +187,12 @@ static uint16_t get_next_af_eon(RDSEncoder* enc, uint8_t eon_index) {
 			enc->state[enc->program].eon_states[eon_index].af_state += 1;
 		} else {
 			out = enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state] << 8;
-			if (enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state + 1])
+			if (enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state + 1]) {
 				out |= enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state + 1];
-			else
+			} else {
 				out |= AF_CODE_FILLER;
 				enc->state[enc->program].eon_states[eon_index].af_state += 2;
+			}
 		}
 		if (enc->state[enc->program].eon_states[eon_index].af_state >= enc->data[enc->program].eon[eon_index].af.num_entries) enc->state[enc->program].eon_states[eon_index].af_state = 0;
 	} else {
@@ -593,7 +595,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 			enc->data[enc->program].rt_text_timeout--;
 			if(enc->data[enc->program].rt_text_timeout == 0) {
 				enc->state[enc->program].rt_update = 1;
-				memccpy(enc->state[enc->program].rt_text, enc->data[enc->program].default_rt, 0, RT_LENGTH);
+				memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].default_rt, 0, RT_LENGTH);
 			}
 		}
 
