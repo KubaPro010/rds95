@@ -595,7 +595,7 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 			enc->data[enc->program].rt_text_timeout--;
 			if(enc->data[enc->program].rt_text_timeout == 0) {
 				enc->state[enc->program].rt_update = 1;
-				memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].default_rt, 0, RT_LENGTH);
+				memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].default_rt, RT_LENGTH);
 			}
 		}
 
