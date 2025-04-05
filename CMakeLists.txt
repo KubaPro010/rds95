@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(rds95 VERSION 1.2)
+project(rds95 VERSION 1.3)
 
 add_compile_options(-Wall -Werror -Wextra -pedantic -O2 -std=c18 -march=native -DVERSION=\"${PROJECT_VERSION}\")
 

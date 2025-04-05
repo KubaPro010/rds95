@@ -236,6 +236,12 @@ static void handle_grpseq2(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
+static void handle_dttmout(char *arg, RDSModulator* mod, char* output) {
+	mod->enc->data[mod->enc->program].original_rt_text_timeout = atoi(arg);
+	mod->enc->data[mod->enc->program].rt_text_timeout = mod->enc->data[mod->enc->program].original_rt_text_timeout;
+	strcpy(output, "+\0");
+}
+
 static void handle_level(char *arg, RDSModulator* mod, char* output) {
 	mod->params.level = atoi(arg)/255.0f;
 	strcpy(output, "+\0");
@@ -313,7 +319,7 @@ static void handle_init(char *arg, RDSModulator* mod, char* output) {
 static void handle_ver(char *arg, RDSModulator* mod, char* output) {
 	(void)arg;
 	(void)mod;
-	sprintf(output, "Firmware v. 1.2 - (C) 2025 radio95");
+	sprintf(output, "Encoder v. %s - (C) 2025 radio95", VERSION);
 }
 
 static void handle_eonen(char *arg, char *pattern, RDSModulator* mod, char* output) {
@@ -453,6 +459,7 @@ static const command_handler_t commands_eq8[] = {
 	{"PROGRAM", handle_program, 7},
 	{"RDS2MOD", handle_rds2mod, 7},
 	{"GRPSEQ2", handle_grpseq2, 7},
+	{"DTTMOUT", handle_dttmout, 7},
 };
 static const command_handler_t commands_exact[] = {
 	{"INIT", handle_init, 4},

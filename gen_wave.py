@@ -4,7 +4,7 @@ FFT = PLOT and True
 import math
 import io, os
 if PLOT: import matplotlib.pyplot as plt
-if FFT: import numpy as np  # Import numpy for FFT
+if FFT: import numpy as np
 
 DATA_RATE = 1187.5
 SIZE_RATIO = 2
@@ -16,33 +16,33 @@ if not sample_rate.is_integer(): raise ValueError("Need a even value")
 
 # this is modified from ChristopheJacquet's pydemod
 def rrcosfilter(NumSamples):
-    T_delta = 1/float(sample_rate)
-    sample_num = list(range(NumSamples))
-    h_rrc = [0.0] * NumSamples
-    SymbolPeriod = 1/(2*DATA_RATE)
+	T_delta = 1/float(sample_rate)
+	sample_num = list(range(NumSamples))
+	h_rrc = [0.0] * NumSamples
+	SymbolPeriod = 1/(2*DATA_RATE)
 
-    for x in sample_num:
-        t = (x-NumSamples/2)*T_delta
-        if t == 0.0:
-            h_rrc[x] = 1.0 - 1 + (4/math.pi)
-        elif t == SymbolPeriod/4:
-            h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi)* \
-                    (math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
-        elif t == -SymbolPeriod/4:
-            h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi)* \
-                    (math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
-        else:
-            h_rrc[x] = (4*(t/SymbolPeriod)*math.cos(math.pi*t*2/SymbolPeriod))/ \
-                    (math.pi*t*(1-(4*t/SymbolPeriod)*(4*t/SymbolPeriod))/SymbolPeriod)
+	for x in sample_num:
+		t = (x-NumSamples/2)*T_delta
+		if t == 0.0:
+			h_rrc[x] = 1.0 - 1 + (4/math.pi)
+		elif t == SymbolPeriod/4:
+			h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi)* \
+					(math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
+		elif t == -SymbolPeriod/4:
+			h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi)* \
+					(math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
+		else:
+			h_rrc[x] = (4*(t/SymbolPeriod)*math.cos(math.pi*t*2/SymbolPeriod))/ \
+					(math.pi*t*(1-(4*t/SymbolPeriod)*(4*t/SymbolPeriod))/SymbolPeriod)
 
-    return h_rrc
+	return h_rrc
 
 def convolve(a, b):
-    out = [0] * (len(a) + len(b) - 1)
-    for i in range(len(a)):
-        for j in range(len(b)):
-            out[i+j] += a[i] * b[j]
-    return out
+	out = [0] * (len(a) + len(b) - 1)
+	for i in range(len(a)):
+		for j in range(len(b)):
+			out[i+j] += a[i] * b[j]
+	return out
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -63,61 +63,58 @@ outc.write(header)
 outh.write(header)
 
 def generate():
-    l = ratio // 2
+	l = ratio // 2
 
-    sample = [0.0] * (16*l)
-    sample[l] = 1
-    sample[2*l] = -1
+	sample = [0.0] * (16*l)
+	sample[l] = 1
+	sample[2*l] = -1
 
-    sf = rrcosfilter(l*16)
-    shapedSamples = convolve(sample, sf)
-    
-    lowest = 0
-    lowest_idx = 0
-    highest = 0
-    highest_idx = 0
-    for i,j in enumerate(shapedSamples):
-        if j < lowest:
-            lowest = j
-            lowest_idx = i
-        if j > highest:
-            highest = j
-            highest_idx = i
-    middle = int((lowest_idx+highest_idx)/2)
+	sf = rrcosfilter(l*16)
+	shapedSamples = convolve(sample, sf)
 
-    out = shapedSamples[middle-int(ratio*SIZE_RATIO):middle+int(ratio*SIZE_RATIO)]
-    out = [2 * (i - min(out)) / (max(out) - min(out)) - 1 for i in out]
-    if max(out) > 1 or min(out) < -1: raise Exception("Clipped")
-    print(f"{len(out)=} {len(out)/sample_rate=} {(len(out)/sample_rate)/(1/DATA_RATE)=} {1/DATA_RATE=}")
+	lowest = 0
+	lowest_idx = 0
+	highest = 0
+	highest_idx = 0
+	for i,j in enumerate(shapedSamples):
+		if j < lowest:
+			lowest = j
+			lowest_idx = i
+		if j > highest:
+			highest = j
+			highest_idx = i
+	middle = int((lowest_idx+highest_idx)/2)
 
-    if PLOT:
-        # Plot the waveform
-        plt.plot(out, label="out")
-        plt.legend()
-        plt.grid(True)
-        plt.show()
+	out = shapedSamples[middle-int(ratio*SIZE_RATIO):middle+int(ratio*SIZE_RATIO)]
+	out = [2 * (i - min(out)) / (max(out) - min(out)) - 1 for i in out]
+	if max(out) > 1 or min(out) < -1: raise Exception("Clipped")
+	print(f"{len(out)=} {len(out)/sample_rate=} {(len(out)/sample_rate)/(1/DATA_RATE)=} {1/DATA_RATE=}")
 
-    if FFT:
-        # Compute the FFT of the waveform
-        N = len(out)
-        fft_out = np.fft.fft(out)
-        fft_freqs = np.fft.fftfreq(N, d=1/sample_rate)
+	if PLOT:
+		plt.plot(out, label="out")
+		plt.legend()
+		plt.grid(True)
+		plt.show()
 
-        # Plot the magnitude of the FFT
-        plt.figure(figsize=(10, 6))
-        plt.plot(fft_freqs[:N//2], np.abs(fft_out)[:N//2])  # Plot only the positive frequencies
-        plt.xlim(0,DATA_RATE*3)
-        plt.title("FFT of the waveform")
-        plt.xlabel("Frequency (Hz)")
-        plt.ylabel("Magnitude")
-        plt.grid(True)
-        plt.show()
+	if FFT:
+		N = len(out)
+		fft_out = np.fft.fft(out)
+		fft_freqs = np.fft.fftfreq(N, d=1/sample_rate)
 
-    outc.write(u"float waveform_biphase[{size}] = {{{values}}};\n\n".format(
-        values = u", ".join(map(str, out)),
-        size = len(out)))
+		plt.figure(figsize=(10, 6))
+		plt.plot(fft_freqs[:N//2], np.abs(fft_out)[:N//2])
+		plt.xlim(0,DATA_RATE*3)
+		plt.title("FFT of the waveform")
+		plt.xlabel("Frequency (Hz)")
+		plt.ylabel("Magnitude")
+		plt.grid(True)
+		plt.show()
 
-    outh.write(u"extern float waveform_biphase[{size}];\n".format(size=len(out)))
+	outc.write(u"float waveform_biphase[{size}] = {{{values}}};\n\n".format(
+		values = u", ".join(map(str, out)),
+		size = len(out)))
+
+	outh.write(u"extern float waveform_biphase[{size}];\n".format(size=len(out)))
 
 generate()
 

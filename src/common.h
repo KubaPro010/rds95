@@ -11,3 +11,7 @@
 #endif
 
 #define M_2PI	(M_PI * 2.0)
+
+#ifndef VERSION
+#define VERSION	"-.-"
+#endif

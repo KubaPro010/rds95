@@ -17,7 +17,7 @@ int _strnlen(const char *s, int maxlen) {
 	return len;
 }
 
-// For RDS2 RFT, and UECP
+// For RDS2 RFT, file error checking, and UECP
 uint16_t crc16_ccitt(char* data, uint16_t len) {
 	uint16_t i, crc=0xFFFF;
 	for (i=0; i < len; i++ ) {

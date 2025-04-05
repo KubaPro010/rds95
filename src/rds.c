@@ -40,7 +40,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	} else if (strcmp(option, "PTYN") == 0) {
 		memcpy(tempEncoder.data[emp->program].ptyn, emp->data[emp->program].ptyn, PTYN_LENGTH);
 		tempEncoder.data[emp->program].ptyn_enabled = emp->data[emp->program].ptyn_enabled;
-	} else if (strcmp(option, "AF") == 0 || strcmp(option, "AFCH") == 0) {
+	} else if (strcmp(option, "AF") == 0) {
 		memcpy(&(tempEncoder.data[emp->program].af), &(emp->data[emp->program].af), sizeof(emp->data[emp->program].af));
 	} else if (strcmp(option, "ECC") == 0) {
 		tempEncoder.data[emp->program].ecc = emp->data[emp->program].ecc;
@@ -97,6 +97,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	memcpy(&(rdsEncoderfile.rtpData[emp->program]), &(tempEncoder.rtpData[emp->program]), sizeof(RDSRTPlusData));
 	memcpy(&(rdsEncoderfile.encoder_data), &(tempEncoder.encoder_data), sizeof(RDSEncoderData));
 	rdsEncoderfile.program = tempEncoder.program;
+	rdsEncoderfile.crc = crc16_ccitt((char*)&rdsEncoderfile, sizeof(RDSEncoderFile) - sizeof(uint16_t));
 
 	file = fopen(encoderPath, "wb");
 	if (file == NULL) {
@@ -121,9 +122,16 @@ void loadFromFile(RDSEncoder *enc) {
 	fclose(file);
 
 	if (rdsEncoderfile.file_starter != 225 || rdsEncoderfile.file_ender != 95 || rdsEncoderfile.file_middle != 160) {
-		fprintf(stderr, "Invalid file format\n");
+		fprintf(stderr, "[RDSENCODER-FILE] Invalid file format\n");
 		return;
 	}
+
+    uint16_t calculated_crc = crc16_ccitt((char*)&rdsEncoderfile, sizeof(RDSEncoderFile) - sizeof(uint16_t));
+
+    if (calculated_crc != rdsEncoderfile.crc) {
+        fprintf(stderr, "[RDSENCODER-FILE] CRC mismatch! Data may be corrupted\n");
+        return;
+    }
 
 	for (int i = 0; i < PROGRAMS; i++) {
 		memcpy(&(enc->data[i]), &(rdsEncoderfile.data[i]), sizeof(RDSData));
@@ -145,25 +153,48 @@ int rdssaved() {
 }
 
 static uint16_t get_next_af(RDSEncoder* enc) {
-	static uint8_t af_state;
 	uint16_t out;
 
 	if (enc->data[enc->program].af.num_afs) {
-		if (af_state == 0) {
+		if (enc->state[enc->program].af_state == 0) {
 			out = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af.num_afs) << 8;
 			out |= enc->data[enc->program].af.afs[0];
-			af_state += 1;
+			enc->state[enc->program].af_state += 1;
 		} else {
-			out = enc->data[enc->program].af.afs[af_state] << 8;
-			if (enc->data[enc->program].af.afs[af_state + 1])
-				out |= enc->data[enc->program].af.afs[af_state + 1];
+			out = enc->data[enc->program].af.afs[enc->state[enc->program].af_state] << 8;
+			if (enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1])
+				out |= enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1];
 			else
 				out |= AF_CODE_FILLER;
-			af_state += 2;
+				enc->state[enc->program].af_state += 2;
 		}
-		if (af_state >= enc->data[enc->program].af.num_entries) af_state = 0;
+		if (enc->state[enc->program].af_state >= enc->data[enc->program].af.num_entries) enc->state[enc->program].af_state = 0;
 	} else {
-		out = AF_CODE_NO_AF << 8 | AF_CODE_FILLER;
+		out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
+	}
+
+	return out;
+}
+
+static uint16_t get_next_af_eon(RDSEncoder* enc, uint8_t eon_index) {
+	uint16_t out;
+
+	if (enc->data[enc->program].eon[eon_index].af.num_afs) {
+		if (enc->state[enc->program].eon_states[eon_index].af_state == 0) {
+			out = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af.num_afs) << 8;
+			out |= enc->data[enc->program].eon[eon_index].af.afs[0];
+			enc->state[enc->program].eon_states[eon_index].af_state += 1;
+		} else {
+			out = enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state] << 8;
+			if (enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state + 1])
+				out |= enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state + 1];
+			else
+				out |= AF_CODE_FILLER;
+				enc->state[enc->program].eon_states[eon_index].af_state += 2;
+		}
+		if (enc->state[enc->program].eon_states[eon_index].af_state >= enc->data[enc->program].eon[eon_index].af.num_entries) enc->state[enc->program].eon_states[eon_index].af_state = 0;
+	} else {
+		out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
 	}
 
 	return out;
@@ -355,7 +386,10 @@ get_eon:
 		blocks[2] |= eon.ps[enc->state[enc->program].eon_state*2 + 1];
 		blocks[1] |= enc->state[enc->program].eon_state;
 		break;
-	case 4: // 13
+	case 4:
+		blocks[2] = get_next_af_eon(enc, enc->state[enc->program].eon_index);
+		break;
+	case 5: // 13
 		if(eon.pty == 0 && eon.tp == 0) {
 			break;
 		}
@@ -363,12 +397,11 @@ get_eon:
 		if(eon.tp) blocks[2] |= eon.ta;
 		blocks[1] |= 13;
 		break;
-	// TODO: Add AF
 	}
 
 	blocks[3] = eon.pi;
 
-	if(enc->state[enc->program].eon_state == 4) {
+	if(enc->state[enc->program].eon_state == 5) {
 		enc->state[enc->program].eon_index++;
 
 		uint8_t i = 0;
@@ -553,6 +586,14 @@ static void get_rds_group(RDSEncoder* enc, uint16_t *blocks, uint8_t stream) {
 				}
 				enc->state[enc->program].rt_state = 0;
 				enc->data[enc->program].rt_switching_period = enc->data[enc->program].orignal_rt_switching_period;
+			}
+		}
+
+		if(enc->data[enc->program].rt1_enabled && enc->data[enc->program].rt_text_timeout != 0) {
+			enc->data[enc->program].rt_text_timeout--;
+			if(enc->data[enc->program].rt_text_timeout == 0) {
+				enc->state[enc->program].rt_update = 1;
+				memccpy(enc->state[enc->program].rt_text, enc->data[enc->program].default_rt, 0, RT_LENGTH);
 			}
 		}
 
@@ -742,6 +783,8 @@ void init_rds_encoder(RDSEncoder* enc) {
 void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 	uint8_t i = 0, len = 0;
 
+	enc->data[enc->program].rt_text_timeout = enc->data[enc->program].original_rt_text_timeout;
+
 	enc->state[enc->program].rt_update = 1;
 
 	memset(enc->data[enc->program].rt1, ' ', RT_LENGTH);
@@ -767,7 +810,7 @@ void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 
 void set_rds_rt2(RDSEncoder* enc, char *rt2) {
 	uint8_t i = 0, len = 0;
-
+	
 	enc->state[enc->program].rt2_update = 1;
 
 	memset(enc->data[enc->program].rt2, ' ', RT_LENGTH);

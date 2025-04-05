@@ -13,7 +13,7 @@
 
 #define RDS_DEVICE "RDS"
 
-#define NUM_MPX_FRAMES	256
+#define NUM_MPX_FRAMES	128
 
 static uint8_t stop_rds;
 
@@ -34,7 +34,7 @@ static void *control_pipe_worker(void* modulator) {
 }
 
 static void show_version() {
-	printf("rds95 (a RDS encoder by radio95) version 1.2\n");
+	printf("rds95 (a RDS encoder by radio95) version %s\n", VERSION);
 }
 
 static void show_help(char *name) {
@@ -43,7 +43,6 @@ static void show_help(char *name) {
 		"Usage: %s [options]\n"
 		"\n"
 		"    -C,--ctl          FIFO control pipe\n"
-		"    -h,--help         Show this help text and exit\n"
 		"\n",
 		name
 	);
@@ -95,8 +94,8 @@ int main(int argc, char **argv) {
 	format.rate = RDS_SAMPLE_RATE;
 
 	buffer.prebuf = 0;
-	buffer.tlength = 12228;
-	buffer.maxlength = 12228;
+	buffer.tlength = NUM_MPX_FRAMES*4;
+	buffer.maxlength = NUM_MPX_FRAMES*4;
 
 	rds_device = pa_simple_new(
 		NULL,

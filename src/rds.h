@@ -26,8 +26,7 @@
 #define MAX_AFS 25
 
 #define AF_CODE_FILLER		205
-#define AF_CODE_NO_AF		224
-#define AF_CODE_NUM_AFS_BASE	AF_CODE_NO_AF
+#define AF_CODE_NUM_AFS_BASE	224
 #define AF_CODE_LFMF_FOLLOWS	250
 
 #define PROGRAMS 2
@@ -55,9 +54,6 @@ typedef struct {
 
 	char ps[PS_LENGTH];
 	char rt1[RT_LENGTH];
-
-	uint8_t dsn;
-	uint8_t psn;
 
 	uint8_t ecc;
 
@@ -104,6 +100,9 @@ typedef struct {
 	RDSEON eon[4];
 } RDSData;
 typedef struct {
+	uint8_t af_state : 6;
+} RDSEONState;
+typedef struct {
 	uint8_t ps_update : 1;
 	uint8_t tps_update : 1;
 	char ps_text[PS_LENGTH];
@@ -148,6 +147,9 @@ typedef struct {
 
 	uint8_t eon_index : 3;
 	uint8_t eon_state : 4;
+	RDSEONState eon_states[4];
+
+	uint8_t af_state : 6;
 
 	uint16_t last_stream0_group[3];
 } RDSState;
@@ -197,6 +199,7 @@ typedef struct {
 	RDSEncoderData encoder_data;
 	uint8_t program : 3;
 	uint8_t file_ender; // Always is 95 my freq
+	uint16_t crc;
 } RDSEncoderFile;
 
 #define GROUP_TYPE_0	( 0 << 4)
