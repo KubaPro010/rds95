@@ -365,16 +365,6 @@ static void handle_eontp(char *arg, char *pattern, RDSModulator* mod, char* outp
 	strcpy(output, "+\0");
 }
 
-static void handle_psn(char *arg, char *pattern, RDSModulator* mod, char* output) {
-	mod->enc->data[atoi(pattern)-1].psn = atoi(arg);
-	strcpy(output, "+\0");
-}
-
-static void handle_dsn(char *arg, char *pattern, RDSModulator* mod, char* output) {
-	mod->enc->data[atoi(pattern)-1].dsn = atoi(arg);
-	strcpy(output, "+\0");
-}
-
 static void handle_eonaf(char *arg, char *pattern, RDSModulator* mod, char* output) {
 	if (arg[0] == '\0') {
 		memset(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), 0, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
@@ -476,8 +466,6 @@ static const pattern_command_handler_t pattern_commands[] = {
 	{"EON", "TA", handle_eonta},
 	{"EON", "TP", handle_eontp},
 	{"EON", "AF", handle_eonaf},
-	{"PSN", "", handle_psn},
-	{"DSN", "", handle_dsn},
 	{"UDG", "", handle_udg},
 };
 
