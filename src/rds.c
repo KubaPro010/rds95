@@ -400,7 +400,7 @@ static uint8_t get_rds_custom_groups2(RDSEncoder* enc, RDSGroup *group) {
 		group->b = enc->state[enc->program].custom_group2[2];
 		group->c = enc->state[enc->program].custom_group2[3];
 		group->d = enc->state[enc->program].custom_group2[4];
-		group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b))
+		group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b));
 		return 1;
 	}
 	return 0;
