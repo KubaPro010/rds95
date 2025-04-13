@@ -280,7 +280,7 @@ static void get_oda_af_oda_group(RDSEncoder* enc, RDSGroup *group) {
 	(void)enc;
 	group->b |= 3 << 12;
 
-	group->b |= 9 << 1;
+	group->b |= 7 << 1;
 	group->d = ODA_AID_ODAAF;
 }
 
@@ -288,7 +288,7 @@ static void get_oda_af_group(RDSEncoder* enc, RDSGroup *group) {
 	uint16_t af[4];
 	get_next_af_oda(enc, af);
 
-	group->b |= 9 << 12;
+	group->b |= 7 << 12;
 	for (int i = 0; i < 4; i++) {
 		group->b |= ((af[i] >> 8) & 1) << i;
 	}
