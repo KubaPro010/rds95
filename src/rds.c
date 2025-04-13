@@ -650,7 +650,7 @@ group_coded:
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits, uint8_t stream) {
 	RDSGroup group;
 	get_rds_group(enc, &group, stream);
-	add_checkwords(&group);
+	add_checkwords(&group, &bits);
 }
 
 void reset_rds_state(RDSEncoder* enc, uint8_t program) {

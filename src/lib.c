@@ -53,7 +53,7 @@ static uint16_t offset_words[] = {
 	0x350  /*  C' */
 };
 
-void add_checkwords(RDSGroup *group, uint8_t *bits, uint8_t stream)
+void add_checkwords(RDSGroup *group, uint8_t *bits)
 {
 	uint16_t offset_word;
 
