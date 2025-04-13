@@ -23,6 +23,8 @@ The newer standard which is the IEC one, removes these features:
 
 RDS95 is the only RDS2 encoder to have a independent tunneling feature, where you can pick the group sequence from the RDS2 stream in order to speed up the transmission of RT or LPS (in my tests, this helps a lot)
 
+RDS95 is the only (as far as i can tell) encoder to transmit the 9-bit AF codes
+
 ## Commands
 
 ### PS
@@ -58,7 +60,12 @@ Toggles the transmission of CT groups: `CT=1`
 ### AF
 
 Sets the AF frequencies: `AF=95,89.1`  
-Clears the AF: `AF=`  
+Clear the AF: `AF=`  
+
+### AFO
+
+Sets the AF frequencies for the ODA 9-bit version which enables AF for 64.1-88 MHz: `AFO=69.8,95.0,225` (LowerFM,FM,LF)
+Clear the AFO: `AFO=`
 
 ### TPS
 
@@ -153,9 +160,12 @@ Sets the group sequence for stream0, available groups:
 - X: UDG1
 - Y: UDG2
 - R: RT+
+- P: eRT+
 - S: ERT
 - 3: ODA
 - F: LPS
+- T: Fast tuning info
+- U: ODA AF
 
 `GRPSEQ=002222`
 
