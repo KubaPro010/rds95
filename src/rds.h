@@ -34,6 +34,7 @@
 // List of ODAs: https://www.nrscstandards.org/committees/dsm/archive/rds-oda-aids.pdf
 #define	ODA_AID_RTPLUS	0x4bd7
 #define	ODA_AID_ERT		0x6552
+#define	ODA_AID_ERTPLUS	0x4BD8
 
 typedef struct {
 	uint8_t num_entries : 6;
@@ -139,11 +140,12 @@ typedef struct {
 	uint16_t custom_group2[GROUP_LENGTH + 1];
 
 	uint8_t rtp_oda : 1;
+	uint8_t ertp_oda : 1;
 	uint8_t ert_oda : 1;
 	uint8_t data_ecc : 1;
 	uint8_t grp_seq_idx[4];
 	uint8_t udg_idxs[2];
-	
+
 	uint8_t fasttuning_state : 3;
 
 	uint8_t last_minute : 6;
@@ -192,14 +194,14 @@ typedef struct {
 	RDSEncoderData encoder_data;
 	RDSData data[PROGRAMS];
 	RDSState state[PROGRAMS];
-	RDSRTPlusData rtpData[PROGRAMS];
-	RDSRTPlusState rtpState[PROGRAMS];
+	RDSRTPlusData rtpData[PROGRAMS][2];
+	RDSRTPlusState rtpState[PROGRAMS][2];
 	uint8_t program : 3;
 } RDSEncoder;
 typedef struct {
 	uint8_t file_starter; // Always is 225 first polish radio programme am frequency
 	RDSData data[PROGRAMS];
-	RDSRTPlusData rtpData[PROGRAMS];
+	RDSRTPlusData rtpData[PROGRAMS][2];
 	uint8_t file_middle; // Always is 160, average of both
 	RDSEncoderData encoder_data;
 	uint8_t program : 3;
@@ -233,8 +235,10 @@ void set_rds_tps(RDSEncoder* enc, char *tps);
 void set_rds_lps(RDSEncoder* enc, char *lps);
 void set_rds_ert(RDSEncoder *enc, char *ert);
 void set_rds_rtplus_flags(RDSEncoder *enc, uint8_t flags);
-void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags);
-void set_rds_ptyn(RDSEncoder* enc, char *ptyn);
+void set_rds_ertplus_flags(RDSEncoder *enc, uint8_t flags);
+void set_rds_rtplus_tags(RDSEncoder *enc, uint8_t *tags);
+void set_rds_ertplus_tags(RDSEncoder *enc, uint8_t *tags);
+void set_rds_ptyn(RDSEncoder *enc, char *ptyn);
 void set_rds_grpseq(RDSEncoder* enc, char *grpseq);
 void set_rds_grpseq2(RDSEncoder* enc, char *grpseq2);
 

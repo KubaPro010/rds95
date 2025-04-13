@@ -61,6 +61,17 @@ static void handle_rtp(char *arg, RDSModulator* mod, char* output) {
 	}
 }
 
+static void handle_ertp(char *arg, RDSModulator* mod, char* output) {
+	uint8_t tags[6];
+
+	if (sscanf((char *)arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
+		set_rds_ertplus_tags(mod->enc, tags);
+		strcpy(output, "+\0");
+	} else {
+		strcpy(output, "-\0");
+	}
+}
+
 static void handle_lps(char *arg, RDSModulator* mod, char* output) {
 	arg[LPS_LENGTH * 2] = 0;
 	set_rds_lps(mod->enc, arg);
@@ -198,9 +209,20 @@ static void handle_rtprun(char *arg, RDSModulator* mod, char* output) {
 	int flag1, flag2;
 	if (sscanf(arg, "%d,%d", &flag1, &flag2) == 2) {
 		set_rds_rtplus_flags(mod->enc, flag1);
-		if(flag2) mod->enc->rtpState[mod->enc->program].toggle ^= 1;
+		if(flag2) mod->enc->rtpState[mod->enc->program][0].toggle ^= 1;
 	} else {
 		set_rds_rtplus_flags(mod->enc, atoi(arg));
+	}
+	strcpy(output, "+\0");
+}
+
+static void handle_ertprun(char *arg, RDSModulator* mod, char* output) {
+	int flag1, flag2;
+	if (sscanf(arg, "%d,%d", &flag1, &flag2) == 2) {
+		set_rds_ertplus_flags(mod->enc, flag1);
+		if(flag2) mod->enc->rtpState[mod->enc->program][1].toggle ^= 1;
+	} else {
+		set_rds_ertplus_flags(mod->enc, atoi(arg));
 	}
 	strcpy(output, "+\0");
 }
@@ -435,6 +457,7 @@ static const command_handler_t commands_eq5[] = {
 	{"PTYN", handle_ptyn, 4},
 	{"DPTY", handle_dpty, 4},
 	{"SLCD", handle_slcd, 4},
+	{"ERTP", handle_ertp, 4},
 };
 
 static const command_handler_t commands_eq2[] = {
@@ -461,6 +484,7 @@ static const command_handler_t commands_eq8[] = {
 	{"RDS2MOD", handle_rds2mod, 7},
 	{"GRPSEQ2", handle_grpseq2, 7},
 	{"DTTMOUT", handle_dttmout, 7},
+	{"ERTPRUN", handle_ertprun, 7},
 };
 static const command_handler_t commands_exact[] = {
 	{"INIT", handle_init, 4},
