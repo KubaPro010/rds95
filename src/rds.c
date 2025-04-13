@@ -290,7 +290,7 @@ static void get_oda_af_group(RDSEncoder* enc, RDSGroup *group) {
 
 	group->b |= 9 << 12;
 	for (int i = 0; i < 4; i++) {
-		group->b |= ((af[i] >> 15) & 1) << i;
+		group->b |= ((af[i] >> 8) & 1) << i;
 	}
 
 	group->c = af[0] & 0xFF;
