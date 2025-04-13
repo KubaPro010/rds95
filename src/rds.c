@@ -68,12 +68,12 @@ void loadFromFile(RDSEncoder *enc) {
 		return;
 	}
 
-    uint16_t calculated_crc = crc16_ccitt((char*)&rdsEncoderfile, sizeof(RDSEncoderFile) - sizeof(uint16_t));
+	uint16_t calculated_crc = crc16_ccitt((char*)&rdsEncoderfile, sizeof(RDSEncoderFile) - sizeof(uint16_t));
 
-    if (calculated_crc != rdsEncoderfile.crc) {
-        fprintf(stderr, "[RDSENCODER-FILE] CRC mismatch! Data may be corrupted\n");
-        return;
-    }
+	if (calculated_crc != rdsEncoderfile.crc) {
+		fprintf(stderr, "[RDSENCODER-FILE] CRC mismatch! Data may be corrupted\n");
+		return;
+	}
 
 	for (int i = 0; i < PROGRAMS; i++) {
 		memcpy(&(enc->data[i]), &(rdsEncoderfile.data[i]), sizeof(RDSData));
@@ -98,23 +98,20 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 	uint16_t out;
 
 	if (enc->data[enc->program].af.num_afs) {
-		uint8_t* afs = enc->data[enc->program].af.afs;
-		uint8_t num_afs = enc->data[enc->program].af.num_afs;
-
-		if(enc->state[enc->program].af_state == 0) {
-			out = (AF_CODE_NUM_AFS_BASE + num_afs) << 8;
-			out |= afs[0];
-			enc->state[enc->program].af_state++;
-		} else if (enc->state[enc->program].af_state < num_afs) {
-			out = afs[enc->state[enc->program].af_state];
-			enc->state[enc->program].af_state++;
+		if (enc->state[enc->program].af_state == 0) {
+			out = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af.num_afs) << 8;
+			out |= enc->data[enc->program].af.afs[0];
+			enc->state[enc->program].af_state += 1;
 		} else {
-			out = AF_CODE_FILLER;
+			out = enc->data[enc->program].af.afs[enc->state[enc->program].af_state] << 8;
+			if (enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1]) {
+				out |= enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1];
+			} else {
+				out |= AF_CODE_FILLER;
+				enc->state[enc->program].af_state += 2;
+			}
 		}
-
-		if (enc->state[enc->program].af_state >= enc->data[enc->program].af.num_entries) {
-			enc->state[enc->program].af_state = 0;
-		}
+		if (enc->state[enc->program].af_state >= enc->data[enc->program].af.num_entries) enc->state[enc->program].af_state = 0;
 	} else {
 		out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
 	}
@@ -123,25 +120,22 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 }
 
 static void get_next_af_oda(RDSEncoder* enc, uint16_t* af_group) {
-	uint16_t* afs = enc->data[enc->program].af_oda.afs;
-	uint16_t num_afs = enc->data[enc->program].af_oda.num_afs;
-
-	for (int i = 0; i < 4; ++i) {
-		if(enc->state[enc->program].af_oda_state == 0) {
-			af_group[i] = (AF_CODE_NUM_AFS_BASE + num_afs) << 8;
-			af_group[i] |= afs[0];
-			enc->state[enc->program].af_oda_state++;
-		} else if (enc->state[enc->program].af_oda_state < num_afs) {
-			af_group[i] = afs[enc->state[enc->program].af_oda_state];
-			enc->state[enc->program].af_oda_state++;
+	uint8_t offset = 0;
+	if (enc->state[enc->program].af_oda_state == 0) {
+		af_group[0] = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af_oda.num_afs) << 8;
+		offset = 1;
+	} else {
+		af_group[0] = enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state++] << 8;
+	}
+	for(int i = 0; i < 3; i++) {
+		if (enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state + offset]) {
+			af_group[i + 1] = enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state + offset];
 		} else {
-			af_group[i] = AF_CODE_FILLER;
+			af_group[i + 1] = AF_CODE_FILLER;
 		}
+		enc->state[enc->program].af_oda_state++;
 	}
-
-	if (enc->state[enc->program].af_oda_state >= enc->data[enc->program].af_oda.num_entries) {
-		enc->state[enc->program].af_oda_state = 0;
-	}
+	if (enc->state[enc->program].af_oda_state >= enc->data[enc->program].af_odanum_entries) enc->state[enc->program].af_oda_state = 0;
 }
 
 static uint16_t get_next_af_eon(RDSEncoder* enc, uint8_t eon_index) {
@@ -468,7 +462,7 @@ static void get_rds_ert_group(RDSEncoder* enc, RDSGroup *group) {
 		memcpy(enc->state[enc->program].ert_text, enc->data[enc->program].ert, ERT_LENGTH);
 		enc->state[enc->program].ert_update = 0;
 	}
-	
+
 	group->b |= 12 << 12 | (enc->state[enc->program].ert_state & 31);
 	group->c =  enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4    ] << 8;
 	group->c |= enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4 + 1];
@@ -702,20 +696,20 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 					grp_sqc_idx = 0;
 				}
 				grp = enc->data[enc->program].grp_sqc_rds2[grp_sqc_idx];
-		
+
 				good_group = check_rds_good_group(enc, &grp, stream);
-		
+
 				if(!good_group) cant_find_group++;
 				else cant_find_group = 0;
 				if(!good_group && cant_find_group == 23) {
 					cant_find_group = 0;
 					break;
 				}
-		
+
 				enc->state[enc->program].grp_seq_idx[2]++;
 			}
 			if(!good_group) grp = '0';
-		
+
 			get_rds_sequence_group(enc, group, &grp, stream);
 
 			goto group_coded_rds2;
@@ -863,8 +857,8 @@ void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 	while (*rt1 != 0 && len < RT_LENGTH) enc->data[enc->program].rt1[len++] = *rt1++;
 
 	while (len > 0 && enc->data[enc->program].rt1[len - 1] == ' ') {
-        len--;
-    }
+		len--;
+	}
 
 	if (len < RT_LENGTH) {
 		enc->state[enc->program].rt_segments = 0;
@@ -882,7 +876,7 @@ void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 
 void set_rds_rt2(RDSEncoder* enc, char *rt2) {
 	uint8_t i = 0, len = 0;
-	
+
 	enc->state[enc->program].rt2_update = 1;
 
 	memset(enc->data[enc->program].rt2, ' ', RT_LENGTH);
