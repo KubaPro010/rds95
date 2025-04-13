@@ -89,7 +89,7 @@ static void handle_dpty(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
-static void handle_slcdata(char *arg, RDSModulator* mod, char* output) {
+static void handle_slcd(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].slc_data = strtoul(arg, NULL, 16);
 	strcpy(output, "+\0");
 }
@@ -477,7 +477,7 @@ static const pattern_command_handler_t pattern_commands[] = {
 	{"EON", "TA", handle_eonta},
 	{"EON", "TP", handle_eontp},
 	{"EON", "AF", handle_eonaf},
-	{"EON", "DT", handle_eondt}
+	{"EON", "DT", handle_eondt},
 	{"UDG", "", handle_udg},
 };
 
