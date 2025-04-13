@@ -1,6 +1,8 @@
 # RDS95
 
-RDS95 is a ligth software RDS encoder for linux
+(eRT)(RDS2)
+
+RDS95 is a light software RDS encoder for linux
 
 RDS95 follows the IEC 62106 standard (available at the RDS Forum website)
 
