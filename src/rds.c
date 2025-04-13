@@ -98,9 +98,9 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 	uint16_t out;
 
 	if (enc->data[enc->program].af.num_afs) {
-		uint16_t* afs = enc->data[enc->program].af.afs;
-		uint16_t num_afs = enc->data[enc->program].af.num_afs;
-		uint16_t* af_state = &enc->state[enc->program].af_state;
+		uint8_t* afs = enc->data[enc->program].af.afs;
+		uint8_t num_afs = enc->data[enc->program].af.num_afs;
+		uint8_t* af_state = &enc->state[enc->program].af_state;
 
 		if (*af_state < num_afs) {
 			out = afs[*af_state];
