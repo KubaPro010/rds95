@@ -298,6 +298,12 @@ static void get_rds_ecc_group(RDSEncoder* enc, RDSGroup *group) {
 	group->c = enc->data[enc->program].ecc;
 }
 
+static void get_rds_slcdata_group(RDSEncoder* enc, RDSGroup *group) {
+	group->b |= 1 << 12;
+	group->c = 0x6000;
+	group->c |= enc->data[enc->program].slc_data;
+}
+
 static void get_rds_rtplus_group(RDSEncoder* enc, RDSGroup *group) {
 	group->b |= 11 << 12;
 	group->b |= enc->rtpState[enc->program].toggle << 4 | enc->rtpData[enc->program].running << 3;
@@ -332,20 +338,22 @@ get_eon:
 		break;
 	case 4:
 		group->c = get_next_af_eon(enc, enc->state[enc->program].eon_index);
+		group->b |= enc->state[enc->program].eon_state;
 		break;
 	case 5: // 13
-		if(eon.pty == 0 && eon.tp == 0) {
-			break;
-		}
 		group->c = eon.pty << 11;
 		if(eon.tp) group->c |= eon.ta;
 		group->b |= 13;
+		break;
+	case 6: // 15
+		group->c = eon.data;
+		group->b |= 15;
 		break;
 	}
 
 	group->d = eon.pi;
 
-	if(enc->state[enc->program].eon_state == 5) {
+	if(enc->state[enc->program].eon_state == 6) {
 		enc->state[enc->program].eon_index++;
 
 		uint8_t i = 0;
@@ -421,7 +429,12 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 			get_rds_ps_group(enc, group);
 			goto group_coded;
 		case '1':
-			get_rds_ecc_group(enc, group);
+			if(enc->state[enc->program].data_ecc == 0 && enc->data[enc->program].slc_data != 0) {
+				get_rds_slcdata_group(enc, group);
+			} else {
+				get_rds_ecc_group(enc, group);
+			}
+			enc->state[enc->program].data_ecc ^= 1;
 			goto group_coded;
 		case '2':
 			get_rds_rt_group(enc, group);
@@ -478,7 +491,7 @@ static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp, uint8_t stream) 
 	(void)stream;
 	uint8_t good_group = 0;
 	if(*grp == '0') good_group = 1;
-	if(*grp == '1' && enc->data[enc->program].ecc != 0) good_group = 1;
+	if(*grp == '1' && (enc->data[enc->program].ecc != 0 || enc->data[enc->program].slc_data != 0)) good_group = 1;
 	if(*grp == '2' && (enc->data[enc->program].rt1_enabled || enc->data[enc->program].rt2_enabled)) good_group = 1;
 	if(*grp == 'A' && enc->data[enc->program].ptyn_enabled) good_group = 1;
 	if(*grp == 'E') {

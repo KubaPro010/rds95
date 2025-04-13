@@ -89,6 +89,11 @@ static void handle_dpty(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
+static void handle_slcdata(char *arg, RDSModulator* mod, char* output) {
+	mod->enc->data[mod->enc->program].slc_data = strtoul(arg, NULL, 16);
+	strcpy(output, "+\0");
+}
+
 static void handle_tp(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].tp = atoi(arg);
 	strcpy(output, "+\0");
@@ -400,6 +405,11 @@ static void handle_eonaf(char *arg, char *pattern, RDSModulator* mod, char* outp
 	strcpy(output, "+\0");
 }
 
+static void handle_eondt(char *arg, char *pattern, RDSModulator* mod, char* output) {
+	mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].data = strtoul(arg, NULL, 16);
+	strcpy(output, "+\0");
+}
+
 static const command_handler_t commands_eq3[] = {
 	{"PS", handle_ps, 2},
 	{"PI", handle_pi, 2},
@@ -424,6 +434,7 @@ static const command_handler_t commands_eq5[] = {
 	{"TEXT", handle_rt1, 4},
 	{"PTYN", handle_ptyn, 4},
 	{"DPTY", handle_dpty, 4},
+	{"SLCD", handle_slcd, 4},
 };
 
 static const command_handler_t commands_eq2[] = {
@@ -466,6 +477,7 @@ static const pattern_command_handler_t pattern_commands[] = {
 	{"EON", "TA", handle_eonta},
 	{"EON", "TP", handle_eontp},
 	{"EON", "AF", handle_eonaf},
+	{"EON", "DT", handle_eondt}
 	{"UDG", "", handle_udg},
 };
 

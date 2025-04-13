@@ -48,6 +48,7 @@ typedef struct {
 	uint8_t pty : 5;
 	char ps[8];
 	RDSAFs af;
+	uint16_t data : 16;
 } RDSEON;
 typedef struct {
 	uint16_t pi;
@@ -56,6 +57,7 @@ typedef struct {
 	char rt1[RT_LENGTH];
 
 	uint8_t ecc;
+	uint16_t slc_data : 12;
 
 	uint8_t ta : 1;
 	uint8_t pty : 5;
@@ -138,6 +140,7 @@ typedef struct {
 
 	uint8_t rtp_oda : 1;
 	uint8_t ert_oda : 1;
+	uint8_t data_ecc : 1;
 	uint8_t grp_seq_idx[4];
 	uint8_t udg_idxs[2];
 

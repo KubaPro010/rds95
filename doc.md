@@ -45,6 +45,10 @@ Sets the TA flag and triggers Traffic PS: `TA=0`
 Sets the DPTY flag: `DPTY=1`  
 *Formerly DI*
 
+### SLCD
+
+The 1A group where ECC is sent can also be used to send broadcaster data: `SLCD=FFF`
+
 ### CT
 
 Toggles the transmission of CT groups: `CT=1`  
