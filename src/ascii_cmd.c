@@ -72,6 +72,16 @@ static void handle_ertp(char *arg, RDSModulator* mod, char* output) {
 	}
 }
 
+static void handle_linkage(char *arg, RDSModulator* mod, char* output) {
+	if(arg[0] == '\0') {
+		mod->enc->data[mod->enc->program].eon_linkage = 0;
+		return;
+	}
+
+	mod->enc->data[mod->enc->program].eon_linkage = atoi(arg);
+	strcpy(output, "+\0");
+}
+
 static void handle_lps(char *arg, RDSModulator* mod, char* output) {
 	arg[LPS_LENGTH * 2] = 0;
 	set_rds_lps(mod->enc, arg);
@@ -495,6 +505,7 @@ static const command_handler_t commands_eq5[] = {
 	{"DPTY", handle_dpty, 4},
 	{"SLCD", handle_slcd, 4},
 	{"ERTP", handle_ertp, 4},
+	{"LINK", handle_link, 4},
 };
 
 static const command_handler_t commands_eq2[] = {

@@ -166,6 +166,8 @@ typedef struct {
 	uint8_t af_state : 6;
 	uint8_t af_oda_state : 6;
 
+	uint8_t eon_linkage : 1;
+
 	uint16_t last_stream0_group[3];
 } RDSState;
 

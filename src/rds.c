@@ -365,12 +365,14 @@ static void get_rds_lps_group(RDSEncoder* enc, RDSGroup *group) {
 
 static void get_rds_ecc_group(RDSEncoder* enc, RDSGroup *group) {
 	group->b |= 1 << 12;
-	group->c = enc->data[enc->program].ecc;
+	group->c = enc->state[enc->program].eon_linkage << 15;
+	group->c |= enc->data[enc->program].ecc;
 }
 
 static void get_rds_slcdata_group(RDSEncoder* enc, RDSGroup *group) {
 	group->b |= 1 << 12;
-	group->c = 0x6000;
+	group->c = enc->state[enc->program].eon_linkage << 15;
+	group->c |= 0x6000;
 	group->c |= enc->data[enc->program].slc_data;
 }
 
