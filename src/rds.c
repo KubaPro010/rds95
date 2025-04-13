@@ -120,12 +120,12 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 }
 
 static void get_next_af_oda(RDSEncoder* enc, uint16_t* af_group) {
-	uint8_t offset = 1;
+	uint8_t offset = 0;
 	if (enc->state[enc->program].af_oda_state == 0) {
 		af_group[0] = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af_oda.num_afs);
-		offset++;
 	} else {
 		af_group[0] = enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state++];
+		offset++;
 	}
 	for(int i = 0; i < 3; i++) {
 		if (enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state + offset]) {
