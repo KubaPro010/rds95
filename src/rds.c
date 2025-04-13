@@ -101,7 +101,11 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 		uint8_t* afs = enc->data[enc->program].af.afs;
 		uint8_t num_afs = enc->data[enc->program].af.num_afs;
 
-		if (enc->state[enc->program].af_state < num_afs) {
+		if(enc->state[enc->program].af_state == 0) {
+			out = (AF_CODE_NUM_AFS_BASE + num_afs) << 8;
+			out |= afs[0];
+			enc->state[enc->program].af_state++;
+		} else if (enc->state[enc->program].af_state < num_afs) {
 			out = afs[enc->state[enc->program].af_state];
 			enc->state[enc->program].af_state++;
 		} else {
@@ -123,7 +127,11 @@ static void get_next_af_oda(RDSEncoder* enc, uint16_t* af_group) {
 	uint16_t num_afs = enc->data[enc->program].af_oda.num_afs;
 
 	for (int i = 0; i < 4; ++i) {
-		if (enc->state[enc->program].af_oda_state < num_afs) {
+		if(enc->state[enc->program].af_oda_state == 0) {
+			af_group[i] = (AF_CODE_NUM_AFS_BASE + num_afs) << 8;
+			af_group[i] |= afs[0];
+			enc->state[enc->program].af_oda_state++;
+		} else if (enc->state[enc->program].af_oda_state < num_afs) {
 			af_group[i] = afs[enc->state[enc->program].af_oda_state];
 			enc->state[enc->program].af_oda_state++;
 		} else {
