@@ -72,13 +72,13 @@ static void handle_ertp(char *arg, RDSModulator* mod, char* output) {
 	}
 }
 
-static void handle_linkage(char *arg, RDSModulator* mod, char* output) {
+static void handle_link(char *arg, RDSModulator* mod, char* output) {
 	if(arg[0] == '\0') {
-		mod->enc->data[mod->enc->program].eon_linkage = 0;
+		mod->enc->state[mod->enc->program].eon_linkage = 0;
 		return;
 	}
 
-	mod->enc->data[mod->enc->program].eon_linkage = atoi(arg);
+	mod->enc->state[mod->enc->program].eon_linkage = atoi(arg);
 	strcpy(output, "+\0");
 }
 
