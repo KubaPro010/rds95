@@ -100,17 +100,16 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 	if (enc->data[enc->program].af.num_afs) {
 		uint8_t* afs = enc->data[enc->program].af.afs;
 		uint8_t num_afs = enc->data[enc->program].af.num_afs;
-		uint8_t* af_state = &enc->state[enc->program].af_state;
 
-		if (*af_state < num_afs) {
-			out = afs[*af_state];
-			(*af_state)++;
+		if (enc->state[enc->program].af_state < num_afs) {
+			out = afs[enc->state[enc->program].af_state];
+			enc->state[enc->program].af_state++;
 		} else {
 			out = AF_CODE_FILLER;
 		}
 
-		if (*af_state >= enc->data[enc->program].af.num_entries) {
-			*af_state = 0;
+		if (enc->state[enc->program].af_state >= enc->data[enc->program].af.num_entries) {
+			enc->state[enc->program].af_state = 0;
 		}
 	} else {
 		out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
@@ -122,19 +121,18 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 static void get_next_af_oda(RDSEncoder* enc, uint16_t* af_group) {
 	uint16_t* afs = enc->data[enc->program].af_oda.afs;
 	uint16_t num_afs = enc->data[enc->program].af_oda.num_afs;
-	uint16_t* af_state = &enc->state[enc->program].af_oda_state;
 
 	for (int i = 0; i < 4; ++i) {
-		if (*af_state < num_afs) {
-			af_group[i] = afs[*af_state];
-			(*af_state)++;
+		if (enc->state[enc->program].af_oda_state < num_afs) {
+			af_group[i] = afs[enc->state[enc->program].af_oda_state];
+			enc->state[enc->program].af_oda_state++;
 		} else {
 			af_group[i] = AF_CODE_FILLER;
 		}
 	}
 
-	if (*af_state >= enc->data[enc->program].af_oda.num_entries) {
-		*af_state = 0;
+	if (enc->state[enc->program].af_oda_state >= enc->data[enc->program].af_oda.num_entries) {
+		enc->state[enc->program].af_oda_state = 0;
 	}
 }
 
@@ -286,7 +284,7 @@ static void get_oda_af_oda_group(RDSEncoder* enc, RDSGroup *group) {
 
 static void get_oda_af_group(RDSEncoder* enc, RDSGroup *group) {
 	uint16_t af[4];
-	get_next_af_oda(enc, &af);
+	get_next_af_oda(enc, af);
 
 	group->b |= 9 << 12;
 	for (int i = 0; i < 4; i++) {
