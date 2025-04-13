@@ -202,52 +202,16 @@ typedef struct {
 	uint16_t crc;
 } RDSEncoderFile;
 
-#define GROUP_TYPE_0	( 0 << 4)
-#define GROUP_TYPE_1	( 1 << 4)
-#define GROUP_TYPE_2	( 2 << 4)
-#define GROUP_TYPE_3	( 3 << 4)
-#define GROUP_TYPE_4	( 4 << 4)
-#define GROUP_TYPE_5	( 5 << 4)
-#define GROUP_TYPE_6	( 6 << 4)
-#define GROUP_TYPE_7	( 7 << 4)
-#define GROUP_TYPE_8	( 8 << 4)
-#define GROUP_TYPE_9	( 9 << 4)
-#define GROUP_TYPE_10	(10 << 4)
-#define GROUP_TYPE_11	(11 << 4)
-#define GROUP_TYPE_12	(12 << 4)
-#define GROUP_TYPE_13	(13 << 4)
-#define GROUP_TYPE_14	(14 << 4)
-#define GROUP_TYPE_15	(15 << 4)
+typedef struct
+{
+	uint16_t a;
+	uint16_t b;
+	uint16_t c;
+	uint16_t d;
+	uint8_t is_type_b : 1;
+} RDSGroup;
 
-#define GROUP_VER_A	0
-#define GROUP_VER_B	1
-
-#define GROUP_5A	(GROUP_TYPE_5  | GROUP_VER_A)
-#define GROUP_6A	(GROUP_TYPE_6  | GROUP_VER_A)
-#define GROUP_7A	(GROUP_TYPE_7  | GROUP_VER_A)
-#define GROUP_8A	(GROUP_TYPE_8  | GROUP_VER_A)
-#define GROUP_9A	(GROUP_TYPE_9  | GROUP_VER_A)
-#define GROUP_11A	(GROUP_TYPE_11 | GROUP_VER_A)
-#define GROUP_12A	(GROUP_TYPE_12 | GROUP_VER_A)
-#define GROUP_13A	(GROUP_TYPE_13 | GROUP_VER_A)
-
-#define GROUP_1B	(GROUP_TYPE_1  | GROUP_VER_B)
-#define GROUP_3B	(GROUP_TYPE_3  | GROUP_VER_B)
-#define GROUP_4B	(GROUP_TYPE_4  | GROUP_VER_B)
-#define GROUP_5B	(GROUP_TYPE_5  | GROUP_VER_B)
-#define GROUP_6B	(GROUP_TYPE_6  | GROUP_VER_B)
-#define GROUP_7B	(GROUP_TYPE_7  | GROUP_VER_B)
-#define GROUP_8B	(GROUP_TYPE_8  | GROUP_VER_B)
-#define GROUP_9B	(GROUP_TYPE_9  | GROUP_VER_B)
-#define GROUP_10B	(GROUP_TYPE_10 | GROUP_VER_B)
-#define GROUP_11B	(GROUP_TYPE_11 | GROUP_VER_B)
-#define GROUP_12B	(GROUP_TYPE_12 | GROUP_VER_B)
-#define GROUP_13B	(GROUP_TYPE_13 | GROUP_VER_B)
-
-#define GET_GROUP_TYPE(x)	((x >> 4) & 15)
-#define GET_GROUP_VER(x)	(x & 1)
-
-#define IS_TYPE_B(a)	(a[1] & 0x0800)
+#define IS_TYPE_B(b)	(b & 0x0800)
 
 void saveToFile(RDSEncoder *emp, const char *option);
 void loadFromFile(RDSEncoder *emp);

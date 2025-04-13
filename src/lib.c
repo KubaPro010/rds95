@@ -30,6 +30,21 @@ uint16_t crc16_ccitt(char* data, uint16_t len) {
 	return ((crc ^= 0xFFFF) & 0xFFFF);
 }
 
+uint16_t get_block_grom_group(RDSGroup *group, uint8_t block) {
+	switch (block) {
+	case 0:
+		return group->a;
+	case 1:
+		return group->b;
+	case 2:
+		return group->c;
+	case 3:
+		return group->d;
+	default:
+		return 0;
+	}
+}
+
 static uint16_t offset_words[] = {
 	0x0FC, /*  A  */
 	0x198, /*  B  */
@@ -38,20 +53,17 @@ static uint16_t offset_words[] = {
 	0x350  /*  C' */
 };
 
-void add_checkwords(uint16_t *blocks, uint8_t *bits, uint8_t stream)
+void add_checkwords(RDSGroup *group, uint8_t *bits, uint8_t stream)
 {
 	uint16_t offset_word;
-	bool group_type_b = IS_TYPE_B(blocks);
-	bool rds2_tunneling = ((blocks[0] == 0) && (stream != 0));
 
 	for (uint8_t i = 0; i < GROUP_LENGTH; i++) {
 		offset_word = offset_words[i];
-		if ((i == 2 && group_type_b && stream == 0) ||
-			(i == 2 && group_type_b && rds2_tunneling)) {
+		if (i == 2 && group->is_type_b) {
 			offset_word = offset_words[4];
 		}
 
-		uint16_t block = blocks[i];
+		uint16_t block = get_block_grom_group(group, i);
 
 		uint16_t block_crc = 0;
 		uint8_t j, bit, msb;
