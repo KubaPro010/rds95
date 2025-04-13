@@ -135,7 +135,7 @@ static void get_next_af_oda(RDSEncoder* enc, uint16_t* af_group) {
 		}
 		enc->state[enc->program].af_oda_state++;
 	}
-	if (enc->state[enc->program].af_oda_state >= enc->data[enc->program].af_odanum_entries) enc->state[enc->program].af_oda_state = 0;
+	if (enc->state[enc->program].af_oda_state >= enc->data[enc->program].af_oda.num_entries) enc->state[enc->program].af_oda_state = 0;
 }
 
 static uint16_t get_next_af_eon(RDSEncoder* enc, uint8_t eon_index) {
