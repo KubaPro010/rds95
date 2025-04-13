@@ -98,25 +98,44 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 	uint16_t out;
 
 	if (enc->data[enc->program].af.num_afs) {
-		if (enc->state[enc->program].af_state == 0) {
-			out = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af.num_afs) << 8;
-			out |= enc->data[enc->program].af.afs[0];
-			enc->state[enc->program].af_state += 1;
+		uint16_t* afs = enc->data[enc->program].af.afs;
+		uint16_t num_afs = enc->data[enc->program].af.num_afs;
+		uint16_t* af_state = &enc->state[enc->program].af_state;
+
+		if (*af_state < num_afs) {
+			out = afs[*af_state];
+			(*af_state)++;
 		} else {
-			out = enc->data[enc->program].af.afs[enc->state[enc->program].af_state] << 8;
-			if (enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1]) {
-				out |= enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1];
-			} else {
-				out |= AF_CODE_FILLER;
-				enc->state[enc->program].af_state += 2;
-			}
+			out = AF_CODE_FILLER;
 		}
-		if (enc->state[enc->program].af_state >= enc->data[enc->program].af.num_entries) enc->state[enc->program].af_state = 0;
+
+		if (*af_state >= enc->data[enc->program].af.num_entries) {
+			*af_state = 0;
+		}
 	} else {
 		out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
 	}
 
 	return out;
+}
+
+static void get_next_af_oda(RDSEncoder* enc, uint16_t* af_group) {
+	uint16_t* afs = enc->data[enc->program].af_oda.afs;
+	uint16_t num_afs = enc->data[enc->program].af_oda.num_afs;
+	uint16_t* af_state = &enc->state[enc->program].af_oda_state;
+
+	for (int i = 0; i < 4; ++i) {
+		if (*af_state < num_afs) {
+			af_group[i] = afs[*af_state];
+			(*af_state)++;
+		} else {
+			af_group[i] = AF_CODE_FILLER;
+		}
+	}
+
+	if (*af_state >= enc->data[enc->program].af_oda.num_entries) {
+		*af_state = 0;
+	}
 }
 
 static uint16_t get_next_af_eon(RDSEncoder* enc, uint8_t eon_index) {
@@ -255,6 +274,32 @@ static void get_rds_ert_oda_group(RDSEncoder* enc, RDSGroup *group) {
 	group->b |= 12 << 1;
 	group->c = 1; // UTF-8
 	group->d = ODA_AID_ERT;
+}
+
+static void get_oda_af_oda_group(RDSEncoder* enc, RDSGroup *group) {
+	(void)enc;
+	group->b |= 3 << 12;
+
+	group->b |= 9 << 1;
+	group->c = ODA_AID_ODAAF;
+}
+
+static void get_oda_af_group(RDSEncoder* enc, RDSGroup *group) {
+	uint16_t af[4];
+	get_next_af_oda(enc, &af);
+
+	group->b |= 9 << 12;
+	for (int i = 0; i < 4; i++) {
+		group->b |= ((af[i] >> 15) & 1) << i;
+	}
+
+	group->c = af[0] & 0xFFFF;
+	group->c <<= 8;
+	group->c |= af[1] & 0xFFFF;
+
+	group->d = af[2] & 0xFFFF;
+	group->d <<= 8;
+	group->d |= af[3] & 0xFFFF;
 }
 
 static void get_rds_ct_group(RDSEncoder* enc, RDSGroup *group) {
@@ -533,6 +578,14 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 		case 'T':
 			get_rds_fasttuning_group(enc, group);
 			goto group_coded;
+		case 'U':
+			if(enc->state[enc->program].af_oda == 0) {
+				get_oda_af_group(enc, group);
+			} else {
+				get_oda_af_oda_group(enc, group);
+			}
+			enc->state[enc->program].af_oda ^= 1;
+			goto group_coded;
 	}
 group_coded:
 	return;
@@ -560,6 +613,7 @@ static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp, uint8_t stream) 
 	if(*grp == 'S' && enc->data[enc->program].ert[0] != '\0') good_group = 1;
 	if(*grp == 'F' && enc->data[enc->program].lps[0] != '\0') good_group = 1;
 	if(*grp == 'T') good_group = 1;
+	if(*grp == 'U' && enc->data[enc->program].af_oda.num_afs) good_group = 1;
 	return good_group;
 }
 

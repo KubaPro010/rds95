@@ -163,6 +163,42 @@ static void handle_af(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
+static void handle_afo(char *arg, RDSModulator* mod, char* output) {
+	if (arg[0] == 'A' || arg[0] == 'B') {
+		strcpy(output, "-\0");
+		return;
+	}
+	if(arg[0] == '\0') {
+		memset(&(mod->enc->data[mod->enc->program].af_oda), 0, sizeof(mod->enc->data[mod->enc->program].af_oda));
+		return;
+	}
+
+	memset(&(mod->enc->data[mod->enc->program].af_oda), 0, sizeof(mod->enc->data[mod->enc->program].af_oda));
+	uint8_t arg_count;
+	RDSAFsODA new_af_oda;
+	float af[MAX_AFS], *af_iter;
+
+	arg_count = sscanf((char *)arg,
+		"%f,%f,%f,%f,%f,"
+		"%f,%f,%f,%f,%f,"
+		"%f,%f,%f,%f,%f,"
+		"%f,%f,%f,%f,%f",
+		&af[0],  &af[1],  &af[2],  &af[3],  &af[4],
+		&af[5],  &af[6],  &af[7],  &af[8],  &af[9],
+		&af[10], &af[11], &af[12], &af[13], &af[14],
+		&af[15], &af[16], &af[17], &af[18], &af[19]);
+
+	af_iter = af;
+	memset(&new_af_oda, 0, sizeof(RDSAFsODA));
+
+	while (arg_count-- != 0) {
+		add_rds_af_oda(&new_af_oda, *af_iter++);
+	}
+
+	memcpy(&(mod->enc->data[mod->enc->program].af_oda), &new_af_oda, sizeof(mod->enc->data[mod->enc->program].af_oda));
+	strcpy(output, "+\0");
+}
+
 static void handle_g(char *arg, RDSModulator* mod, char* output) {
 	uint16_t blocks[4];
 	int count = sscanf((char *)arg, "%4hx%4hx%4hx%4hx", &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
@@ -450,6 +486,7 @@ static const command_handler_t commands_eq4[] = {
 	{"RTP", handle_rtp, 3},
 	{"LPS", handle_lps, 3},
 	{"ERT", handle_ert, 3},
+	{"AFO", handle_afo, 3}
 };
 
 static const command_handler_t commands_eq5[] = {

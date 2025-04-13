@@ -35,7 +35,13 @@
 #define	ODA_AID_RTPLUS	0x4bd7
 #define	ODA_AID_ERT		0x6552
 #define	ODA_AID_ERTPLUS	0x4BD8
+#define ODA_AID_ODAAF	0x6365
 
+typedef struct {
+	uint8_t num_entries : 6;
+	uint8_t num_afs : 5;
+	uint16_t afs[MAX_AFS]; // 9 bit, there was no uint9_t
+} RDSAFsODA;
 typedef struct {
 	uint8_t num_entries : 6;
 	uint8_t num_afs : 5;
@@ -84,8 +90,8 @@ typedef struct {
 	uint8_t ptyn_enabled : 1;
 	char ptyn[PTYN_LENGTH];
 
-	uint8_t af_method : 1;
 	RDSAFs af;
+	RDSAFsODA af_oda;
 
 	uint8_t ct : 1;
 
@@ -142,6 +148,7 @@ typedef struct {
 	uint8_t rtp_oda : 1;
 	uint8_t ertp_oda : 1;
 	uint8_t ert_oda : 1;
+	uint8_t af_oda : 1;
 	uint8_t data_ecc : 1;
 	uint8_t grp_seq_idx[4];
 	uint8_t udg_idxs[2];
@@ -157,6 +164,7 @@ typedef struct {
 	RDSEONState eon_states[4];
 
 	uint8_t af_state : 6;
+	uint8_t af_oda_state : 6;
 
 	uint16_t last_stream0_group[3];
 } RDSState;

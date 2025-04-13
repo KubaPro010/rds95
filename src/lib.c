@@ -81,6 +81,41 @@ void add_checkwords(RDSGroup *group, uint8_t *bits)
 	}
 }
 
+uint8_t add_rds_af_oda(RDSAFsODA *af_list, float freq) {
+	uint16_t af;
+
+	uint8_t entries_reqd = 1;
+	if (freq < 64.1f || freq > 107.9f) entries_reqd = 2;
+
+	if (af_list->num_afs + entries_reqd > MAX_AFS) return 1;
+
+	if(freq >= 64.1f && freq <= 88.0f) {
+		af = (uint16_t)(freq * 10.0f) - 384;
+		af_list->afs[af_list->num_entries] = af;
+		af_list->num_entries += 1;
+	} else if (freq >= 87.6f && freq <= 107.9f) {
+		af = (uint16_t)(freq * 10.0f) - 875;
+		af_list->afs[af_list->num_entries] = af;
+		af_list->num_entries += 1;
+	} else if (freq >= 153.0f && freq <= 279.0f) {
+		af = (uint16_t)(freq - 153.0f) / 9 + 1;
+		af_list->afs[af_list->num_entries + 0] = AF_CODE_LFMF_FOLLOWS;
+		af_list->afs[af_list->num_entries + 1] = af;
+		af_list->num_entries += 2;
+	} else if (freq >= 531.0f && freq <= 1602.0f) {
+		af = (uint16_t)(freq - 531.0f) / 9 + 16;
+		af_list->afs[af_list->num_entries + 0] = AF_CODE_LFMF_FOLLOWS;
+		af_list->afs[af_list->num_entries + 1] = af;
+		af_list->num_entries += 2;
+	} else {
+		return 1;
+	}
+
+	af_list->num_afs++;
+
+	return 0;
+}
+
 uint8_t add_rds_af(RDSAFs *af_list, float freq) {
 	uint16_t af;
 
