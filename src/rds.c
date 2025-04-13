@@ -174,6 +174,7 @@ static void get_rds_ps_group(RDSEncoder* enc, RDSGroup *group) {
 }
 
 static void get_rds_fasttuning_group(RDSEncoder* enc, RDSGroup *group) {
+	group->b |= 15 << 12;
 	group->b |= 1 << 11;
 
 	group->b |= enc->data[enc->program].ta << 4;
