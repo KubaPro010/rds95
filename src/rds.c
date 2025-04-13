@@ -122,10 +122,10 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 static void get_next_af_oda(RDSEncoder* enc, uint16_t* af_group) {
 	uint8_t offset = 0;
 	if (enc->state[enc->program].af_oda_state == 0) {
-		af_group[0] = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af_oda.num_afs) << 8;
+		af_group[0] = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af_oda.num_afs);
 		offset = 1;
 	} else {
-		af_group[0] = enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state++] << 8;
+		af_group[0] = enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state++];
 	}
 	for(int i = 0; i < 3; i++) {
 		if (enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state + offset]) {
@@ -293,13 +293,13 @@ static void get_oda_af_group(RDSEncoder* enc, RDSGroup *group) {
 		group->b |= ((af[i] >> 15) & 1) << i;
 	}
 
-	group->c = af[0] & 0xFFFF;
+	group->c = af[0] & 0xFF;
 	group->c <<= 8;
-	group->c |= af[1] & 0xFFFF;
+	group->c |= af[1] & 0xFF;
 
-	group->d = af[2] & 0xFFFF;
+	group->d = af[2] & 0xFF;
 	group->d <<= 8;
-	group->d |= af[3] & 0xFFFF;
+	group->d |= af[3] & 0xFF;
 }
 
 static void get_rds_ct_group(RDSEncoder* enc, RDSGroup *group) {
