@@ -173,6 +173,22 @@ static void get_rds_ps_group(RDSEncoder* enc, RDSGroup *group) {
 	if (enc->state[enc->program].ps_csegment == 4) enc->state[enc->program].ps_csegment = 0;
 }
 
+static void get_rds_fasttuning_group(RDSEncoder* enc, RDSGroup *group) {
+	group.b |= 1 << 11;
+
+	group->b |= enc->data[enc->program].ta << 4;
+	if(enc->state[enc->program].fasttuning_state == 0) group->b |= enc->data[enc->program].dpty << 2;
+	group->b |= enc->state[enc->program].fasttuning_state;
+
+	// are blocks b and d the same or not?
+	group->d = group->b;
+
+	enc->state[enc->program].fasttuning_state++;
+	if (enc->state[enc->program].fasttuning_state == 4) enc->state[enc->program].fasttuning_state = 0;
+
+	group->is_type_b = 1;
+}
+
 static void get_rds_rt_group(RDSEncoder* enc, RDSGroup *group) {
 	if (enc->state[enc->program].rt_update && enc->data[enc->program].rt1_enabled && !enc->state[enc->program].current_rt) {
 		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
@@ -482,6 +498,9 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 		case 'F':
 			get_rds_lps_group(enc, group);
 			goto group_coded;
+		case 'T':
+			get_rds_fasttuning_group(enc, group);
+			goto group_coded;
 	}
 group_coded:
 	return;
@@ -507,6 +526,7 @@ static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp, uint8_t stream) 
 	if(*grp == 'R' && enc->rtpData[enc->program].enabled) good_group = 1;
 	if(*grp == 'S' && enc->data[enc->program].ert[0] != '\0') good_group = 1;
 	if(*grp == 'F' && enc->data[enc->program].lps[0] != '\0') good_group = 1;
+	if(*grp == 'T') good_group = 1;
 	return good_group;
 }
 

@@ -143,6 +143,8 @@ typedef struct {
 	uint8_t data_ecc : 1;
 	uint8_t grp_seq_idx[4];
 	uint8_t udg_idxs[2];
+	
+	uint8_t fasttuning_state : 3;
 
 	uint8_t last_minute : 6;
 	uint8_t ta_timeout : 7;
