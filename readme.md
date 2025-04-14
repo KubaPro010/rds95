@@ -100,15 +100,12 @@ Sets the LPS: `LPS=NovaFM❤️`
 
 ### ERT
 
-TODO: ERT
+Sets the ERT: `ERT=Currently on air we're playing: Lady Gaga - Applause`
+*Note that ERT is a 128-character version of RT with UTF-8 support*
 
 ### PTYN
 
 Sets the programme type name: `PTYN=Football`
-
-### AFCH
-
-TODO: AFCH  
 
 ### UDG1
 

@@ -884,6 +884,7 @@ void set_rds_lps(RDSEncoder* enc, char *lps) {
 
 	if (len < LPS_LENGTH) {
 		enc->state[enc->program].lps_segments = 0;
+		enc->data[enc->program].lps[len++] = '\r';
 		while (i < len) {
 			i += 4;
 			enc->state[enc->program].lps_segments++;
