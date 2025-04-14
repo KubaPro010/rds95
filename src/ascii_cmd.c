@@ -288,8 +288,8 @@ static void handle_grpseq2(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_dttmout(char *arg, RDSModulator* mod, char* output) {
-	mod->enc->data[mod->enc->program].original_rt_text_timeout = atoi(arg);
-	mod->enc->data[mod->enc->program].rt_text_timeout = mod->enc->data[mod->enc->program].original_rt_text_timeout;
+	mod->enc->data[mod->enc->program].rt_text_timeout = atoi(arg);
+	mod->enc->state[mod->enc->program].rt_text_timeout_state = mod->enc->data[mod->enc->program].rt_text_timeout;
 	strcpy(output, "+\0");
 }
 
