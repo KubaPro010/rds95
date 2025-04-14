@@ -41,7 +41,7 @@ void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
 		perror("Error opening file");
 		return;
 	}
-	fwrite(&tempFile, sizeof(RDSModulatorParameters), 1, file);
+	fwrite(&tempFile, sizeof(RDSModulatorParametersFile), 1, file);
 	fclose(file);
 }
 
