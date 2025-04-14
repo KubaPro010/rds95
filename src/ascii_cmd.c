@@ -13,25 +13,25 @@ typedef struct {
 } pattern_command_handler_t;
 
 static void handle_ptyn(char *arg, RDSModulator* mod, char* output) {
-	arg[PTYN_LENGTH+8] = 0;
+	arg[PTYN_LENGTH*2] = 0;
 	set_rds_ptyn(mod->enc, convert_to_rdscharset(arg));
 	strcpy(output, "+\0");
 }
 
 static void handle_tps(char *arg, RDSModulator* mod, char* output) {
-	arg[PS_LENGTH+8] = 0;
+	arg[PS_LENGTH*2] = 0;
 	set_rds_tps(mod->enc, convert_to_rdscharset(arg));
 	strcpy(output, "+\0");
 }
 
 static void handle_rt1(char *arg, RDSModulator* mod, char* output) {
-	arg[RT_LENGTH+8] = 0;
+	arg[RT_LENGTH*2] = 0;
 	set_rds_rt1(mod->enc, convert_to_rdscharset(arg));
 	strcpy(output, "+\0");
 }
 
 static void handle_rt2(char *arg, RDSModulator* mod, char* output) {
-	arg[RT_LENGTH+8] = 0;
+	arg[RT_LENGTH*2] = 0;
 	set_rds_rt2(mod->enc, convert_to_rdscharset(arg));
 	strcpy(output, "+\0");
 }
@@ -75,19 +75,19 @@ static void handle_link(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_lps(char *arg, RDSModulator* mod, char* output) {
-	arg[LPS_LENGTH+8] = 0;
+	arg[LPS_LENGTH*2] = 0;
 	set_rds_lps(mod->enc, arg);
 	strcpy(output, "+\0");
 }
 
 static void handle_ert(char *arg, RDSModulator* mod, char* output) {
-	arg[ERT_LENGTH+8] = 0;
+	arg[ERT_LENGTH*2] = 0;
 	set_rds_ert(mod->enc, arg);
 	strcpy(output, "+\0");
 }
 
 static void handle_ps(char *arg, RDSModulator* mod, char* output) {
-	arg[PS_LENGTH+8] = 0;
+	arg[PS_LENGTH*2] = 0;
 	set_rds_ps(mod->enc, convert_to_rdscharset(arg));
 	strcpy(output, "+\0");
 }
