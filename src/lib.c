@@ -32,16 +32,11 @@ uint16_t crc16_ccitt(char* data, uint16_t len) {
 
 uint16_t get_block_grom_group(RDSGroup *group, uint8_t block) {
 	switch (block) {
-	case 0:
-		return group->a;
-	case 1:
-		return group->b;
-	case 2:
-		return group->c;
-	case 3:
-		return group->d;
-	default:
-		return 0;
+	case 0: return group->a;
+	case 1: return group->b;
+	case 2: return group->c;
+	case 3: return group->d;
+	default: return 0;
 	}
 }
 
@@ -59,9 +54,7 @@ void add_checkwords(RDSGroup *group, uint8_t *bits)
 
 	for (uint8_t i = 0; i < GROUP_LENGTH; i++) {
 		offset_word = offset_words[i];
-		if (i == 2 && group->is_type_b) {
-			offset_word = offset_words[4];
-		}
+		if (i == 2 && group->is_type_b) offset_word = offset_words[4];
 
 		uint16_t block = get_block_grom_group(group, i);
 
@@ -107,9 +100,7 @@ uint8_t add_rds_af_oda(RDSAFsODA *af_list, float freq) {
 		af_list->afs[af_list->num_entries + 0] = AF_CODE_LFMF_FOLLOWS;
 		af_list->afs[af_list->num_entries + 1] = af;
 		af_list->num_entries += 2;
-	} else {
-		return 1;
-	}
+	} else return 1;
 
 	af_list->num_afs++;
 
@@ -138,16 +129,14 @@ uint8_t add_rds_af(RDSAFs *af_list, float freq) {
 		af_list->afs[af_list->num_entries + 0] = AF_CODE_LFMF_FOLLOWS;
 		af_list->afs[af_list->num_entries + 1] = af;
 		af_list->num_entries += 2;
-	} else {
-		return 1;
-	}
+	} else return 1;
 
 	af_list->num_afs++;
 
 	return 0;
 }
 
-char *convert_to_rds_charset(char *str) {
+char *convert_to_rdscharset(char *str) {
 	static char new_str[255];
 	uint8_t i = 0;
 

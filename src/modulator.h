@@ -11,6 +11,13 @@ typedef struct
 
 typedef struct
 {
+	uint8_t check;
+	RDSModulatorParameters params;
+	uint16_t crc;
+} RDSModulatorParametersFile;
+
+typedef struct
+{
 	uint8_t symbol_shift: 7;
 	float sample_buffer[SAMPLE_BUFFER_SIZE];
 	uint8_t sample_buffer_idx : 7;

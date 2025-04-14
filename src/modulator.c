@@ -3,53 +3,75 @@
 static float waveform[2][FILTER_SIZE];
 
 void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
-	char encoderPath[256];
-	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsModulator", getenv("HOME"));
+	char modulatorPath[128];
+	snprintf(modulatorPath, sizeof(modulatorPath), "%s/.rdsModulator", getenv("HOME"));
 	FILE *file;
 	
-	RDSModulatorParameters tempEncoder;
-	file = fopen(encoderPath, "rb");
+	RDSModulatorParameters tempMod;
+	RDSModulatorParametersFile tempFile;
+	file = fopen(modulatorPath, "rb");
 	if (file != NULL) {
-		fread(&tempEncoder, sizeof(RDSModulatorParameters), 1, file);
+		fread(&tempFile, sizeof(RDSModulatorParametersFile), 1, file);
 		fclose(file);
 	} else {
-		memcpy(&tempEncoder, emp, sizeof(RDSModulatorParameters));
+		memset(&tempFile, 0, sizeof(RDSModulatorParametersFile));
+		tempFile.check = 160;
+		memcpy(&tempFile.params, emp, sizeof(RDSModulatorParameters));
+		tempFile.crc = crc16_ccitt((char*)&tempFile, sizeof(RDSModulatorParametersFile) - sizeof(uint16_t));
 	}
+	memcpy(&tempMod, &tempFile.params, sizeof(RDSModulatorParameters));
 	
 	if (strcmp(option, "LEVEL") == 0) {
-		tempEncoder.level = emp->level;
+		tempMod.level = emp->level;
 	} else if (strcmp(option, "RDSGEN") == 0) {
-		tempEncoder.rdsgen = emp->rdsgen;
+		tempMod.rdsgen = emp->rdsgen;
 	} else if (strcmp(option, "ALL") == 0) {
-		tempEncoder.level = emp->level;
-		tempEncoder.rdsgen = emp->rdsgen;
+		tempMod.level = emp->level;
+		tempMod.rdsgen = emp->rdsgen;
 	} else {
 		return;
 	}
+
+	memcpy(&tempFile.params, &tempMod, sizeof(RDSModulatorParameters));
+	tempFile.check = 160;
+	tempFile.crc = crc16_ccitt((char*)&tempFile, sizeof(RDSModulatorParametersFile) - sizeof(uint16_t));
 	
-	file = fopen(encoderPath, "wb");
+	file = fopen(modulatorPath, "wb");
 	if (file == NULL) {
 		perror("Error opening file");
 		return;
 	}
-	fwrite(&tempEncoder, sizeof(RDSModulatorParameters), 1, file);
+	fwrite(&tempFile, sizeof(RDSModulatorParameters), 1, file);
 	fclose(file);
 }
 
 void Modulator_loadFromFile(RDSModulatorParameters *emp) {
-	char encoderPath[256];
-	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsModulator", getenv("HOME"));
-	FILE *file = fopen(encoderPath, "rb");
+	char modulatorPath[128];
+	snprintf(modulatorPath, sizeof(modulatorPath), "%s/.rdsModulator", getenv("HOME"));
+	FILE *file = fopen(modulatorPath, "rb");
 	if (file == NULL) {
 		perror("Error opening file");
 		return;
 	}
-	fread(emp, sizeof(RDSModulatorParameters), 1, file);
+	RDSModulatorParametersFile tempFile;
+	fread(&tempFile, sizeof(RDSModulatorParametersFile), 1, file);
+	if (tempFile.check != 160) {
+		fprintf(stderr, "[RDSMODULATOR-FILE] Invalid file format\n");
+		fclose(file);
+		return;
+	}
+	uint16_t calculated_crc = crc16_ccitt((char*)&tempFile, sizeof(RDSModulatorParametersFile) - sizeof(uint16_t));
+	if (calculated_crc != tempFile.crc) {
+		fprintf(stderr, "[RDSMODULATOR-FILE] CRC mismatch! Data may be corrupted\n");
+		fclose(file);
+		return;
+	}
+	memcpy(emp, &tempFile.params, sizeof(RDSModulatorParameters));
 	fclose(file);
 }
 
 int modulatorsaved() {
-	char encoderPath[256];
+	char encoderPath[128];
 	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsModulator", getenv("HOME"));
 	FILE *file = fopen(encoderPath, "rb");
 	if (file) {
@@ -121,15 +143,6 @@ float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 	rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index++] = 0;
 	if (rdsMod->data[stream].out_sample_index == SAMPLE_BUFFER_SIZE) rdsMod->data[stream].out_sample_index = 0;
 	
-	uint8_t tooutput = 1;
-	if (rdsMod->params.rdsgen == 0) {
-		tooutput = 0;
-	} else {
-		if(rdsMod->params.rdsgen == 1) {
-			if (stream == 1) {
-				tooutput = 0;
-			}
-		}
-	}
+	uint8_t tooutput = rdsMod->params.rdsgen > stream ? 1 : 0;
 	return sample*rdsMod->params.level*tooutput;
 }

@@ -5,7 +5,7 @@
 #include <time.h>
 
 void saveToFile(RDSEncoder *emp, const char *option) {
-	char encoderPath[256];
+	char encoderPath[128];
 	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
 	FILE *file;
 
@@ -53,7 +53,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 void loadFromFile(RDSEncoder *enc) {
 	RDSEncoderFile rdsEncoderfile;
 
-	char encoderPath[256];
+	char encoderPath[128];
 	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
 	FILE *file = fopen(encoderPath, "rb");
 	if (file == NULL) {
@@ -69,7 +69,6 @@ void loadFromFile(RDSEncoder *enc) {
 	}
 
 	uint16_t calculated_crc = crc16_ccitt((char*)&rdsEncoderfile, sizeof(RDSEncoderFile) - sizeof(uint16_t));
-
 	if (calculated_crc != rdsEncoderfile.crc) {
 		fprintf(stderr, "[RDSENCODER-FILE] CRC mismatch! Data may be corrupted\n");
 		return;
@@ -84,7 +83,7 @@ void loadFromFile(RDSEncoder *enc) {
 }
 
 int rdssaved() {
-	char encoderPath[256];
+	char encoderPath[128];
 	snprintf(encoderPath, sizeof(encoderPath), "%s/.rdsEncoder", getenv("HOME"));
 	FILE *file = fopen(encoderPath, "rb");
 	if (file) {
@@ -99,40 +98,32 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 
 	if (enc->data[enc->program].af.num_afs) {
 		if (enc->state[enc->program].af_state == 0) {
-			out = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af.num_afs) << 8;
-			out |= enc->data[enc->program].af.afs[0];
-			enc->state[enc->program].af_state += 1;
+			out = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af.num_afs) << 8 | enc->data[enc->program].af.afs[0];
+			enc->state[enc->program].af_state++;
 		} else {
 			out = enc->data[enc->program].af.afs[enc->state[enc->program].af_state] << 8;
-			if (enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1]) {
-				out |= enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1];
-			} else {
+			if (enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1]) out |= enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1];
+			else {
 				out |= AF_CODE_FILLER;
 				enc->state[enc->program].af_state += 2;
 			}
 		}
 		if (enc->state[enc->program].af_state >= enc->data[enc->program].af.num_entries) enc->state[enc->program].af_state = 0;
-	} else {
-		out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
-	}
+	} else out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
 
 	return out;
 }
 
 static void get_next_af_oda(RDSEncoder* enc, uint16_t* af_group) {
 	uint8_t offset = 0;
-	if (enc->state[enc->program].af_oda_state == 0) {
-		af_group[0] = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af_oda.num_afs);
-	} else {
+	if (enc->state[enc->program].af_oda_state == 0) af_group[0] = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af_oda.num_afs);
+	else {
 		af_group[0] = enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state++];
 		offset++;
 	}
 	for(int i = 0; i < 3; i++) {
-		if (enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state + offset]) {
-			af_group[i + 1] = enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state + offset];
-		} else {
-			af_group[i + 1] = AF_CODE_FILLER;
-		}
+		if (enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state + offset]) af_group[i + 1] = enc->data[enc->program].af_oda.afs[enc->state[enc->program].af_oda_state + offset];
+		else af_group[i + 1] = AF_CODE_FILLER;
 		enc->state[enc->program].af_oda_state++;
 	}
 	if (enc->state[enc->program].af_oda_state >= enc->data[enc->program].af_oda.num_entries) enc->state[enc->program].af_oda_state = 0;
@@ -143,28 +134,22 @@ static uint16_t get_next_af_eon(RDSEncoder* enc, uint8_t eon_index) {
 
 	if (enc->data[enc->program].eon[eon_index].af.num_afs) {
 		if (enc->state[enc->program].eon_states[eon_index].af_state == 0) {
-			out = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af.num_afs) << 8;
-			out |= enc->data[enc->program].eon[eon_index].af.afs[0];
+			out = (AF_CODE_NUM_AFS_BASE + enc->data[enc->program].af.num_afs) << 8 | enc->data[enc->program].eon[eon_index].af.afs[0];
 			enc->state[enc->program].eon_states[eon_index].af_state += 1;
 		} else {
 			out = enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state] << 8;
-			if (enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state + 1]) {
-				out |= enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state + 1];
-			} else {
+			if (enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state + 1]) out |= enc->data[enc->program].eon[eon_index].af.afs[enc->state[enc->program].eon_states[eon_index].af_state + 1];
+			else {
 				out |= AF_CODE_FILLER;
 				enc->state[enc->program].eon_states[eon_index].af_state += 2;
 			}
 		}
 		if (enc->state[enc->program].eon_states[eon_index].af_state >= enc->data[enc->program].eon[eon_index].af.num_entries) enc->state[enc->program].eon_states[eon_index].af_state = 0;
-	} else {
-		out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
-	}
+	} else out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
 
 	return out;
 }
-// #endregion
 
-// #region Group encoding
 static void get_rds_ps_group(RDSEncoder* enc, RDSGroup *group) {
 	if(enc->state[enc->program].ps_csegment == 0) {
 		if(enc->state[enc->program].ps_update) {
@@ -194,35 +179,33 @@ static void get_rds_ps_group(RDSEncoder* enc, RDSGroup *group) {
 
 static void get_rds_fasttuning_group(RDSEncoder* enc, RDSGroup *group) {
 	group->b |= 15 << 12;
+
 	group->b |= 1 << 11;
+	group->is_type_b = 1;
 
 	group->b |= enc->data[enc->program].ta << 4;
 	if(enc->state[enc->program].fasttuning_state == 0) group->b |= enc->data[enc->program].dpty << 2;
 	group->b |= enc->state[enc->program].fasttuning_state;
-
-	// are blocks b and d the same or not?
 	group->d = group->b;
 
 	enc->state[enc->program].fasttuning_state++;
 	if (enc->state[enc->program].fasttuning_state == 4) enc->state[enc->program].fasttuning_state = 0;
-
-	group->is_type_b = 1;
 }
 
 static void get_rds_rt_group(RDSEncoder* enc, RDSGroup *group) {
-	if (enc->state[enc->program].rt_update && enc->data[enc->program].rt1_enabled && !enc->state[enc->program].current_rt) {
+	if (enc->state[enc->program].rt_update && enc->data[enc->program].rt1_enabled && !enc->data[enc->program].current_rt) {
 		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
 		enc->state[enc->program].rt_ab ^= 1;
 		enc->state[enc->program].rt_update = 0;
 		enc->state[enc->program].rt_state = 0;
-		enc->state[enc->program].current_rt = 0;
+		enc->data[enc->program].current_rt = 0;
 	}
-	if(enc->state[enc->program].rt2_update && enc->data[enc->program].rt2_enabled && enc->state[enc->program].current_rt) {
+	if(enc->state[enc->program].rt2_update && enc->data[enc->program].rt2_enabled && enc->data[enc->program].current_rt) {
 		memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt2, RT_LENGTH);
 		enc->state[enc->program].rt_ab ^= 1;
 		enc->state[enc->program].rt2_update = 0;
 		enc->state[enc->program].rt_state = 0;
-		enc->state[enc->program].current_rt = 1;
+		enc->data[enc->program].current_rt = 1;
 	}
 
 	uint8_t ab = enc->state[enc->program].rt_ab;
@@ -232,9 +215,8 @@ static void get_rds_rt_group(RDSEncoder* enc, RDSGroup *group) {
 		ab = 0;
 		break;
 	case 1:
-		ab = (enc->state[enc->program].current_rt == 0) ? 0 : 1;
+		ab = (enc->data[enc->program].current_rt == 0) ? 0 : 1;
 		break;
-	case 2:
 	default:
 		break;
 	}
@@ -247,14 +229,13 @@ static void get_rds_rt_group(RDSEncoder* enc, RDSGroup *group) {
 	group->d =  enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4 + 2] << 8;
 	group->d |= enc->state[enc->program].rt_text[enc->state[enc->program].rt_state * 4 + 3];
 
-	uint8_t segments = (enc->state[enc->program].current_rt == 1) ? enc->state[enc->program].rt2_segments : enc->state[enc->program].rt_segments;
+	uint8_t segments = (enc->data[enc->program].current_rt == 1) ? enc->state[enc->program].rt2_segments : enc->state[enc->program].rt_segments;
 	enc->state[enc->program].rt_state++;
 	if (enc->state[enc->program].rt_state == segments) enc->state[enc->program].rt_state = 0;
 }
 static void get_rds_rtp_oda_group(RDSEncoder* enc, RDSGroup *group) {
 	(void)enc;
 	group->b |= 3 << 12;
-
 	group->b |= 11 << 1;
 	group->d = ODA_AID_RTPLUS;
 }
@@ -338,7 +319,7 @@ static void get_rds_ptyn_group(RDSEncoder* enc, RDSGroup *group) {
 
 	group->b |= 10 << 12 | enc->state[enc->program].ptyn_state;
 	group->b |= enc->state[enc->program].ptyn_ab << 4;
-	group->c =  enc->state[enc->program].ptyn_text[enc->state[enc->program].ptyn_state * 4 + 0] << 8;
+	group->c =  enc->state[enc->program].ptyn_text[enc->state[enc->program].ptyn_state * 4] << 8;
 	group->c |= enc->state[enc->program].ptyn_text[enc->state[enc->program].ptyn_state * 4 + 1];
 	group->d =  enc->state[enc->program].ptyn_text[enc->state[enc->program].ptyn_state * 4 + 2] << 8;
 	group->d |= enc->state[enc->program].ptyn_text[enc->state[enc->program].ptyn_state * 4 + 3];
@@ -354,7 +335,7 @@ static void get_rds_lps_group(RDSEncoder* enc, RDSGroup *group) {
 	}
 
 	group->b |= 15 << 12 | enc->state[enc->program].lps_state;
-	group->c =  enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4    ] << 8;
+	group->c =  enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4] << 8;
 	group->c |= enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 1];
 	group->d =  enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 2] << 8;
 	group->d |= enc->state[enc->program].lps_text[enc->state[enc->program].lps_state * 4 + 3];
@@ -408,54 +389,56 @@ static void get_rds_ertplus_group(RDSEncoder* enc, RDSGroup *group) {
 
 static void get_rds_eon_group(RDSEncoder* enc, RDSGroup *group) {
 	RDSEON eon;
-get_eon:
 	eon = enc->data[enc->program].eon[enc->state[enc->program].eon_index];
-	group->b |= 14 << 12;
-	group->b |= eon.tp << 4;
+	while(1) {
+		group->b |= 14 << 12;
+		group->b |= eon.tp << 4;
 
-	switch (enc->state[enc->program].eon_state)
-	{
-	case 0:
-	case 1:
-	case 2:
-	case 3:
-		group->c = eon.ps[enc->state[enc->program].eon_state*2] << 8;
-		group->c |= eon.ps[enc->state[enc->program].eon_state*2 + 1];
-		group->b |= enc->state[enc->program].eon_state;
-		break;
-	case 4:
-		group->c = get_next_af_eon(enc, enc->state[enc->program].eon_index);
-		group->b |= enc->state[enc->program].eon_state;
-		break;
-	case 5: // 13
-		group->c = eon.pty << 11;
-		if(eon.tp) group->c |= eon.ta;
-		group->b |= 13;
-		break;
-	case 6: // 15
-		group->c = eon.data;
-		group->b |= 15;
-		break;
-	}
-
-	group->d = eon.pi;
-
-	if(enc->state[enc->program].eon_state == 6) {
-		enc->state[enc->program].eon_index++;
-
-		uint8_t i = 0;
-		while(i < 4 && !enc->data[enc->program].eon[enc->state[enc->program].eon_index].enabled) {
-			enc->state[enc->program].eon_index++;
-			if(enc->state[enc->program].eon_index >= 4) {
-				enc->state[enc->program].eon_index = 0;
-			}
-			i++;
+		switch (enc->state[enc->program].eon_state)
+		{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			group->c = eon.ps[enc->state[enc->program].eon_state*2] << 8;
+			group->c |= eon.ps[enc->state[enc->program].eon_state*2+1];
+			group->b |= enc->state[enc->program].eon_state;
+			break;
+		case 4:
+			group->c = get_next_af_eon(enc, enc->state[enc->program].eon_index);
+			group->b |= enc->state[enc->program].eon_state;
+			break;
+		case 5: // 13
+			group->c = eon.pty << 11;
+			if(eon.tp) group->c |= eon.ta;
+			group->b |= 13;
+			break;
+		case 6: // 15
+			group->c = eon.data;
+			group->b |= 15;
+			break;
 		}
 
-		enc->state[enc->program].eon_state = 0;
-		goto get_eon;
-	} else {
-		enc->state[enc->program].eon_state++;
+		group->d = eon.pi;
+
+		if(enc->state[enc->program].eon_state == 6) {
+			enc->state[enc->program].eon_index++;
+
+			uint8_t i = 0;
+			while(i < 4 && !enc->data[enc->program].eon[enc->state[enc->program].eon_index].enabled) {
+				enc->state[enc->program].eon_index++;
+				if(enc->state[enc->program].eon_index == 4) {
+					enc->state[enc->program].eon_index = 0;
+				}
+				eon = enc->data[enc->program].eon[enc->state[enc->program].eon_index];
+				i++;
+			}
+
+			enc->state[enc->program].eon_state = 0;
+		} else {
+			enc->state[enc->program].eon_state++;
+			break;
+		}
 	}
 }
 
@@ -466,15 +449,14 @@ static void get_rds_ert_group(RDSEncoder* enc, RDSGroup *group) {
 	}
 
 	group->b |= 12 << 12 | (enc->state[enc->program].ert_state & 31);
-	group->c =  enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4    ] << 8;
+	group->c = enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4] << 8;
 	group->c |= enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4 + 1];
-	group->d =  enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4 + 2] << 8;
+	group->d = enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4 + 2] << 8;
 	group->d |= enc->state[enc->program].ert_text[enc->state[enc->program].ert_state * 4 + 3];
 
 	enc->state[enc->program].ert_state++;
 	if (enc->state[enc->program].ert_state == enc->state[enc->program].ert_segments) enc->state[enc->program].ert_state = 0;
 }
-// #endregion
 
 static uint8_t get_rds_custom_groups(RDSEncoder* enc, RDSGroup *group) {
 	if(enc->state[enc->program].custom_group[0] == 1) {
@@ -503,24 +485,21 @@ static uint8_t get_rds_custom_groups2(RDSEncoder* enc, RDSGroup *group) {
 
 static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, uint8_t stream) {
 	uint8_t udg_idx;
-	uint8_t idx_seq = (stream == 0) ? 1 : 3;
-	uint8_t idx2_seq = (stream == 0) ? 0 : 2;
+	uint8_t ps_seq_idx = (stream == 0) ? 1 : 3;
+	uint8_t grp_seq_idx = (stream == 0) ? 0 : 2;
 	switch (*grp)
 	{
 		default:
 		case '0':
-			if(enc->state[enc->program].grp_seq_idx[idx_seq] < 4) enc->state[enc->program].grp_seq_idx[idx2_seq]--;
-			else enc->state[enc->program].grp_seq_idx[idx_seq] = 0;
+			if(enc->state[enc->program].grp_seq_idx[ps_seq_idx] < 4) enc->state[enc->program].grp_seq_idx[grp_seq_idx]--;
+			else enc->state[enc->program].grp_seq_idx[ps_seq_idx] = 0;
 
-			enc->state[enc->program].grp_seq_idx[idx_seq]++;
+			enc->state[enc->program].grp_seq_idx[ps_seq_idx]++;
 			get_rds_ps_group(enc, group);
 			goto group_coded;
 		case '1':
-			if(enc->state[enc->program].data_ecc == 0 && enc->data[enc->program].slc_data != 0) {
-				get_rds_slcdata_group(enc, group);
-			} else {
-				get_rds_ecc_group(enc, group);
-			}
+			if(enc->state[enc->program].data_ecc == 0 && enc->data[enc->program].slc_data != 0) get_rds_slcdata_group(enc, group);
+			else get_rds_ecc_group(enc, group);
 			enc->state[enc->program].data_ecc ^= 1;
 			goto group_coded;
 		case '2':
@@ -539,6 +518,7 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 			group->d = enc->data[enc->program].udg1[udg_idx][2];
 			enc->state[enc->program].udg_idxs[0]++;
 			if(enc->state[enc->program].udg_idxs[0] == enc->data[enc->program].udg1_len) enc->state[enc->program].udg_idxs[0] = 0;
+			group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b));
 			goto group_coded;
 		case 'Y':
 			udg_idx = enc->state[enc->program].udg_idxs[1];
@@ -547,33 +527,24 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 			group->d = enc->data[enc->program].udg2[udg_idx][2];
 			enc->state[enc->program].udg_idxs[1]++;
 			if(enc->state[enc->program].udg_idxs[1] == enc->data[enc->program].udg2_len) enc->state[enc->program].udg_idxs[1] = 0;
+			group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b));
 			goto group_coded;
 		case 'R':
-			if(enc->state[enc->program].rtp_oda == 0) {
-				get_rds_rtplus_group(enc, group);
-			} else {
-				get_rds_rtp_oda_group(enc, group);
-			}
+			if(enc->state[enc->program].rtp_oda == 0) get_rds_rtplus_group(enc, group);
+			else get_rds_rtp_oda_group(enc, group);
 			enc->state[enc->program].rtp_oda ^= 1;
 			goto group_coded;
 		case 'P':
-			if(enc->state[enc->program].ert_oda == 0) {
-				get_rds_ertplus_group(enc, group);
-			} else {
-				get_rds_ertp_oda_group(enc, group);
-			}
+			if(enc->state[enc->program].ert_oda == 0) get_rds_ertplus_group(enc, group);
+			else get_rds_ertp_oda_group(enc, group);
+
 			enc->state[enc->program].ert_oda ^= 1;
 			goto group_coded;
 		case 'S':
-			if(enc->state[enc->program].ert_oda == 0) {
-				get_rds_ert_group(enc, group);
-			} else {
-				get_rds_ert_oda_group(enc, group);
-			}
+			if(enc->state[enc->program].ert_oda == 0) get_rds_ert_group(enc, group);
+			else get_rds_ert_oda_group(enc, group);
 			enc->state[enc->program].ert_oda ^= 1;
 			goto group_coded;
-		// TODO: add uecp
-		// TODO: readd ODA
 		case 'F':
 			get_rds_lps_group(enc, group);
 			goto group_coded;
@@ -581,11 +552,8 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 			get_rds_fasttuning_group(enc, group);
 			goto group_coded;
 		case 'U':
-			if(enc->state[enc->program].af_oda == 0) {
-				get_oda_af_group(enc, group);
-			} else {
-				get_oda_af_oda_group(enc, group);
-			}
+			if(enc->state[enc->program].af_oda == 0) get_oda_af_group(enc, group);
+			else get_oda_af_oda_group(enc, group);
 			enc->state[enc->program].af_oda ^= 1;
 			goto group_coded;
 	}
@@ -643,27 +611,27 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 			enc->state[enc->program].ta_timeout--;
 			if(enc->state[enc->program].ta_timeout == 0) {
 				enc->data[enc->program].ta = 0;
-				enc->state[enc->program].ta_timeout = enc->state[enc->program].original_ta_timeout;
+				enc->state[enc->program].ta_timeout_state = enc->state[enc->program].ta_timeout;
 			};
 		}
 
-		if(enc->data[enc->program].rt1_enabled && enc->data[enc->program].rt2_enabled && enc->data[enc->program].rt_switching_period != 0) {
-			enc->data[enc->program].rt_switching_period--;
-			if(enc->data[enc->program].rt_switching_period == 0) {
-				enc->state[enc->program].current_rt ^= 1;
-				if (enc->state[enc->program].current_rt == 1) {
+		if(enc->data[enc->program].rt1_enabled && enc->data[enc->program].rt2_enabled && enc->state[enc->program].rt_switching_period_state) {
+			enc->state[enc->program].rt_switching_period_state--;
+			if(enc->state[enc->program].rt_switching_period_state == 0) {
+				enc->data[enc->program].current_rt ^= 1;
+				if (enc->data[enc->program].current_rt == 1) {
 					memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt2, RT_LENGTH);
 				} else {
 					memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
 				}
 				enc->state[enc->program].rt_state = 0;
-				enc->data[enc->program].rt_switching_period = enc->data[enc->program].orignal_rt_switching_period;
+				enc->state[enc->program].rt_switching_period_state = enc->data[enc->program].rt_switching_period;
 			}
 		}
 
-		if(enc->data[enc->program].rt1_enabled && enc->data[enc->program].rt_text_timeout != 0) {
-			enc->data[enc->program].rt_text_timeout--;
-			if(enc->data[enc->program].rt_text_timeout == 0) {
+		if(enc->data[enc->program].rt1_enabled && enc->data[enc->program].current_rt == 0 && enc->state[enc->program].rt_text_timeout) {
+			enc->state[enc->program].rt_text_timeout_state--;
+			if(enc->state[enc->program].rt_text_timeout_state == 0) {
 				enc->state[enc->program].rt_update = 1;
 				memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].default_rt, RT_LENGTH);
 			}
@@ -682,15 +650,15 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 
 	if(stream != 0) {
 		group->a = 0;
-		if(get_rds_custom_groups2(enc, group)) {
-			goto group_coded_rds2;
-		}
-		if(enc->encoder_data.rds2_mode == 0) { // tunneling
+		if(get_rds_custom_groups2(enc, group)) goto group_coded_rds2;
+
+		if(enc->encoder_data.rds2_mode == 0) {
 			group->b = enc->state[enc->program].last_stream0_group[0];
 			group->c = enc->state[enc->program].last_stream0_group[1];
 			group->d = enc->state[enc->program].last_stream0_group[2];
+			group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b));
 			goto group_coded_rds2;
-		} else if(enc->encoder_data.rds2_mode == 1) { // independent tunneling
+		} else if(enc->encoder_data.rds2_mode == 1) {
 			while(good_group == 0) {
 				grp_sqc_idx = enc->state[enc->program].grp_seq_idx[2];
 				if(enc->data[enc->program].grp_sqc_rds2[grp_sqc_idx] == '\0') {
@@ -718,9 +686,7 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 		}
 	}
 
-	if(get_rds_custom_groups(enc, group)) {
-		goto group_coded;
-	}
+	if(get_rds_custom_groups(enc, group)) goto group_coded;
 
 	while(good_group == 0) {
 		grp_sqc_idx = enc->state[enc->program].grp_seq_idx[0];
@@ -750,15 +716,11 @@ group_coded_rds2:
 		if(group->is_type_b) group->c = enc->data[enc->program].pi;
 		group->b |= enc->data[enc->program].tp << 10;
 		group->b |= enc->data[enc->program].pty << 5;
-	} else if(stream == 0) {
-		goto group_coded;
-	}
+	} else if(stream == 0) goto group_coded;
 	return;
 
 group_coded:
-	if(stream != 0) {
-		goto group_coded_rds2;
-	}
+	if(stream != 0) goto group_coded_rds2;
 	group->b |= enc->data[enc->program].tp << 10;
 	group->b |= enc->data[enc->program].pty << 5;
 	if(group->is_type_b) group->c = enc->data[enc->program].pi;
@@ -799,9 +761,7 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program) {
 	utc = gmtime(&now);
 	tempCoder.state[program].last_minute = utc->tm_min;
 
-	for(int i = 0; i < 4; i++) {
-		tempCoder.data[program].eon[i].ta = 0;
-	}
+	for(int i = 0; i < 4; i++) tempCoder.data[program].eon[i].ta = 0;
 
 	memcpy(&(enc->state[program]), &(tempCoder.state[program]), sizeof(RDSState));
 	memcpy(&(enc->rtpState[program]), &(tempCoder.rtpState[program]), sizeof(RDSRTPlusState));
@@ -851,29 +811,23 @@ void init_rds_encoder(RDSEncoder* enc) {
 void set_rds_rt1(RDSEncoder* enc, char *rt1) {
 	uint8_t i = 0, len = 0;
 
-	enc->data[enc->program].rt_text_timeout = enc->data[enc->program].original_rt_text_timeout;
+	enc->state[enc->program].rt_text_timeout_state = enc->data[enc->program].rt_text_timeout;
 
 	enc->state[enc->program].rt_update = 1;
 
 	memset(enc->data[enc->program].rt1, ' ', RT_LENGTH);
 	while (*rt1 != 0 && len < RT_LENGTH) enc->data[enc->program].rt1[len++] = *rt1++;
 
-	while (len > 0 && enc->data[enc->program].rt1[len - 1] == ' ') {
-		len--;
-	}
+	while (len > 0 && enc->data[enc->program].rt1[len - 1] == ' ') len--;
 
 	if (len < RT_LENGTH) {
 		enc->state[enc->program].rt_segments = 0;
-
 		enc->data[enc->program].rt1[len++] = '\r';
-
 		while (i < len) {
 			i += 4;
 			enc->state[enc->program].rt_segments++;
 		}
-	} else {
-		enc->state[enc->program].rt_segments = 16;
-	}
+	} else enc->state[enc->program].rt_segments = 16;
 }
 
 void set_rds_rt2(RDSEncoder* enc, char *rt2) {
@@ -884,22 +838,16 @@ void set_rds_rt2(RDSEncoder* enc, char *rt2) {
 	memset(enc->data[enc->program].rt2, ' ', RT_LENGTH);
 	while (*rt2 != 0 && len < RT_LENGTH) enc->data[enc->program].rt2[len++] = *rt2++;
 
-	while (len > 0 && enc->data[enc->program].rt2[len - 1] == ' ') {
-		len--;
-	}
+	while (len > 0 && enc->data[enc->program].rt2[len - 1] == ' ') len--;
 
 	if (len < RT_LENGTH) {
 		enc->state[enc->program].rt2_segments = 0;
-
 		enc->data[enc->program].rt2[len++] = '\r';
-
 		while (i < len) {
 			i += 4;
 			enc->state[enc->program].rt2_segments++;
 		}
-	} else {
-		enc->state[enc->program].rt2_segments = 16;
-	}
+	} else enc->state[enc->program].rt2_segments = 16;
 }
 
 void set_rds_ps(RDSEncoder* enc, char *ps) {
@@ -936,14 +884,11 @@ void set_rds_lps(RDSEncoder* enc, char *lps) {
 
 	if (len < LPS_LENGTH) {
 		enc->state[enc->program].lps_segments = 0;
-
 		while (i < len) {
 			i += 4;
 			enc->state[enc->program].lps_segments++;
 		}
-	} else {
-		enc->state[enc->program].lps_segments = 8;
-	}
+	} else enc->state[enc->program].lps_segments = 8;
 }
 
 void set_rds_ert(RDSEncoder* enc, char *ert) {
@@ -951,44 +896,38 @@ void set_rds_ert(RDSEncoder* enc, char *ert) {
 
 	enc->state[enc->program].ert_update = 1;
 
-	memset(enc->data[enc->program].ert, ' ', RT_LENGTH);
-	while (*ert != 0 && len < RT_LENGTH) enc->data[enc->program].ert[len++] = *ert++;
+	memset(enc->data[enc->program].ert, ' ', ERT_LENGTH);
+	while (*ert != 0 && len < ERT_LENGTH) enc->data[enc->program].ert[len++] = *ert++;
 
-	while (len > 0 && enc->data[enc->program].ert[len - 1] == ' ') {
-		len--;
-	}
+	while (len > 0 && enc->data[enc->program].ert[len - 1] == ' ') len--;
 
-	if (len < RT_LENGTH) {
+	if (len < ERT_LENGTH) {
 		enc->state[enc->program].ert_segments = 0;
-
 		enc->data[enc->program].ert[len++] = '\r';
-
 		while (i < len) {
 			i += 4;
 			enc->state[enc->program].ert_segments++;
 		}
-	} else {
-		enc->state[enc->program].ert_segments = 32;
-	}
+	} else enc->state[enc->program].ert_segments = 32;
 }
 
 void set_rds_rtplus_flags(RDSEncoder* enc, uint8_t flags) {
 	enc->rtpData[enc->program][0].enabled = (flags==2);
-	enc->rtpData[enc->program][0].running	= flags & 1;
+	enc->rtpData[enc->program][0].running = flags & 1;
 }
 
 void set_rds_ertplus_flags(RDSEncoder* enc, uint8_t flags) {
 	enc->rtpData[enc->program][1].enabled = (flags==2);
-	enc->rtpData[enc->program][1].running	= flags & 1;
+	enc->rtpData[enc->program][1].running = flags & 1;
 }
 
 void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags) {
-	enc->rtpData[enc->program][0].type[0]	= tags[0] & 0x3f;
-	enc->rtpData[enc->program][0].start[0]	= tags[1] & 0x3f;
-	enc->rtpData[enc->program][0].len[0]	= tags[2] & 0x3f;
-	enc->rtpData[enc->program][0].type[1]	= tags[3] & 0x3f;
-	enc->rtpData[enc->program][0].start[1]	= tags[4] & 0x3f;
-	enc->rtpData[enc->program][0].len[1]	= tags[5] & 0x1f;
+	enc->rtpData[enc->program][0].type[0] = tags[0] & 0x3f;
+	enc->rtpData[enc->program][0].start[0] = tags[1] & 0x3f;
+	enc->rtpData[enc->program][0].len[0] = tags[2] & 0x3f;
+	enc->rtpData[enc->program][0].type[1] = tags[3] & 0x3f;
+	enc->rtpData[enc->program][0].start[1] = tags[4] & 0x3f;
+	enc->rtpData[enc->program][0].len[1] = tags[5] & 0x1f;
 
 	enc->rtpState[enc->program][0].toggle ^= 1;
 	enc->rtpData[enc->program][0].running = 1;
@@ -996,12 +935,12 @@ void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags) {
 }
 
 void set_rds_ertplus_tags(RDSEncoder* enc, uint8_t *tags) {
-	enc->rtpData[enc->program][1].type[0]	= tags[0] & 0x3f;
-	enc->rtpData[enc->program][1].start[0]	= tags[1] & 0x3f;
-	enc->rtpData[enc->program][1].len[0]	= tags[2] & 0x3f;
-	enc->rtpData[enc->program][1].type[1]	= tags[3] & 0x3f;
-	enc->rtpData[enc->program][1].start[1]	= tags[4] & 0x3f;
-	enc->rtpData[enc->program][1].len[1]	= tags[5] & 0x1f;
+	enc->rtpData[enc->program][1].type[0] = tags[0] & 0x3f;
+	enc->rtpData[enc->program][1].start[0] = tags[1] & 0x3f;
+	enc->rtpData[enc->program][1].len[0] = tags[2] & 0x3f;
+	enc->rtpData[enc->program][1].type[1] = tags[3] & 0x3f;
+	enc->rtpData[enc->program][1].start[1] = tags[4] & 0x3f;
+	enc->rtpData[enc->program][1].len[1] = tags[5] & 0x1f;
 
 	enc->rtpState[enc->program][1].toggle ^= 1;
 	enc->rtpData[enc->program][1].running = 1;

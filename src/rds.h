@@ -77,9 +77,8 @@ typedef struct {
 	uint8_t rt2_enabled : 1;
 	uint8_t rt_type : 2;
 	uint8_t rt_text_timeout;
-	uint8_t original_rt_text_timeout;
 	uint8_t rt_switching_period;
-	uint8_t orignal_rt_switching_period;
+	uint8_t current_rt : 1;
 	char default_rt[RT_LENGTH];
 	char rt2[RT_LENGTH];
 
@@ -125,7 +124,6 @@ typedef struct {
 	uint8_t rt_ab : 1;
 	uint8_t rt_segments : 5;
 	uint8_t rt2_segments : 5;
-	uint8_t current_rt : 1;
 
 	char ert_text[ERT_LENGTH];
 	uint8_t ert_state : 6;
@@ -145,6 +143,9 @@ typedef struct {
 	uint16_t custom_group[GROUP_LENGTH];
 	uint16_t custom_group2[GROUP_LENGTH + 1];
 
+	uint8_t rt_switching_period_state;
+	uint8_t rt_text_timeout_state;
+
 	uint8_t rtp_oda : 1;
 	uint8_t ertp_oda : 1;
 	uint8_t ert_oda : 1;
@@ -156,8 +157,9 @@ typedef struct {
 	uint8_t fasttuning_state : 3;
 
 	uint8_t last_minute : 6;
+
 	uint8_t ta_timeout : 7;
-	uint8_t original_ta_timeout : 7;
+	uint8_t ta_timeout_state : 7;
 
 	uint8_t eon_index : 3;
 	uint8_t eon_state : 4;
