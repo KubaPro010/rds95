@@ -9,6 +9,7 @@ void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
 	
 	RDSModulatorParameters tempMod;
 	RDSModulatorParametersFile tempFile;
+	memset(&tempFile, 0, sizeof(tempFile));
 	file = fopen(modulatorPath, "rb");
 	if (file != NULL) {
 		fread(&tempFile, sizeof(RDSModulatorParametersFile), 1, file);
@@ -54,6 +55,7 @@ void Modulator_loadFromFile(RDSModulatorParameters *emp) {
 		return;
 	}
 	RDSModulatorParametersFile tempFile;
+	memset(&tempFile, 0, sizeof(tempFile));
 	fread(&tempFile, sizeof(RDSModulatorParametersFile), 1, file);
 	if (tempFile.check != 160) {
 		fprintf(stderr, "[RDSMODULATOR-FILE] Invalid file format\n");
