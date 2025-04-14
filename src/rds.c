@@ -629,7 +629,7 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 			}
 		}
 
-		if(enc->data[enc->program].rt1_enabled && enc->data[enc->program].current_rt == 0 && enc->state[enc->program].rt_text_timeout) {
+		if(enc->data[enc->program].rt1_enabled && enc->data[enc->program].current_rt == 0 && enc->state[enc->program].rt_text_timeout_state) {
 			enc->state[enc->program].rt_text_timeout_state--;
 			if(enc->state[enc->program].rt_text_timeout_state == 0) {
 				enc->state[enc->program].rt_update = 1;
