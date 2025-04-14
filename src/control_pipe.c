@@ -1,8 +1,4 @@
-#include "common.h"
-#include "ascii_cmd.h"
 #include "control_pipe.h"
-#include "rds.h"
-#include "modulator.h"
 
 static int fd;
 static struct pollfd poller;
