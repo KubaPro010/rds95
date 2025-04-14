@@ -35,7 +35,7 @@ void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
 
 	memcpy(&tempFile.params, &tempMod, sizeof(RDSModulatorParameters));
 	tempFile.check = 160;
-	tempFile.crc = crc16_ccitt((char*)&tempFile, sizeof(RDSModulatorParametersFile) - sizeof(uint16_t));
+	tempFile.crc = crc16_ccitt((char*)&tempFile, offsetof(RDSModulatorParametersFile, crc));
 	
 	file = fopen(modulatorPath, "wb");
 	if (file == NULL) {
@@ -62,7 +62,7 @@ void Modulator_loadFromFile(RDSModulatorParameters *emp) {
 		fclose(file);
 		return;
 	}
-	uint16_t calculated_crc = crc16_ccitt((char*)&tempFile, sizeof(RDSModulatorParametersFile) - sizeof(uint16_t));
+	uint16_t calculated_crc = crc16_ccitt((char*)&tempFile, offsetof(RDSModulatorParametersFile, crc));
 	if (calculated_crc != tempFile.crc) {
 		fprintf(stderr, "[RDSMODULATOR-FILE] CRC mismatch! Data may be corrupted\n");
 		fclose(file);
