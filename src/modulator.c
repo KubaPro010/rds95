@@ -18,7 +18,7 @@ void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
 		memset(&tempFile, 0, sizeof(RDSModulatorParametersFile));
 		tempFile.check = 160;
 		memcpy(&tempFile.params, emp, sizeof(RDSModulatorParameters));
-		tempFile.crc = crc16_ccitt((char*)&tempFile, sizeof(RDSModulatorParametersFile) - sizeof(uint16_t));
+		tempFile.crc = crc16_ccitt((char*)&tempFile, offsetof(RDSModulatorParametersFile, crc));
 	}
 	memcpy(&tempMod, &tempFile.params, sizeof(RDSModulatorParameters));
 	

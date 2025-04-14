@@ -39,7 +39,7 @@ void saveToFile(RDSEncoder *emp, const char *option) {
 	memcpy(&(rdsEncoderfile.rtpData[emp->program]), &(tempEncoder.rtpData[emp->program]), sizeof(RDSRTPlusData)*2);
 	memcpy(&(rdsEncoderfile.encoder_data), &(tempEncoder.encoder_data), sizeof(RDSEncoderData));
 	rdsEncoderfile.program = tempEncoder.program;
-	rdsEncoderfile.crc = crc16_ccitt((char*)&rdsEncoderfile, sizeof(RDSEncoderFile) - sizeof(uint16_t));
+	rdsEncoderfile.crc = crc16_ccitt((char*)&rdsEncoderfile, offsetof(RDSEncoderFile, crc));
 
 	file = fopen(encoderPath, "wb");
 	if (file == NULL) {
@@ -68,7 +68,7 @@ void loadFromFile(RDSEncoder *enc) {
 		return;
 	}
 
-	uint16_t calculated_crc = crc16_ccitt((char*)&rdsEncoderfile, sizeof(RDSEncoderFile) - sizeof(uint16_t));
+	uint16_t calculated_crc = crc16_ccitt((char*)&rdsEncoderfile, offsetof(RDSEncoderFile, crc));
 	if (calculated_crc != rdsEncoderfile.crc) {
 		fprintf(stderr, "[RDSENCODER-FILE] CRC mismatch! Data may be corrupted\n");
 		return;
