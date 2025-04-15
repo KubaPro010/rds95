@@ -49,7 +49,7 @@ static void handle_ecc(char *arg, RDSModulator* mod, char* output) {
 static void handle_rtp(char *arg, RDSModulator* mod, char* output) {
 	uint8_t tags[6];
 
-	if (sscanf((char *)arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
+	if (sscanf(arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
 		set_rds_rtplus_tags(mod->enc, tags);
 		strcpy(output, "+\0");
 	} else strcpy(output, "-\0");
@@ -58,7 +58,7 @@ static void handle_rtp(char *arg, RDSModulator* mod, char* output) {
 static void handle_ertp(char *arg, RDSModulator* mod, char* output) {
 	uint8_t tags[6];
 
-	if (sscanf((char *)arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
+	if (sscanf(arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
 		set_rds_ertplus_tags(mod->enc, tags);
 		strcpy(output, "+\0");
 	} else strcpy(output, "-\0");
@@ -138,7 +138,7 @@ static void handle_af(char *arg, RDSModulator* mod, char* output) {
 	RDSAFs new_af;
 	float af[MAX_AFS], *af_iter;
 
-	arg_count = sscanf((char *)arg,
+	arg_count = sscanf(arg,
 		"%f,%f,%f,%f,%f,"
 		"%f,%f,%f,%f,%f,"
 		"%f,%f,%f,%f,%f,"
@@ -172,7 +172,7 @@ static void handle_afo(char *arg, RDSModulator* mod, char* output) {
 	RDSAFsODA new_af_oda;
 	float af[MAX_AFS], *af_iter;
 
-	arg_count = sscanf((char *)arg,
+	arg_count = sscanf(arg,
 		"%f,%f,%f,%f,%f,"
 		"%f,%f,%f,%f,%f,"
 		"%f,%f,%f,%f,%f,"
@@ -193,9 +193,39 @@ static void handle_afo(char *arg, RDSModulator* mod, char* output) {
 	strcpy(output, "+\0");
 }
 
+static void handle_adr(char *arg, RDSModulator* mod, char* output) {
+	uint16_t ids[2];
+	int count = sscanf(arg, "%d,%d", &ids[0], &ids[1]);
+	if(count == 1) {
+		mod->enc->encoder_data.encoder_addr[0] = ids[0];
+	} else if(count == 2) {
+		mod->enc->encoder_data.encoder_addr[0] = ids[0];
+		mod->enc->encoder_data.encoder_addr[1] = ids[1];
+	} else {
+		strcpy(output, "-\0");
+		return;
+	}
+	strcpy(output, "+\0");
+}
+
+static void handle_site(char *arg, RDSModulator* mod, char* output) {
+	uint16_t ids[2];
+	int count = sscanf(arg, "%d,%d", &ids[0], &ids[1]);
+	if(count == 1) {
+		mod->enc->encoder_data.site_addr[0] = ids[0];
+	} else if(count == 2) {
+		mod->enc->encoder_data.site_addr[0] = ids[0];
+		mod->enc->encoder_data.site_addr[1] = ids[1];
+	} else {
+		strcpy(output, "-\0");
+		return;
+	}
+	strcpy(output, "+\0")
+}
+
 static void handle_g(char *arg, RDSModulator* mod, char* output) {
 	uint16_t blocks[4];
-	int count = sscanf((char *)arg, "%4hx%4hx%4hx%4hx", &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
+	int count = sscanf(arg, "%4hx%4hx%4hx%4hx", &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 	if (count == 3) {
 		mod->enc->state[mod->enc->program].custom_group[0] = 1;
 		mod->enc->state[mod->enc->program].custom_group[1] = blocks[0];
@@ -314,7 +344,7 @@ static void handle_udg(char *arg, char *pattern, RDSModulator* mod, char* output
 	char *ptr = arg;
 
 	while (sets < 8) {
-		int count = sscanf((char *)ptr, "%4hx%4hx%4hx", &blocks[sets][0], &blocks[sets][1], &blocks[sets][2]);
+		int count = sscanf(ptr, "%4hx%4hx%4hx", &blocks[sets][0], &blocks[sets][1], &blocks[sets][2]);
 		if (count != 3) {
 			all_scanned = 0;
 			break;
@@ -412,7 +442,7 @@ static void handle_eonaf(char *arg, char *pattern, RDSModulator* mod, char* outp
 	RDSAFs new_af;
 	float af[MAX_AFS], *af_iter;
 
-	arg_count = sscanf((char *)arg,
+	arg_count = sscanf(arg,
 		"%f,%f,%f,%f,%f,"
 		"%f,%f,%f,%f,%f,"
 		"%f,%f,%f,%f,%f,"
@@ -458,7 +488,8 @@ static const command_handler_t commands_eq4[] = {
 	{"RTP", handle_rtp, 3},
 	{"LPS", handle_lps, 3},
 	{"ERT", handle_ert, 3},
-	{"AFO", handle_afo, 3}
+	{"AFO", handle_afo, 3},
+	{"ADR", handle_adr, 3}
 };
 
 static const command_handler_t commands_eq5[] = {
@@ -468,6 +499,7 @@ static const command_handler_t commands_eq5[] = {
 	{"SLCD", handle_slcd, 4},
 	{"ERTP", handle_ertp, 4},
 	{"LINK", handle_link, 4},
+	{"SITE", handle_site, 4}
 };
 
 static const command_handler_t commands_eq2[] = {
@@ -517,7 +549,7 @@ static const pattern_command_handler_t pattern_commands[] = {
 static bool process_command_table(const command_handler_t *table, int table_size,
 								 char *cmd, char *arg, char *output, RDSModulator* mod) {
 	for (int i = 0; i < table_size; i++) {
-		if (strcmp(cmd, (char *)table[i].cmd) == 0) {
+		if (strcmp(cmd, table[i].cmd) == 0) {
 			table[i].handler(arg, mod, output);
 			return true;
 		}
@@ -546,6 +578,31 @@ static bool process_pattern_commands(char *cmd, char *arg, char *output, RDSModu
 }
 
 void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
+	if(mod->enc->encoder_data.ascii_data.expected_encoder_addr != 0 && mod->enc->encoder_data.ascii_data.expected_encoder_addr != 255) {
+		uint8_t reached = 0;
+		for(int i = 0; i < 2; i++) {
+			if(mod->enc->encoder_data.encoder_addr[i] == mod->enc->encoder_data.expected_encoder_addr) {
+				reached = 1;
+				break;
+			}
+		}
+		if(!reached) {
+			return;
+		}
+	}
+	if(mod->enc->encoder_data.expected_site_addr != 0) {
+		uint8_t reached = 0;
+		for(int i = 0; i < 2; i++) {
+			if(mod->enc->encoder_data.site_addr[i] == mod->enc->encoder_data.expected_site_addr) {
+				reached = 1;
+				break;
+			}
+		}
+		if(!reached) {
+			return;
+		}
+	}
+
 	char *cmd, *arg;
 
 	char output[255];
@@ -564,7 +621,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 
 	for (size_t i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
 		const command_handler_t *handler = &commands_exact[i];
-		if (cmd_len == handler->cmd_length && strcmp(upper_str, (char *)handler->cmd) == 0) {
+		if (cmd_len == handler->cmd_length && strcmp(upper_str, handler->cmd) == 0) {
 			handler->handler(NULL, mod, output);
 			return;
 		}
