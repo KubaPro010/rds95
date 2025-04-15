@@ -581,7 +581,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 	if(mod->enc->encoder_data.ascii_data.expected_encoder_addr != 0 && mod->enc->encoder_data.ascii_data.expected_encoder_addr != 255) {
 		uint8_t reached = 0;
 		for(int i = 0; i < 2; i++) {
-			if(mod->enc->encoder_data.encoder_addr[i] == mod->enc->encoder_data.expected_encoder_addr) {
+			if(mod->enc->encoder_data.ascii_data.encoder_addr[i] == mod->enc->encoder_data.ascii_data.expected_encoder_addr) {
 				reached = 1;
 				break;
 			}
@@ -593,7 +593,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 	if(mod->enc->encoder_data.expected_site_addr != 0) {
 		uint8_t reached = 0;
 		for(int i = 0; i < 2; i++) {
-			if(mod->enc->encoder_data.site_addr[i] == mod->enc->encoder_data.expected_site_addr) {
+			if(mod->enc->encoder_data.site_addr[i] == mod->enc->encoder_data.ascii_data.expected_site_addr) {
 				reached = 1;
 				break;
 			}
