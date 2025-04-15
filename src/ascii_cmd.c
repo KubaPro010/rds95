@@ -195,7 +195,7 @@ static void handle_afo(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_adr(char *arg, RDSModulator* mod, char* output) {
 	uint16_t ids[2];
-	int count = sscanf(arg, "%4d,%4d", &ids[0], &ids[1]);
+	int count = sscanf(arg, "%4hu,%4hu", &ids[0], &ids[1]);
 	if(count == 1) {
 		mod->enc->encoder_data.encoder_addr[0] = ids[0];
 	} else if(count == 2) {
@@ -210,7 +210,7 @@ static void handle_adr(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_site(char *arg, RDSModulator* mod, char* output) {
 	uint16_t ids[2];
-	int count = sscanf(arg, "%4d,%4d", &ids[0], &ids[1]);
+	int count = sscanf(arg, "%4hu,%4hu", &ids[0], &ids[1]);
 	if(count == 1) {
 		mod->enc->encoder_data.site_addr[0] = ids[0];
 	} else if(count == 2) {
