@@ -195,7 +195,7 @@ static void handle_afo(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_adr(char *arg, RDSModulator* mod, char* output) {
 	uint16_t ids[2];
-	int count = sscanf(arg, "%d,%d", &ids[0], &ids[1]);
+	int count = sscanf(arg, "%4d,%4d", &ids[0], &ids[1]);
 	if(count == 1) {
 		mod->enc->encoder_data.encoder_addr[0] = ids[0];
 	} else if(count == 2) {
@@ -210,7 +210,7 @@ static void handle_adr(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_site(char *arg, RDSModulator* mod, char* output) {
 	uint16_t ids[2];
-	int count = sscanf(arg, "%d,%d", &ids[0], &ids[1]);
+	int count = sscanf(arg, "%4d,%4d", &ids[0], &ids[1]);
 	if(count == 1) {
 		mod->enc->encoder_data.site_addr[0] = ids[0];
 	} else if(count == 2) {
@@ -581,7 +581,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 	if(mod->enc->encoder_data.ascii_data.expected_encoder_addr != 0 && mod->enc->encoder_data.ascii_data.expected_encoder_addr != 255) {
 		uint8_t reached = 0;
 		for(int i = 0; i < 2; i++) {
-			if(mod->enc->encoder_data.ascii_data.encoder_addr[i] == mod->enc->encoder_data.ascii_data.expected_encoder_addr) {
+			if(mod->enc->encoder_data.encoder_addr[i] == mod->enc->encoder_data.ascii_data.expected_encoder_addr) {
 				reached = 1;
 				break;
 			}
@@ -590,7 +590,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 			return;
 		}
 	}
-	if(mod->enc->encoder_data.expected_site_addr != 0) {
+	if(mod->enc->encoder_data.ascii_data.expected_site_addr != 0) {
 		uint8_t reached = 0;
 		for(int i = 0; i < 2; i++) {
 			if(mod->enc->encoder_data.site_addr[i] == mod->enc->encoder_data.ascii_data.expected_site_addr) {
