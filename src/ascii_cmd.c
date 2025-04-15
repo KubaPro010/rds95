@@ -220,7 +220,7 @@ static void handle_site(char *arg, RDSModulator* mod, char* output) {
 		strcpy(output, "-\0");
 		return;
 	}
-	strcpy(output, "+\0")
+	strcpy(output, "+\0");
 }
 
 static void handle_g(char *arg, RDSModulator* mod, char* output) {
