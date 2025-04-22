@@ -491,21 +491,21 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 
 			enc->state[enc->program].grp_seq_idx[ps_seq_idx]++;
 			get_rds_ps_group(enc, group);
-			goto group_coded;
+			break;
 		case '1':
 			if(enc->state[enc->program].data_ecc == 0 && enc->data[enc->program].slc_data != 0) get_rds_slcdata_group(enc, group);
 			else get_rds_ecc_group(enc, group);
 			enc->state[enc->program].data_ecc ^= 1;
-			goto group_coded;
+			break;
 		case '2':
 			get_rds_rt_group(enc, group);
-			goto group_coded;
+			break;
 		case 'A':
 			get_rds_ptyn_group(enc, group);
-			goto group_coded;
+			break;
 		case 'E':
 			get_rds_eon_group(enc, group);
-			goto group_coded;
+			break;
 		case 'X':
 			if(stream != 0) {
 				udg_idx = enc->state[enc->program].udg_idxs_rds2[0];
