@@ -101,9 +101,14 @@ typedef struct {
 
 	uint8_t udg1_len : 4;
 	uint8_t udg2_len : 4;
+	uint8_t udg1_len_rds2 : 4;
+	uint8_t udg2_len_rds2 : 4;
 
 	uint16_t udg1[8][3];
 	uint16_t udg2[8][3];
+
+	uint16_t udg1_rds2[8][4];
+	uint16_t udg2_rds2[8][4];
 
 	RDSEON eon[4];
 } RDSData;
@@ -153,6 +158,7 @@ typedef struct {
 	uint8_t data_ecc : 1;
 	uint8_t grp_seq_idx[4];
 	uint8_t udg_idxs[2];
+	uint8_t udg_idxs_rds2[2];
 
 	uint8_t fasttuning_state : 3;
 

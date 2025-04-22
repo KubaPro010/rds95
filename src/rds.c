@@ -507,53 +507,72 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 			get_rds_eon_group(enc, group);
 			goto group_coded;
 		case 'X':
+			if(stream != 0) {
+				udg_idx = enc->state[enc->program].udg_idxs_rds2[0];
+				group->a = enc->data[enc->program].udg1_rds2[udg_idx][0];
+				group->b = enc->data[enc->program].udg1_rds2[udg_idx][1];
+				group->c = enc->data[enc->program].udg1_rds2[udg_idx][2];
+				group->d = enc->data[enc->program].udg1_rds2[udg_idx][3];
+				enc->state[enc->program].udg_idxs_rds2[0]++;
+				if(enc->state[enc->program].udg_idxs_rds2[0] == enc->data[enc->program].udg1_len_rds2) enc->state[enc->program].udg_idxs_rds2[0] = 0;
+				group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b));
+				break;
+			}
 			udg_idx = enc->state[enc->program].udg_idxs[0];
 			group->b = enc->data[enc->program].udg1[udg_idx][0];
 			group->c = enc->data[enc->program].udg1[udg_idx][1];
 			group->d = enc->data[enc->program].udg1[udg_idx][2];
 			enc->state[enc->program].udg_idxs[0]++;
 			if(enc->state[enc->program].udg_idxs[0] == enc->data[enc->program].udg1_len) enc->state[enc->program].udg_idxs[0] = 0;
-			group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b));
-			goto group_coded;
+			group->is_type_b = IS_TYPE_B(group->b);
+			break;
 		case 'Y':
+			if(stream != 0) {
+				udg_idx = enc->state[enc->program].udg_idxs_rds2[1];
+				group->a = enc->data[enc->program].udg2_rds2[udg_idx][0];
+				group->b = enc->data[enc->program].udg2_rds2[udg_idx][1];
+				group->c = enc->data[enc->program].udg2_rds2[udg_idx][2];
+				group->d = enc->data[enc->program].udg2_rds2[udg_idx][3];
+				enc->state[enc->program].udg_idxs_rds2[1]++;
+				if(enc->state[enc->program].udg_idxs_rds2[1] == enc->data[enc->program].udg2_len_rds2) enc->state[enc->program].udg_idxs_rds2[1] = 0;
+				group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b));
+				break;
+			}
 			udg_idx = enc->state[enc->program].udg_idxs[1];
 			group->b = enc->data[enc->program].udg2[udg_idx][0];
 			group->c = enc->data[enc->program].udg2[udg_idx][1];
 			group->d = enc->data[enc->program].udg2[udg_idx][2];
 			enc->state[enc->program].udg_idxs[1]++;
 			if(enc->state[enc->program].udg_idxs[1] == enc->data[enc->program].udg2_len) enc->state[enc->program].udg_idxs[1] = 0;
-			group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b));
-			goto group_coded;
+			group->is_type_b = IS_TYPE_B(group->b);
+			break;
 		case 'R':
 			if(enc->state[enc->program].rtp_oda == 0) get_rds_rtplus_group(enc, group);
 			else get_rds_rtp_oda_group(enc, group);
 			enc->state[enc->program].rtp_oda ^= 1;
-			goto group_coded;
+			break;
 		case 'P':
 			if(enc->state[enc->program].ert_oda == 0) get_rds_ertplus_group(enc, group);
 			else get_rds_ertp_oda_group(enc, group);
-
 			enc->state[enc->program].ert_oda ^= 1;
-			goto group_coded;
+			break;
 		case 'S':
 			if(enc->state[enc->program].ert_oda == 0) get_rds_ert_group(enc, group);
 			else get_rds_ert_oda_group(enc, group);
 			enc->state[enc->program].ert_oda ^= 1;
-			goto group_coded;
+			break;
 		case 'F':
 			get_rds_lps_group(enc, group);
-			goto group_coded;
+			break;
 		case 'T':
 			get_rds_fasttuning_group(enc, group);
-			goto group_coded;
+			break;
 		case 'U':
 			if(enc->state[enc->program].af_oda == 0) get_oda_af_group(enc, group);
 			else get_oda_af_oda_group(enc, group);
 			enc->state[enc->program].af_oda ^= 1;
-			goto group_coded;
+			break;
 	}
-group_coded:
-	return;
 }
 
 static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp, uint8_t stream) {

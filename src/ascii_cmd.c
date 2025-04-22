@@ -370,6 +370,39 @@ static void handle_udg(char *arg, char *pattern, RDSModulator* mod, char* output
 	else strcpy(output, "/\0");
 }
 
+static void handle_udg2(char *arg, char *pattern, RDSModulator* mod, char* output) {
+	uint8_t all_scanned = 1, bad_format = 0;
+	uint16_t blocks[8][4];
+	int sets = 0;
+	char *ptr = arg;
+
+	while (sets < 8) {
+		int count = sscanf(ptr, "%4hx%4hx%4hx%4hx", &blocks[sets][0], &blocks[sets][1], &blocks[sets][2], &blocks[sets][3]);
+		if (count != 4) {
+			all_scanned = 0;
+			break;
+		}
+		sets++;
+		while (*ptr && *ptr != ',') ptr++;
+		if (*ptr == ',') ptr++;
+		else {
+			bad_format = 1;
+			break;
+		}
+	}
+
+	if (strcmp(pattern, "1") == 0) {
+		memcpy(&(mod->enc->data[mod->enc->program].udg1_rds2), &blocks, sets * sizeof(uint16_t[4]));
+		mod->enc->data[mod->enc->program].udg1_len_rds2 = sets;
+	} else if(strcmp(pattern, "2") == 0) {
+		memcpy(&(mod->enc->data[mod->enc->program].udg2_rds2), &blocks, sets * sizeof(uint16_t[4]));
+		mod->enc->data[mod->enc->program].udg2_len_rds2 = sets;
+	} else strcpy(output, "!\0");
+	if(bad_format) strcpy(output, "-\0");
+	else if(all_scanned) strcpy(output, "+\0");
+	else strcpy(output, "/\0");
+}
+
 static void handle_rttype(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].rt_type = atoi(arg);
 	strcpy(output, "+\0");
@@ -544,6 +577,7 @@ static const pattern_command_handler_t pattern_commands[] = {
 	{"EON", "AF", handle_eonaf},
 	{"EON", "DT", handle_eondt},
 	{"UDG", "", handle_udg},
+	{"UDG2", "", handle_udg2},
 };
 
 static bool process_command_table(const command_handler_t *table, int table_size,
