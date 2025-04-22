@@ -524,7 +524,7 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 			group->d = enc->data[enc->program].udg1[udg_idx][2];
 			enc->state[enc->program].udg_idxs[0]++;
 			if(enc->state[enc->program].udg_idxs[0] == enc->data[enc->program].udg1_len) enc->state[enc->program].udg_idxs[0] = 0;
-			group->is_type_b = IS_TYPE_B(group->b);
+			group->is_type_b = (IS_TYPE_B(group->b) != 0);
 			break;
 		case 'Y':
 			if(stream != 0) {
@@ -544,7 +544,7 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 			group->d = enc->data[enc->program].udg2[udg_idx][2];
 			enc->state[enc->program].udg_idxs[1]++;
 			if(enc->state[enc->program].udg_idxs[1] == enc->data[enc->program].udg2_len) enc->state[enc->program].udg_idxs[1] = 0;
-			group->is_type_b = IS_TYPE_B(group->b);
+			group->is_type_b = (IS_TYPE_B(group->b) != 0);
 			break;
 		case 'R':
 			if(enc->state[enc->program].rtp_oda == 0) get_rds_rtplus_group(enc, group);
