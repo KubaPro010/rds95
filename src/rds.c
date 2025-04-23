@@ -98,10 +98,8 @@ static uint16_t get_next_af(RDSEncoder* enc) {
 		} else {
 			out = enc->data[enc->program].af.afs[enc->state[enc->program].af_state] << 8;
 			if (enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1]) out |= enc->data[enc->program].af.afs[enc->state[enc->program].af_state + 1];
-			else {
-				out |= AF_CODE_FILLER;
-				enc->state[enc->program].af_state += 2;
-			}
+			else out |= AF_CODE_FILLER;
+			enc->state[enc->program].af_state += 2;
 		}
 		if (enc->state[enc->program].af_state >= enc->data[enc->program].af.num_entries) enc->state[enc->program].af_state = 0;
 	} else out = AF_CODE_NUM_AFS_BASE << 8 | AF_CODE_FILLER;
