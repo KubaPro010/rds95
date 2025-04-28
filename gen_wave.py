@@ -7,7 +7,7 @@ if PLOT: import matplotlib.pyplot as plt
 if FFT: import numpy as np
 
 DATA_RATE = 1187.5
-SIZE_RATIO = 2
+SIZE_RATIO = 1
 
 ratio = 16
 sample_rate = DATA_RATE*ratio
@@ -23,17 +23,12 @@ def rrcosfilter(NumSamples):
 
 	for x in sample_num:
 		t = (x-NumSamples/2)*T_delta
-		if t == 0.0:
-			h_rrc[x] = 1.0 - 1 + (4/math.pi)
-		elif t == SymbolPeriod/4:
-			h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi)* \
-					(math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
-		elif t == -SymbolPeriod/4:
-			h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi)* \
-					(math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
-		else:
-			h_rrc[x] = (4*(t/SymbolPeriod)*math.cos(math.pi*t*2/SymbolPeriod))/ \
-					(math.pi*t*(1-(4*t/SymbolPeriod)*(4*t/SymbolPeriod))/SymbolPeriod)
+		if t == 0.0: h_rrc[x] = 1.0 - 1 + (4/math.pi)
+		elif t == SymbolPeriod/4: h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi) * (math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
+		elif t == -SymbolPeriod/4: h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi) * (math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
+		else: h_rrc[x] = (4*(t/SymbolPeriod)*math.cos(math.pi*t*2/SymbolPeriod)) / (math.pi*t*(1-(4*t/SymbolPeriod)*(4*t/SymbolPeriod))/SymbolPeriod)
+	blackman = [0.42 + 0.5*math.cos(math.pi*i/(NumSamples-1)) + 0.08*math.cos(2.0*math.pi*i/(NumSamples-1)) for i in range(NumSamples)]
+	h_rrc = [h_rrc[i] * blackman[i] for i in range(NumSamples)]
 
 	return h_rrc
 
@@ -63,36 +58,14 @@ outc.write(header)
 outh.write(header)
 
 def generate():
-	l = ratio // 2
-
-	sample = [0.0] * (16*l)
-	sample[l] = 1
-	sample[2*l] = -1
-
-	sf = rrcosfilter(l*16)
-	shapedSamples = convolve(sample, sf)
-
-	lowest = 0
-	lowest_idx = 0
-	highest = 0
-	highest_idx = 0
-	for i,j in enumerate(shapedSamples):
-		if j < lowest:
-			lowest = j
-			lowest_idx = i
-		if j > highest:
-			highest = j
-			highest_idx = i
-	middle = int((lowest_idx+highest_idx)/2)
-
-	out = shapedSamples[middle-int(ratio*SIZE_RATIO):middle+int(ratio*SIZE_RATIO)]
-	out = [2 * (i - min(out)) / (max(out) - min(out)) - 1 for i in out]
-	if max(out) > 1 or min(out) < -1: raise Exception("Clipped")
-	print(f"{len(out)=} {len(out)/sample_rate=} {(len(out)/sample_rate)/(1/DATA_RATE)=} {1/DATA_RATE=}")
+	t = [i / sample_rate for i in range(ratio)]
+	out = [math.sin(2 * math.pi * DATA_RATE * time) for time in t]
+	print(f"{len(out)=} {len(out)/sample_rate=} {1/DATA_RATE=}")
 
 	if PLOT:
-		plt.plot(out, label="out")
+		plt.plot(out*4, label="out")
 		plt.legend()
+		plt.axvline(x=len(out)*2, color='r', linestyle='--', label='center')
 		plt.grid(True)
 		plt.show()
 
@@ -103,7 +76,7 @@ def generate():
 
 		plt.figure(figsize=(10, 6))
 		plt.plot(fft_freqs[:N//2], np.abs(fft_out)[:N//2])
-		plt.xlim(0,DATA_RATE*3)
+		plt.xlim(0,DATA_RATE*2.5)
 		plt.title("FFT of the waveform")
 		plt.xlabel("Frequency (Hz)")
 		plt.ylabel("Magnitude")
