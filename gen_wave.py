@@ -1,5 +1,5 @@
-PLOT = True
-FFT = PLOT and True
+PLOT = False
+FFT = PLOT and False
 
 import math
 import io, os
@@ -9,7 +9,7 @@ if FFT: import numpy as np
 DATA_RATE = 1187.5
 SIZE_RATIO = 1
 
-ratio = 16
+ratio = 4
 sample_rate = DATA_RATE*ratio
 print(f"{sample_rate=}")
 if not sample_rate.is_integer(): raise ValueError("Need a even value")
