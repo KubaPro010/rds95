@@ -146,5 +146,5 @@ float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 	if (rdsMod->data[stream].out_sample_index == SAMPLE_BUFFER_SIZE) rdsMod->data[stream].out_sample_index = 0;
 	
 	uint8_t tooutput = rdsMod->params.rdsgen > stream ? 1 : 0;
-	return sample*rdsMod->params.level*tooutput / 3.5; // 3.5 volts from piracz
+	return sample*rdsMod->params.level*tooutput;
 }
