@@ -42,15 +42,6 @@ Sets the TP flag: `TP=1`
 Sets the TA flag and triggers Traffic PS: `TA=0`  
 *May be overridden by EON*
 
-### DPTY
-
-Sets the DPTY flag: `DPTY=1`  
-*Formerly DI*
-
-### SLCD
-
-The 1A group where ECC is sent can also be used to send broadcaster data: `SLCD=FFF`
-
 ### CT
 
 Toggles the transmission of CT groups: `CT=1`  
@@ -59,11 +50,6 @@ Toggles the transmission of CT groups: `CT=1`
 
 Sets the AF frequencies: `AF=95,89.1`  
 Clear the AF: `AF=`  
-
-### AFO
-
-Sets the AF frequencies for the ODA 9-bit version which enables AF for 64.1-88 MHz: `AFO=69.8,95.0,225` (LowerFM,FM,LF)
-Clear the AFO: `AFO=`
 
 ### TPS
 
@@ -103,17 +89,40 @@ Sets the LPS: `LPS=NovaFM❤️`
 Sets the ERT: `ERT=Currently on air we're playing: Lady Gaga - Applause`
 *Note that ERT is a 128-character version of RT with UTF-8 support*
 
+### AFO
+
+Sets the AF frequencies for the ODA 9-bit version which enables AF for 64.1-88 MHz: `AFO=69.8,95.0,225` (LowerFM,FM,LF not sure if this even works)
+Clear the AFO: `AFO=`
+
+### TEXT
+
+Alias for [RT1](#rt1)
+
 ### PTYN
 
 Sets the programme type name: `PTYN=Football`
 
-### UDG1
+### DPTY
 
-Sets the user defined group, max 8 groups: `UDG1=6000FFFFFFFF`  
+*Formerly DI*
+Sets the DPTY flag: `DPTY=1`  
 
-### UDG2
+### SLCD
 
-See [UDG1](#udg1)
+The 1A group where ECC is sent can also be used to send broadcaster data: `SLCD=FFF`
+
+### ERTP
+
+This only will work if ERT is no longer than 64 characters
+See [RTP](#rtp)
+
+### LINK
+
+Toggles the linkage bit in 1A groups, enable this if you have EON about a station and that station has EON about you: `LINK=1`
+
+### SITE
+
+Sets up to 2 site addresses: `SITE=44,95`
 
 ### G
 
@@ -135,13 +144,15 @@ RT Switching period, in minutes: `RTPER=5`
 
 Sets the RDS output level: `LEVEL=255`
 
-### RESET
-
-Resets the internal state of the encoder: `RESET`
-
 ### PTYNEN
 
-Enables PTYN: `PTYNEN=1`
+Enables PTYN transmission: `PTYEN=1`
+
+### RTPRUN
+
+Sets the RTP Running bit, to signal if the RTP data is accurate: `RTPRUN=1`
+
+You can also toggle the state: `RTPRUN=1,1`
 
 ### GRPSEQ
 
@@ -164,6 +175,98 @@ Sets the group sequence for stream0, available groups:
 
 `GRPSEQ=002222`
 
+### RTTYPE
+
+Sets the RT1/RT2 types of A/B:
+
+- 0: Set to A
+- 1: RT1 is A, RT2 is B
+- 2: Default, just toggle A/B
+
+### PROGRAM
+
+Switches the current program, so diffrent saves: `PROGRAM=1`
+
+### RDS2MOD
+
+Sets the RDS2 operation mode:
+
+- 0: Default, full tunnelling of stream 0
+- 1: Independent tunelling, RDS2 runs a seperate group sequence
+
+### GRPSEQ2
+
+The Group Sequence for the RDS2 independent tunnelling mode
+See [GRPSEQ](#grpseq)
+
+### DTTMOUT
+
+Default text timeout, once runs out it sets the RT1 which is saved in memory: `DTTMOUT=60` (1 hour)
+
+### ERTPRUN
+
+See [RTPRUN](#rtprun)
+
+### INIT
+
+Resets program to default settings, no arguments: `INIT`
+
+### VER
+
+If you have output, then it shows the version of the encoder
+
+### RESET
+
+Resets the internal state: `RESET`
+
+### EONxEN
+
+Enables the EON of x: `EON1EN=1`
+
+### EONxPI
+
+Sets the PI of EON x: `EON1PI=30FE`
+
+### EONxPS
+
+Sets the PS of EON x: `EON1PS=AFERA`
+
+### EONxPTY
+
+Sets the PTY of EON x: `EON1PTY=11`
+
+### EONxTA
+
+Enables the TA of EON x: `EON1TA=1`
+
+### EONxTP
+
+Sets the TP of EON x: `EON1TP=1`
+
+### EONxAF
+
+Sets the AF of EON x: `EON1AF=98.6,95.0`
+
+### EONxDT
+
+Sets the broadcaster data of EON x: `EON1DT=F`
+
+### UDG1
+
+Sets the user defined group, max 8 groups: `UDG1=6000FFFFFFFF`  
+
+### UDG2
+
+See [UDG1](#udg1)
+
+### 2UDG1
+
+Sets the UDG1 of RDS2, max 8 groups expects 4 blocks: `2UDG1=0000200020202020`
+
+### 2UDG2
+
+See [2UDG1](#2udg1)
+
 ### RDSGEN
 
 Sets the rds generator level:
@@ -174,4 +277,6 @@ Sets the rds generator level:
 
 `RDSGEN=1`
 
-TODO: Rest of the cmds
+## Disclaimer
+
+RDS95 is based on [Anthony96922](https://github.com/Anthony96922/)'s [MiniRDS](https://github.com/Anthony96922/MiniRDS)

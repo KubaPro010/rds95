@@ -577,7 +577,7 @@ static const pattern_command_handler_t pattern_commands[] = {
 	{"EON", "AF", handle_eonaf},
 	{"EON", "DT", handle_eondt},
 	{"UDG", "", handle_udg},
-	{"UDG2", "", handle_udg2},
+	{"2UDG", "", handle_udg2},
 };
 
 static bool process_command_table(const command_handler_t *table, int table_size,
