@@ -90,7 +90,7 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 
 	rdsMod->enc = enc;
 
-	if(STREAMS > 0) rdsMod->data[1].symbol_shifting.symbol_shift = SAMPLES_PER_BIT / 2;
+	if(STREAMS > 0) rdsMod->data[1].symbol_shifting.symbol_shift = FILTER_SIZE / 2;
 
 	for (uint8_t i = 0; i < 2; i++) {
 		for (uint16_t j = 0; j < FILTER_SIZE; j++) {
@@ -108,7 +108,7 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 
 float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 	float *cur_waveform;
-	if (rdsMod->data[stream].sample_count == SAMPLES_PER_BIT) {
+	if (rdsMod->data[stream].sample_count == FILTER_SIZE) {
 		if (rdsMod->data[stream].bit_pos == BITS_PER_GROUP) {
 			get_rds_bits(rdsMod->enc, rdsMod->data[stream].bit_buffer, stream);
 			rdsMod->data[stream].bit_pos = 0;
@@ -126,7 +126,7 @@ float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 			if (idx == SAMPLE_BUFFER_SIZE) idx = 0;
 		}
 
-		rdsMod->data[stream].in_sample_index += SAMPLES_PER_BIT;
+		rdsMod->data[stream].in_sample_index += FILTER_SIZE;
 		if (rdsMod->data[stream].in_sample_index == SAMPLE_BUFFER_SIZE) rdsMod->data[stream].in_sample_index = 0;
 
 		rdsMod->data[stream].sample_count = 0;

@@ -94,8 +94,8 @@ int main(int argc, char **argv) {
 	format.rate = RDS_SAMPLE_RATE;
 
 	buffer.prebuf = 0;
-	buffer.tlength = NUM_MPX_FRAMES*4;
-	buffer.maxlength = NUM_MPX_FRAMES*4;
+	buffer.tlength = NUM_MPX_FRAMES*2;
+	buffer.maxlength = NUM_MPX_FRAMES*2;
 
 	rds_device = pa_simple_new(
 		NULL,

@@ -7,37 +7,11 @@ if PLOT: import matplotlib.pyplot as plt
 if FFT: import numpy as np
 
 DATA_RATE = 1187.5
-SIZE_RATIO = 1
 
 ratio = 4
 sample_rate = DATA_RATE*ratio
 print(f"{sample_rate=}")
 if not sample_rate.is_integer(): raise ValueError("Need a even value")
-
-# this is modified from ChristopheJacquet's pydemod
-def rrcosfilter(NumSamples):
-	T_delta = 1/float(sample_rate)
-	sample_num = list(range(NumSamples))
-	h_rrc = [0.0] * NumSamples
-	SymbolPeriod = 1/(2*DATA_RATE)
-
-	for x in sample_num:
-		t = (x-NumSamples/2)*T_delta
-		if t == 0.0: h_rrc[x] = 1.0 - 1 + (4/math.pi)
-		elif t == SymbolPeriod/4: h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi) * (math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
-		elif t == -SymbolPeriod/4: h_rrc[x] = (1/math.sqrt(2))*(((1+2/math.pi) * (math.sin(math.pi/4))) + ((1-2/math.pi)*(math.cos(math.pi/4))))
-		else: h_rrc[x] = (4*(t/SymbolPeriod)*math.cos(math.pi*t*2/SymbolPeriod)) / (math.pi*t*(1-(4*t/SymbolPeriod)*(4*t/SymbolPeriod))/SymbolPeriod)
-	blackman = [0.42 + 0.5*math.cos(math.pi*i/(NumSamples-1)) + 0.08*math.cos(2.0*math.pi*i/(NumSamples-1)) for i in range(NumSamples)]
-	h_rrc = [h_rrc[i] * blackman[i] for i in range(NumSamples)]
-
-	return h_rrc
-
-def convolve(a, b):
-	out = [0] * (len(a) + len(b) - 1)
-	for i in range(len(a)):
-		for j in range(len(b)):
-			out[i+j] += a[i] * b[j]
-	return out
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -60,7 +34,7 @@ outh.write(header)
 def generate():
 	t = [i / sample_rate for i in range(ratio)]
 	out = [math.sin(2 * math.pi * DATA_RATE * time) for time in t]
-	print(f"{len(out)=} {len(out)/sample_rate=} {1/DATA_RATE=}")
+	print(f"{len(out)=}")
 
 	if PLOT:
 		plt.plot(out*4, label="out")
