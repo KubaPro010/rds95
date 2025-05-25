@@ -1,7 +1,5 @@
 #include "modulator.h"
 
-static float waveform[2][FILTER_SIZE];
-
 void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
 	char modulatorPath[128];
 	snprintf(modulatorPath, sizeof(modulatorPath), "%s/.rdsModulator", getenv("HOME"));
@@ -90,14 +88,7 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 
 	rdsMod->enc = enc;
 
-	if(STREAMS > 0) rdsMod->data[1].symbol_shifting.symbol_shift = FILTER_SIZE / 2;
-
-	for (uint8_t i = 0; i < 2; i++) {
-		for (uint16_t j = 0; j < FILTER_SIZE; j++) {
-			waveform[i][j] = i ?
-				+waveform_biphase[j] : -waveform_biphase[j];
-		}
-	}
+	if(STREAMS > 0) rdsMod->data[1].symbol_shift = FILTER_SIZE / 2;
 
 	if(modulatorsaved()) {
 		Modulator_loadFromFile(&rdsMod->params);
@@ -107,8 +98,10 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 }
 
 float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
-	float *cur_waveform;
-	if (rdsMod->data[stream].sample_count == FILTER_SIZE) {
+	rdsMod->data[stream].phase += 1187.5 / RDS_SAMPLE_RATE;
+
+	if (rdsMod->data[stream].phase >= 1.0f) {
+		rdsMod->data[stream].phase -= 1.0f;
 		if (rdsMod->data[stream].bit_pos == BITS_PER_GROUP) {
 			get_rds_bits(rdsMod->enc, rdsMod->data[stream].bit_buffer, stream);
 			rdsMod->data[stream].bit_pos = 0;
@@ -117,33 +110,10 @@ float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 		rdsMod->data[stream].cur_bit = rdsMod->data[stream].bit_buffer[rdsMod->data[stream].bit_pos++];
 		rdsMod->data[stream].prev_output = rdsMod->data[stream].cur_output;
 		rdsMod->data[stream].cur_output = rdsMod->data[stream].prev_output ^ rdsMod->data[stream].cur_bit;
-
-		uint16_t idx = rdsMod->data[stream].in_sample_index;
-		cur_waveform = waveform[rdsMod->data[stream].cur_output];
-
-		for (uint16_t i = 0; i < FILTER_SIZE; i++) {
-			rdsMod->data[stream].sample_buffer[idx++] += *cur_waveform++;
-			if (idx == SAMPLE_BUFFER_SIZE) idx = 0;
-		}
-
-		rdsMod->data[stream].in_sample_index += FILTER_SIZE;
-		if (rdsMod->data[stream].in_sample_index == SAMPLE_BUFFER_SIZE) rdsMod->data[stream].in_sample_index = 0;
-
-		rdsMod->data[stream].sample_count = 0;
-	}
-	rdsMod->data[stream].sample_count++;
-
-	float sample = rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index];
-	if(stream != 0 && rdsMod->data[stream].symbol_shifting.symbol_shift != 0) {
-		rdsMod->data[stream].symbol_shifting.sample_buffer[rdsMod->data[stream].symbol_shifting.sample_buffer_idx++] = rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index];
-
-		if (rdsMod->data[stream].symbol_shifting.sample_buffer_idx == rdsMod->data[stream].symbol_shifting.symbol_shift) rdsMod->data[stream].symbol_shifting.sample_buffer_idx = 0;
-
-		sample = rdsMod->data[stream].symbol_shifting.sample_buffer[rdsMod->data[stream].symbol_shifting.sample_buffer_idx];
 	}
 
-	rdsMod->data[stream].sample_buffer[rdsMod->data[stream].out_sample_index++] = 0;
-	if (rdsMod->data[stream].out_sample_index == SAMPLE_BUFFER_SIZE) rdsMod->data[stream].out_sample_index = 0;
+	float sample = sinf(M_2PI * (rdsMod->data[stream].phase - rdsMod->data[stream].symbol_shift));
+	if(rdsMod->data[stream].cur_output == 0) sample = -sample; // do bpsk
 	
 	uint8_t tooutput = rdsMod->params.rdsgen > stream ? 1 : 0;
 	return sample*rdsMod->params.level*tooutput;
