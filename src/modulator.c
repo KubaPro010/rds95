@@ -88,8 +88,7 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 
 	rdsMod->enc = enc;
 
-	if(STREAMS > 0) rdsMod->data[1].symbol_shift = FILTER_SIZE / 2;
-
+	if(STREAMS > 0) rdsMod->data[1].symbol_shift = M_PI;
 	if(modulatorsaved()) {
 		Modulator_loadFromFile(&rdsMod->params);
 	} else {
@@ -112,7 +111,7 @@ float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
 		rdsMod->data[stream].cur_output = rdsMod->data[stream].prev_output ^ rdsMod->data[stream].cur_bit;
 	}
 
-	float sample = sinf(M_2PI * (rdsMod->data[stream].phase - rdsMod->data[stream].symbol_shift));
+	float sample = sinf(M_2PI * rdsMod->data[stream].phase + rdsMod->data[stream].symbol_shift);
 	if(rdsMod->data[stream].cur_output == 0) sample = -sample; // do bpsk
 	
 	uint8_t tooutput = rdsMod->params.rdsgen > stream ? 1 : 0;

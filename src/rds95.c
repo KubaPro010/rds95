@@ -42,9 +42,11 @@ static void show_help(char *name) {
 		"\n"
 		"Usage: %s [options]\n"
 		"\n"
-		"    -C,--ctl          FIFO control pipe\n"
+		"\t-C,--ctl\tFIFO control pipe\n"
+		"\t-d,--device\tPulseAudio device to use (default: %s)\n"
 		"\n",
-		name
+		name,
+		RDS_DEVICE
 	);
 }
 
@@ -52,6 +54,7 @@ int main(int argc, char **argv) {
 	show_version();
 
 	char control_pipe[51] = "\0";
+	char rds_device_name[32] = RDS_DEVICE;
 
 	pa_simple *rds_device = NULL;
 	pa_sample_spec format;
@@ -60,13 +63,12 @@ int main(int argc, char **argv) {
 	pthread_attr_t attr;
 	pthread_t control_pipe_thread;
 
-	const char	*short_opt = "C:h";
+	const char	*short_opt = "C:d:";
 
 	struct option	long_opt[] =
 	{
 		{"ctl",		required_argument, NULL, 'C'},
-
-		{"help",	no_argument, NULL, 'h'},
+		{"device",	required_argument, NULL, 'd'},
 		{ 0,		0,		0,	0 }
 	};
 
@@ -76,8 +78,10 @@ int main(int argc, char **argv) {
 			case 'C':
 				memcpy(control_pipe, optarg, 50);
 				break;
-
-			case 'h':
+			case 'd':
+				memcpy(rds_device_name, optarg, 31);
+				rds_device_name[31] = '\0';
+				break;
 			default:
 				show_help(argv[0]);
 				return 1;
@@ -90,18 +94,18 @@ int main(int argc, char **argv) {
 	signal(SIGTERM, stop);
 
 	format.format = PA_SAMPLE_FLOAT32NE;
-	format.channels = 2;
+	format.channels = STREAMS;
 	format.rate = RDS_SAMPLE_RATE;
 
 	buffer.prebuf = 0;
-	buffer.tlength = NUM_MPX_FRAMES*2;
-	buffer.maxlength = NUM_MPX_FRAMES*2;
+	buffer.tlength = NUM_MPX_FRAMES*STREAMS;
+	buffer.maxlength = NUM_MPX_FRAMES*STREAMS;
 
 	rds_device = pa_simple_new(
 		NULL,
 		"rds95",
 		PA_STREAM_PLAYBACK,
-		RDS_DEVICE,
+		rds_device_name,
 		"RDS Generator",
 		&format,
 		NULL,
@@ -138,12 +142,11 @@ int main(int argc, char **argv) {
 
 	int pulse_error;
 
-	float rds_buffer[NUM_MPX_FRAMES*2];
+	float rds_buffer[NUM_MPX_FRAMES*STREAMS];
 
 	while(!stop_rds) {
-		for (uint16_t i = 0; i < NUM_MPX_FRAMES*2; i += 2) {
-			rds_buffer[i] = get_rds_sample(&rdsModulator, 0);
-			rds_buffer[i+1] = get_rds_sample(&rdsModulator, 1);
+		for (uint16_t i = 0; i < NUM_MPX_FRAMES*STREAMS; i += STREAMS) {
+			for(uint8_t j = 0; j < STREAMS; j++) rds_buffer[i + j] = get_rds_sample(&rdsModulator, j);
 		}
 
 		if (pa_simple_write(rds_device, rds_buffer, sizeof(rds_buffer), &pulse_error) != 0) {

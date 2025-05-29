@@ -11,8 +11,6 @@
 #define GROUP_LENGTH		4
 #define BITS_PER_GROUP		(GROUP_LENGTH * (BLOCK_SIZE + POLY_DEG))
 #define RDS_SAMPLE_RATE		4750
-#define FILTER_SIZE	4 // RDS_SAMPLE_RATE/1187.5, or the inverse i dont remember
-
 #define STREAMS 2
 
 #define RT_LENGTH	64
@@ -238,7 +236,7 @@ typedef struct
 
 void saveToFile(RDSEncoder *emp, const char *option);
 void loadFromFile(RDSEncoder *emp);
-int rdssaved();
+int isFileSaved();
 
 void reset_rds_state(RDSEncoder* enc, uint8_t program);
 void set_rds_defaults(RDSEncoder* enc, uint8_t program);
