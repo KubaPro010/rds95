@@ -11,6 +11,7 @@
 #define GROUP_LENGTH		4
 #define BITS_PER_GROUP		(GROUP_LENGTH * (BLOCK_SIZE + POLY_DEG))
 #define RDS_SAMPLE_RATE		4750
+#define FILTER_SIZE	4 // RDS_SAMPLE_RATE/1187.5, or the inverse i dont remember
 
 #define STREAMS 2
 
