@@ -167,7 +167,6 @@ static void get_rds_ps_group(RDSEncoder* enc, RDSGroup *group) {
 
 static void get_rds_fasttuning_group(RDSEncoder* enc, RDSGroup *group) {
 	group->b |= 15 << 12;
-
 	group->b |= 1 << 11;
 	group->is_type_b = 1;
 
@@ -205,8 +204,7 @@ static void get_rds_rt_group(RDSEncoder* enc, RDSGroup *group) {
 	case 1:
 		ab = (enc->data[enc->program].current_rt == 0) ? 0 : 1;
 		break;
-	default:
-		break;
+	default: break;
 	}
 
 	group->b |= 2 << 12;
@@ -221,23 +219,20 @@ static void get_rds_rt_group(RDSEncoder* enc, RDSGroup *group) {
 	enc->state[enc->program].rt_state++;
 	if (enc->state[enc->program].rt_state == segments) enc->state[enc->program].rt_state = 0;
 }
-static void get_rds_rtp_oda_group(RDSEncoder* enc, RDSGroup *group) {
-	(void)enc;
+static void get_rdsp_rtp_oda_group(RDSGroup *group) {
 	group->b |= 3 << 12;
 	group->b |= 11 << 1;
 	group->d = ODA_AID_RTPLUS;
 }
 
-static void get_rds_ertp_oda_group(RDSEncoder* enc, RDSGroup *group) {
-	(void)enc;
+static void get_rdsp_ertp_oda_group(RDSGroup *group) {
 	group->b |= 3 << 12;
 
 	group->b |= 13 << 1;
 	group->d = ODA_AID_ERTPLUS;
 }
 
-static void get_rds_ert_oda_group(RDSEncoder* enc, RDSGroup *group) {
-	(void)enc;
+static void get_rdsp_ert_oda_group(RDSGroup *group) {
 	group->b |= 3 << 12;
 
 	group->b |= 12 << 1;
@@ -245,15 +240,14 @@ static void get_rds_ert_oda_group(RDSEncoder* enc, RDSGroup *group) {
 	group->d = ODA_AID_ERT;
 }
 
-static void get_oda_af_oda_group(RDSEncoder* enc, RDSGroup *group) {
-	(void)enc;
+static void get_rdsp_oda_af_oda_group( RDSGroup *group) {
 	group->b |= 3 << 12;
 
 	group->b |= 7 << 1;
 	group->d = ODA_AID_ODAAF;
 }
 
-static void get_oda_af_group(RDSEncoder* enc, RDSGroup *group) {
+static void get_rds_oda_af_group(RDSEncoder* enc, RDSGroup *group) {
 	uint16_t af[4];
 	get_next_af_oda(enc, af);
 
@@ -271,15 +265,12 @@ static void get_oda_af_group(RDSEncoder* enc, RDSGroup *group) {
 	group->d |= af[3] & 0xFF;
 }
 
-static void get_rds_ct_group(RDSEncoder* enc, RDSGroup *group) {
-	(void)enc;
+static void get_rdsp_ct_group(RDSGroup *group, time_t now) {
 	struct tm *utc, *local_time;
-	time_t now;
 	uint8_t l;
 	uint32_t mjd;
 	int16_t offset;
 
-	now = time(NULL);
 	utc = gmtime(&now);
 
 	l = utc->tm_mon <= 1 ? 1 : 0;
@@ -540,17 +531,17 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 			break;
 		case 'R':
 			if(enc->state[enc->program].rtp_oda == 0) get_rds_rtplus_group(enc, group);
-			else get_rds_rtp_oda_group(enc, group);
+			else get_rdsp_rtp_oda_group(group);
 			enc->state[enc->program].rtp_oda ^= 1;
 			break;
 		case 'P':
 			if(enc->state[enc->program].ert_oda == 0) get_rds_ertplus_group(enc, group);
-			else get_rds_ertp_oda_group(enc, group);
+			else get_rdsp_ertp_oda_group(group);
 			enc->state[enc->program].ert_oda ^= 1;
 			break;
 		case 'S':
 			if(enc->state[enc->program].ert_oda == 0) get_rds_ert_group(enc, group);
-			else get_rds_ert_oda_group(enc, group);
+			else get_rdsp_ert_oda_group(group);
 			enc->state[enc->program].ert_oda ^= 1;
 			break;
 		case 'F':
@@ -560,8 +551,8 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 			get_rds_fasttuning_group(enc, group);
 			break;
 		case 'U':
-			if(enc->state[enc->program].af_oda == 0) get_oda_af_group(enc, group);
-			else get_oda_af_oda_group(enc, group);
+			if(enc->state[enc->program].af_oda == 0) get_rds_oda_af_group(enc, group);
+			else get_rdsp_oda_af_oda_group(group);
 			enc->state[enc->program].af_oda ^= 1;
 			break;
 	}
@@ -606,6 +597,7 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 
 	if (utc->tm_min != enc->state[enc->program].last_minute) {
 		enc->state[enc->program].last_minute = utc->tm_min;
+
 		uint8_t eon_has_ta = 0;
 		for (int i = 0; i < 4; i++) {
 			if (enc->data[enc->program].eon[i].enabled && enc->data[enc->program].eon[i].ta) {
@@ -644,7 +636,7 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 		}
 
 		if(enc->data[enc->program].ct && stream == 0) {
-			get_rds_ct_group(enc, group);
+			get_rdsp_ct_group(group, now);
 			goto group_coded;
 		}
 	}
@@ -662,7 +654,7 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 			group->b = enc->state[enc->program].last_stream0_group[0];
 			group->c = enc->state[enc->program].last_stream0_group[1];
 			group->d = enc->state[enc->program].last_stream0_group[2];
-			group->is_type_b = (group->a == 0 && IS_TYPE_B(group->b));
+			group->is_type_b = enc->state[enc->program].last_stream0_group_type_b;
 			goto group_coded_rds2;
 		} else if(enc->encoder_data.rds2_mode == 1) {
 			while(good_group == 0) {
@@ -677,6 +669,7 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 
 				if(!good_group) cant_find_group++;
 				else cant_find_group = 0;
+				
 				if(!good_group && cant_find_group == 23) {
 					cant_find_group = 0;
 					break;
@@ -734,6 +727,7 @@ group_coded:
 	enc->state[enc->program].last_stream0_group[0] = group->b;
 	enc->state[enc->program].last_stream0_group[1] = group->c;
 	enc->state[enc->program].last_stream0_group[2] = group->d;
+	enc->state[enc->program].last_stream0_group_type_b = group->is_type_b;
 	return;
 }
 
@@ -908,16 +902,6 @@ void set_rds_ert(RDSEncoder* enc, char *ert) {
 			enc->state[enc->program].ert_segments++;
 		}
 	} else enc->state[enc->program].ert_segments = 32;
-}
-
-void set_rds_rtplus_flags(RDSEncoder* enc, uint8_t flags) {
-	enc->rtpData[enc->program][0].enabled = (flags==2);
-	enc->rtpData[enc->program][0].running = flags & 1;
-}
-
-void set_rds_ertplus_flags(RDSEncoder* enc, uint8_t flags) {
-	enc->rtpData[enc->program][1].enabled = (flags==2);
-	enc->rtpData[enc->program][1].running = flags & 1;
 }
 
 void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags) {

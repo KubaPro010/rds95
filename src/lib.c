@@ -14,7 +14,6 @@ int _strnlen(const char *s, int maxlen) {
 	return len;
 }
 
-// For RDS2 RFT, file error checking, and UECP
 uint16_t crc16_ccitt(char* data, uint16_t len) {
 	uint16_t i, crc=0xFFFF;
 	for (i=0; i < len; i++ ) {
@@ -27,7 +26,7 @@ uint16_t crc16_ccitt(char* data, uint16_t len) {
 	return ((crc ^= 0xFFFF) & 0xFFFF);
 }
 
-uint16_t get_block_grom_group(RDSGroup *group, uint8_t block) {
+uint16_t get_block_from_group(RDSGroup *group, uint8_t block) {
 	switch (block) {
 	case 0: return group->a;
 	case 1: return group->b;
@@ -53,7 +52,7 @@ void add_checkwords(RDSGroup *group, uint8_t *bits)
 		offset_word = offset_words[i];
 		if (i == 2 && group->is_type_b) offset_word = offset_words[4];
 
-		uint16_t block = get_block_grom_group(group, i);
+		uint16_t block = get_block_from_group(group, i);
 
 		uint16_t block_crc = 0;
 		uint8_t j, bit, msb;
@@ -65,9 +64,7 @@ void add_checkwords(RDSGroup *group, uint8_t *bits)
 			*bits++ = bit;
 		}
 		uint16_t check = block_crc ^ offset_word;
-		for (j = 0; j < POLY_DEG; j++) {
-			*bits++ = (check & ((1 << (POLY_DEG - 1)) >> j)) != 0;
-		}
+		for (j = 0; j < POLY_DEG; j++) *bits++ = (check & ((1 << (POLY_DEG - 1)) >> j)) != 0;
 	}
 }
 

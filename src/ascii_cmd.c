@@ -15,35 +15,35 @@ typedef struct {
 static void handle_ptyn(char *arg, RDSModulator* mod, char* output) {
 	arg[PTYN_LENGTH*2] = 0;
 	set_rds_ptyn(mod->enc, convert_to_rdscharset(arg));
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_tps(char *arg, RDSModulator* mod, char* output) {
 	arg[PS_LENGTH*2] = 0;
 	set_rds_tps(mod->enc, convert_to_rdscharset(arg));
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_rt1(char *arg, RDSModulator* mod, char* output) {
 	arg[RT_LENGTH*2] = 0;
 	set_rds_rt1(mod->enc, convert_to_rdscharset(arg));
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_rt2(char *arg, RDSModulator* mod, char* output) {
 	arg[RT_LENGTH*2] = 0;
 	set_rds_rt2(mod->enc, convert_to_rdscharset(arg));
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_pty(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].pty = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_ecc(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].ecc = strtoul(arg, NULL, 16);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_rtp(char *arg, RDSModulator* mod, char* output) {
@@ -51,8 +51,8 @@ static void handle_rtp(char *arg, RDSModulator* mod, char* output) {
 
 	if (sscanf(arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
 		set_rds_rtplus_tags(mod->enc, tags);
-		strcpy(output, "+\0");
-	} else strcpy(output, "-\0");
+		strcpy(output, "+");
+	} else strcpy(output, "-");
 }
 
 static void handle_ertp(char *arg, RDSModulator* mod, char* output) {
@@ -60,8 +60,8 @@ static void handle_ertp(char *arg, RDSModulator* mod, char* output) {
 
 	if (sscanf(arg, "%hhu,%hhu,%hhu,%hhu,%hhu,%hhu", &tags[0], &tags[1], &tags[2], &tags[3], &tags[4], &tags[5]) == 6) {
 		set_rds_ertplus_tags(mod->enc, tags);
-		strcpy(output, "+\0");
-	} else strcpy(output, "-\0");
+		strcpy(output, "+");
+	} else strcpy(output, "-");
 }
 
 static void handle_link(char *arg, RDSModulator* mod, char* output) {
@@ -71,60 +71,60 @@ static void handle_link(char *arg, RDSModulator* mod, char* output) {
 	}
 
 	mod->enc->state[mod->enc->program].eon_linkage = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_lps(char *arg, RDSModulator* mod, char* output) {
 	arg[LPS_LENGTH*2] = 0;
 	set_rds_lps(mod->enc, arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_ert(char *arg, RDSModulator* mod, char* output) {
 	arg[ERT_LENGTH*2] = 0;
 	set_rds_ert(mod->enc, arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_ps(char *arg, RDSModulator* mod, char* output) {
 	arg[PS_LENGTH*2] = 0;
 	set_rds_ps(mod->enc, convert_to_rdscharset(arg));
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_ct(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].ct = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_dpty(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].dpty = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_slcd(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].slc_data = strtoul(arg, NULL, 16);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_tp(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].tp = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_ta(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].ta = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_pi(char *arg, RDSModulator* mod, char* output) {
 	uint16_t pi_value = strtoul(arg, NULL, 16);
 	if ((pi_value & 0xF000) == 0) {
-		strcpy(output, "-\0");
+		strcpy(output, "-");
 		return;
 	}
 	mod->enc->data[mod->enc->program].pi = pi_value;
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_af(char *arg, RDSModulator* mod, char* output) {
@@ -153,12 +153,10 @@ static void handle_af(char *arg, RDSModulator* mod, char* output) {
 	af_iter = af;
 	memset(&new_af, 0, sizeof(RDSAFs));
 
-	while (arg_count-- != 0) {
-		add_rds_af(&new_af, *af_iter++);
-	}
+	while (arg_count-- != 0) add_rds_af(&new_af, *af_iter++);
 
 	memcpy(&(mod->enc->data[mod->enc->program].af), &new_af, sizeof(mod->enc->data[mod->enc->program].af));
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_afo(char *arg, RDSModulator* mod, char* output) {
@@ -185,27 +183,24 @@ static void handle_afo(char *arg, RDSModulator* mod, char* output) {
 	af_iter = af;
 	memset(&new_af_oda, 0, sizeof(RDSAFsODA));
 
-	while (arg_count-- != 0) {
-		add_rds_af_oda(&new_af_oda, *af_iter++);
-	}
+	while (arg_count-- != 0) add_rds_af_oda(&new_af_oda, *af_iter++);
 
 	memcpy(&(mod->enc->data[mod->enc->program].af_oda), &new_af_oda, sizeof(mod->enc->data[mod->enc->program].af_oda));
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_adr(char *arg, RDSModulator* mod, char* output) {
 	uint16_t ids[2];
 	int count = sscanf(arg, "%4hu,%4hu", &ids[0], &ids[1]);
-	if(count == 1) {
-		mod->enc->encoder_data.encoder_addr[0] = ids[0];
-	} else if(count == 2) {
+	if(count == 1) mod->enc->encoder_data.encoder_addr[0] = ids[0];
+	else if(count == 2) {
 		mod->enc->encoder_data.encoder_addr[0] = ids[0];
 		mod->enc->encoder_data.encoder_addr[1] = ids[1];
 	} else {
-		strcpy(output, "-\0");
+		strcpy(output, "-");
 		return;
 	}
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_site(char *arg, RDSModulator* mod, char* output) {
@@ -217,10 +212,10 @@ static void handle_site(char *arg, RDSModulator* mod, char* output) {
 		mod->enc->encoder_data.site_addr[0] = ids[0];
 		mod->enc->encoder_data.site_addr[1] = ids[1];
 	} else {
-		strcpy(output, "-\0");
+		strcpy(output, "-");
 		return;
 	}
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_g(char *arg, RDSModulator* mod, char* output) {
@@ -231,56 +226,54 @@ static void handle_g(char *arg, RDSModulator* mod, char* output) {
 		mod->enc->state[mod->enc->program].custom_group[1] = blocks[0];
 		mod->enc->state[mod->enc->program].custom_group[2] = blocks[1];
 		mod->enc->state[mod->enc->program].custom_group[3] = blocks[2];
-		strcpy(output, "+\0");
+		strcpy(output, "+");
 	} else if(count == 4) {
 		mod->enc->state[mod->enc->program].custom_group2[0] = 1;
 		mod->enc->state[mod->enc->program].custom_group2[1] = blocks[0];
 		mod->enc->state[mod->enc->program].custom_group2[2] = blocks[1];
 		mod->enc->state[mod->enc->program].custom_group2[3] = blocks[2];
 		mod->enc->state[mod->enc->program].custom_group2[4] = blocks[3];
-		strcpy(output, "+\0");
-	} else {
-		strcpy(output, "-\0");
-	}
+		strcpy(output, "+");
+	} else strcpy(output, "-");
 }
 
 static void handle_rt1en(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].rt1_enabled = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_rt2en(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].rt2_enabled = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_rtper(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].rt_switching_period = atoi(arg);
 	mod->enc->state[mod->enc->program].rt_switching_period_state = mod->enc->data[mod->enc->program].rt_switching_period;
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_ptynen(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].ptyn_enabled = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
-static void handle_rtprun(char *arg, RDSModulator* mod, char* output) {
-	int flag1, flag2;
-	if (sscanf(arg, "%d,%d", &flag1, &flag2) == 2) {
-		set_rds_rtplus_flags(mod->enc, flag1);
-		if(flag2) mod->enc->rtpState[mod->enc->program][0].toggle ^= 1;
-	} else set_rds_rtplus_flags(mod->enc, atoi(arg));
-	strcpy(output, "+\0");
+static void handle_rtprun(char *arg, RDSModulator *mod, char *output) {
+	int flag1 = 0, flag2 = 0;
+	if (sscanf(arg, "%d,%d", &flag1, &flag2) < 1) flag1 = atoi(arg);
+	mod->enc->rtpData[mod->enc->program][0].enabled = (flag1 == 2);
+	mod->enc->rtpData[mod->enc->program][0].running = flag1 & 1;
+	if (flag2) mod->enc->rtpState[mod->enc->program][0].toggle ^= 1;
+	strcpy(output, "+");
 }
 
 static void handle_ertprun(char *arg, RDSModulator* mod, char* output) {
-	int flag1, flag2;
-	if (sscanf(arg, "%d,%d", &flag1, &flag2) == 2) {
-		set_rds_ertplus_flags(mod->enc, flag1);
-		if(flag2) mod->enc->rtpState[mod->enc->program][1].toggle ^= 1;
-	} else set_rds_ertplus_flags(mod->enc, atoi(arg));
-	strcpy(output, "+\0");
+	int flag1 = 0, flag2 = 0;
+	if (sscanf(arg, "%d,%d", &flag1, &flag2) < 1) flag1 = atoi(arg);
+	mod->enc->rtpData[mod->enc->program][1].enabled = (flag1 == 2);
+	mod->enc->rtpData[mod->enc->program][1].running = flag1 & 1;
+	if (flag2) mod->enc->rtpState[mod->enc->program][1].toggle ^= 1;
+	strcpy(output, "+");
 }
 
 static void handle_program(char *arg, RDSModulator* mod, char* output) {
@@ -294,12 +287,12 @@ static void handle_program(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].ta = 0;
 	mod->enc->data[(uint8_t)program].ta = 0;
 	mod->enc->program = (uint8_t)program;
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_rds2mod(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->encoder_data.rds2_mode = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_grpseq(char *arg, RDSModulator* mod, char* output) {
@@ -417,7 +410,7 @@ static void handle_init(char *arg, RDSModulator* mod, char* output) {
 static void handle_ver(char *arg, RDSModulator* mod, char* output) {
 	(void)arg;
 	(void)mod;
-	sprintf(output, "RDS95 v. %s - (C) 2025 radio95", VERSION);
+	sprintf(output, "rds95 v. %s - (C) 2025 radio95", VERSION);
 }
 
 static void handle_eonen(char *arg, char *pattern, RDSModulator* mod, char* output) {
@@ -620,9 +613,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 				break;
 			}
 		}
-		if(!reached) {
-			return;
-		}
+		if(!reached) return;
 	}
 	if(mod->enc->encoder_data.ascii_data.expected_site_addr != 0) {
 		uint8_t reached = 0;
@@ -632,9 +623,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 				break;
 			}
 		}
-		if(!reached) {
-			return;
-		}
+		if(!reached) return;
 	}
 
 	char *cmd, *arg;

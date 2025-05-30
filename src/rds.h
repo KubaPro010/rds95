@@ -173,6 +173,7 @@ typedef struct {
 	uint8_t eon_linkage : 1;
 
 	uint16_t last_stream0_group[3];
+	uint8_t last_stream0_group_type_b : 1;
 } RDSState;
 
 typedef struct {
@@ -242,14 +243,13 @@ void reset_rds_state(RDSEncoder* enc, uint8_t program);
 void set_rds_defaults(RDSEncoder* enc, uint8_t program);
 void init_rds_encoder(RDSEncoder* enc);
 void get_rds_bits(RDSEncoder* enc, uint8_t *bits, uint8_t stream);
+
 void set_rds_rt1(RDSEncoder* enc, char *rt1);
 void set_rds_rt2(RDSEncoder* enc, char *rt2);
 void set_rds_ps(RDSEncoder* enc, char *ps);
 void set_rds_tps(RDSEncoder* enc, char *tps);
 void set_rds_lps(RDSEncoder* enc, char *lps);
 void set_rds_ert(RDSEncoder *enc, char *ert);
-void set_rds_rtplus_flags(RDSEncoder *enc, uint8_t flags);
-void set_rds_ertplus_flags(RDSEncoder *enc, uint8_t flags);
 void set_rds_rtplus_tags(RDSEncoder *enc, uint8_t *tags);
 void set_rds_ertplus_tags(RDSEncoder *enc, uint8_t *tags);
 void set_rds_ptyn(RDSEncoder *enc, char *ptyn);
