@@ -84,12 +84,18 @@ void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
 
 	rdsMod->enc = enc;
 
-	if(STREAMS > 0) rdsMod->data[1].symbol_shift = M_PI;
-	if(modulatorsaved()) {
-		Modulator_loadFromFile(&rdsMod->params);
-	} else {
-		Modulator_saveToFile(&rdsMod->params, "ALL");
-	}
+	#if STREAMS > 1
+	rdsMod->data[1].symbol_shift = M_PI/2;
+		#if STREAMS > 2
+		rdsMod->data[2].symbol_shift = M_PI;
+			#if STREAMS > 3
+			rdsMod->data[3].symbol_shift = 3*M_PI/2;
+			#endif
+		#endif
+	#endif
+
+	if(modulatorsaved()) Modulator_loadFromFile(&rdsMod->params);
+	else Modulator_saveToFile(&rdsMod->params, "ALL");
 }
 
 float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
