@@ -624,6 +624,9 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 
 	char *cmd, *arg;
 
+	char output[255];
+	memset(output, 0, sizeof(output));
+
 	char upper_str[CTL_BUFFER_SIZE];
 	uint16_t cmd_len = _strnlen((const char*)str, CTL_BUFFER_SIZE);
 	for(uint16_t i = 0; i < cmd_len; i++) if(str[i] == '\t') str[i] = ' ';
@@ -638,7 +641,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 	for (size_t i = 0; i < sizeof(commands_exact) / sizeof(command_handler_t); i++) {
 		const command_handler_t *handler = &commands_exact[i];
 		if (cmd_len == handler->cmd_length && strcmp(upper_str, handler->cmd) == 0) {
-			handler->handler(NULL, mod, cmd_output);
+			handler->handler(NULL, mod, output);
 			return;
 		}
 	}
@@ -660,7 +663,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 		cmd = upper_str;
 		cmd[equals_pos - upper_str] = 0;
 		arg = equals_pos + 1;
-		process_pattern_commands(cmd, arg, cmd_output, mod);
+		process_pattern_commands(cmd, arg, output, mod);
 	}
 
 	uint8_t cmd_reached = 0;
@@ -669,7 +672,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 		cmd = upper_str;
 		cmd[1] = 0;
 		arg = str + 2;
-		process_command_table(commands_eq2, sizeof(commands_eq2) / sizeof(command_handler_t), cmd, arg, cmd_output, mod);
+		process_command_table(commands_eq2, sizeof(commands_eq2) / sizeof(command_handler_t), cmd, arg, output, mod);
 		cmd_reached = 1;
 	}
 
@@ -677,7 +680,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 		cmd = upper_str;
 		cmd[2] = 0;
 		arg = str + 3;
-		process_command_table(commands_eq3, sizeof(commands_eq3) / sizeof(command_handler_t), cmd, arg, cmd_output, mod);
+		process_command_table(commands_eq3, sizeof(commands_eq3) / sizeof(command_handler_t), cmd, arg, output, mod);
 		cmd_reached = 1;
 	}
 
@@ -685,7 +688,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 		cmd = upper_str;
 		cmd[3] = 0;
 		arg = str + 4;
-		process_command_table(commands_eq4, sizeof(commands_eq4) / sizeof(command_handler_t), cmd, arg, cmd_output, mod);
+		process_command_table(commands_eq4, sizeof(commands_eq4) / sizeof(command_handler_t), cmd, arg, output, mod);
 		cmd_reached = 1;
 	}
 
@@ -693,7 +696,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 		cmd = upper_str;
 		cmd[4] = 0;
 		arg = str + 5;
-		process_command_table(commands_eq5, sizeof(commands_eq5) / sizeof(command_handler_t), cmd, arg, cmd_output, mod);
+		process_command_table(commands_eq5, sizeof(commands_eq5) / sizeof(command_handler_t), cmd, arg, output, mod);
 		cmd_reached = 1;
 	}
 
@@ -701,7 +704,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 		cmd = upper_str;
 		cmd[5] = 0;
 		arg = str + 6;
-		process_command_table(commands_eq6, sizeof(commands_eq6) / sizeof(command_handler_t), cmd, arg, cmd_output, mod);
+		process_command_table(commands_eq6, sizeof(commands_eq6) / sizeof(command_handler_t), cmd, arg, output, mod);
 		cmd_reached = 1;
 	}
 
@@ -709,7 +712,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 		cmd = upper_str;
 		cmd[6] = 0;
 		arg = str + 7;
-		process_command_table(commands_eq7, sizeof(commands_eq7) / sizeof(command_handler_t), cmd, arg, cmd_output, mod);
+		process_command_table(commands_eq7, sizeof(commands_eq7) / sizeof(command_handler_t), cmd, arg, output, mod);
 		cmd_reached = 1;
 	}
 
@@ -717,9 +720,10 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 		cmd = upper_str;
 		cmd[7] = 0;
 		arg = str + 8;
-		process_command_table(commands_eq8, sizeof(commands_eq8) / sizeof(command_handler_t), cmd, arg, cmd_output, mod);
+		process_command_table(commands_eq8, sizeof(commands_eq8) / sizeof(command_handler_t), cmd, arg, output, mod);
 		cmd_reached = 1;
 	}
 
-	if (!cmd_reached) strcpy(cmd_output, "?\0");
+	if (cmd_output != NULL && cmd_reached) strcpy(cmd_output, output);
+	if (!cmd_reached) strcpy(output, "?\0");
 }
