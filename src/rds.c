@@ -240,7 +240,7 @@ static void get_rdsp_ert_oda_group(RDSGroup *group) {
 	group->d = ODA_AID_ERT;
 }
 
-static void get_rdsp_oda_af_oda_group( RDSGroup *group) {
+static void get_rdsp_oda_af_oda_group(RDSGroup *group) {
 	group->b |= 3 << 12;
 
 	group->b |= 7 << 1;
@@ -252,9 +252,7 @@ static void get_rds_oda_af_group(RDSEncoder* enc, RDSGroup *group) {
 	get_next_af_oda(enc, af);
 
 	group->b |= 7 << 12;
-	for (int i = 0; i < 4; i++) {
-		group->b |= ((af[i] >> 8) & 1) << i;
-	}
+	for (int i = 0; i < 4; i++) group->b |= ((af[i] >> 8) & 1) << i;
 
 	group->c = af[0] & 0xFF;
 	group->c <<= 8;
@@ -558,8 +556,7 @@ static void get_rds_sequence_group(RDSEncoder* enc, RDSGroup *group, char* grp, 
 	}
 }
 
-static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp, uint8_t stream) {
-	(void)stream;
+static uint8_t check_rds_good_group(RDSEncoder* enc, char* grp) {
 	uint8_t good_group = 0;
 	if(*grp == '0') good_group = 1;
 	if(*grp == '1' && (enc->data[enc->program].ecc != 0 || enc->data[enc->program].slc_data != 0)) good_group = 1;
@@ -617,11 +614,8 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 			enc->state[enc->program].rt_switching_period_state--;
 			if(enc->state[enc->program].rt_switching_period_state == 0) {
 				enc->data[enc->program].current_rt ^= 1;
-				if (enc->data[enc->program].current_rt == 1) {
-					memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt2, RT_LENGTH);
-				} else {
-					memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
-				}
+				if (enc->data[enc->program].current_rt == 1) memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt2, RT_LENGTH);
+				else memcpy(enc->state[enc->program].rt_text, enc->data[enc->program].rt1, RT_LENGTH);
 				enc->state[enc->program].rt_state = 0;
 				enc->state[enc->program].rt_switching_period_state = enc->data[enc->program].rt_switching_period;
 			}
@@ -665,7 +659,7 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 				}
 				grp = enc->data[enc->program].grp_sqc_rds2[grp_sqc_idx];
 
-				good_group = check_rds_good_group(enc, &grp, stream);
+				good_group = check_rds_good_group(enc, &grp);
 
 				if(!good_group) cant_find_group++;
 				else cant_find_group = 0;
@@ -695,7 +689,7 @@ static void get_rds_group(RDSEncoder* enc, RDSGroup *group, uint8_t stream) {
 		}
 		grp = enc->data[enc->program].grp_sqc[grp_sqc_idx];
 
-		good_group = check_rds_good_group(enc, &grp, stream);
+		good_group = check_rds_good_group(enc, &grp);
 
 		if(!good_group) cant_find_group++;
 		else cant_find_group = 0;
@@ -904,7 +898,7 @@ void set_rds_ert(RDSEncoder* enc, char *ert) {
 	} else enc->state[enc->program].ert_segments = 32;
 }
 
-void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags) {
+inline void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags) {
 	enc->rtpData[enc->program][0].type[0] = tags[0] & 0x3f;
 	enc->rtpData[enc->program][0].start[0] = tags[1] & 0x3f;
 	enc->rtpData[enc->program][0].len[0] = tags[2] & 0x3f;
@@ -917,7 +911,7 @@ void set_rds_rtplus_tags(RDSEncoder* enc, uint8_t *tags) {
 	enc->rtpData[enc->program][0].enabled = 1;
 }
 
-void set_rds_ertplus_tags(RDSEncoder* enc, uint8_t *tags) {
+inline void set_rds_ertplus_tags(RDSEncoder* enc, uint8_t *tags) {
 	enc->rtpData[enc->program][1].type[0] = tags[0] & 0x3f;
 	enc->rtpData[enc->program][1].start[0] = tags[1] & 0x3f;
 	enc->rtpData[enc->program][1].len[0] = tags[2] & 0x3f;

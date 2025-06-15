@@ -20,16 +20,12 @@ void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option) {
 	}
 	memcpy(&tempMod, &tempFile.params, sizeof(RDSModulatorParameters));
 	
-	if (strcmp(option, "LEVEL") == 0) {
-		tempMod.level = emp->level;
-	} else if (strcmp(option, "RDSGEN") == 0) {
-		tempMod.rdsgen = emp->rdsgen;
-	} else if (strcmp(option, "ALL") == 0) {
+	if (strcmp(option, "LEVEL") == 0) tempMod.level = emp->level;
+	else if (strcmp(option, "RDSGEN") == 0) tempMod.rdsgen = emp->rdsgen;
+	else if (strcmp(option, "ALL") == 0) {
 		tempMod.level = emp->level;
 		tempMod.rdsgen = emp->rdsgen;
-	} else {
-		return;
-	}
+	} else return;
 
 	memcpy(&tempFile.params, &tempMod, sizeof(RDSModulatorParameters));
 	tempFile.check = 160;

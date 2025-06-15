@@ -33,11 +33,11 @@ static void *control_pipe_worker(void* modulator) {
 	pthread_exit(NULL);
 }
 
-static void show_version() {
+static inline void show_version() {
 	printf("rds95 (a RDS encoder by radio95) version %s\n", VERSION);
 }
 
-static void show_help(char *name) {
+static inline void show_help(char *name) {
 	printf(
 		"\n"
 		"Usage: %s [options]\n"
@@ -125,15 +125,12 @@ int main(int argc, char **argv) {
 	if (control_pipe[0]) {
 		if (open_control_pipe(control_pipe) == 0) {
 			fprintf(stderr, "Reading control commands on %s.\n", control_pipe);
-			int r;
-			r = pthread_create(&control_pipe_thread, &attr, control_pipe_worker, (void*)&rdsModulator);
+			int r = pthread_create(&control_pipe_thread, &attr, control_pipe_worker, (void*)&rdsModulator);
 			if (r < 0) {
 				fprintf(stderr, "Could not create control pipe thread.\n");
 				control_pipe[0] = 0;
 				goto exit;
-			} else {
-				fprintf(stderr, "Created control pipe thread.\n");
-			}
+			} else fprintf(stderr, "Created control pipe thread.\n");
 		} else {
 			fprintf(stderr, "Failed to open control pipe: %s.\n", control_pipe);
 			control_pipe[0] = 0;
@@ -145,9 +142,7 @@ int main(int argc, char **argv) {
 	float rds_buffer[NUM_MPX_FRAMES*STREAMS];
 
 	while(!stop_rds) {
-		for (uint16_t i = 0; i < NUM_MPX_FRAMES*STREAMS; i += STREAMS) {
-			for(uint8_t j = 0; j < STREAMS; j++) rds_buffer[i + j] = get_rds_sample(&rdsModulator, j);
-		}
+		for (uint16_t i = 0; i < NUM_MPX_FRAMES * STREAMS; i++) rds_buffer[i] = get_rds_sample(&rdsModulator, i % STREAMS);
 
 		if (pa_simple_write(rds_device, rds_buffer, sizeof(rds_buffer), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
@@ -162,9 +157,7 @@ exit:
 	}
 
 	pthread_attr_destroy(&attr);
-	if (rds_device != NULL) {
-		pa_simple_free(rds_device);
-	}
+	if (rds_device != NULL) pa_simple_free(rds_device);
 
 	return 0;
 }
