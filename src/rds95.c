@@ -13,7 +13,7 @@
 
 #define RDS_DEVICE "RDS"
 #define DEFAULT_STREAMS 2
-#define MAX_STREAMS 8
+#define MAX_STREAMS 4
 
 #define NUM_MPX_FRAMES	128
 
