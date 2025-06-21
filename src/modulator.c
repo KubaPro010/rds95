@@ -77,28 +77,40 @@ int modulatorsaved() {
 	return 0;
 }
 
-void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc) {
+void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc, uint8_t num_streams) {
 	memset(rdsMod, 0, sizeof(*rdsMod));
 	rdsMod->params.level = 1.0f;
 	rdsMod->params.rdsgen = 1;
+	rdsMod->num_streams = num_streams;
 
 	rdsMod->enc = enc;
 
-	#if STREAMS > 1
-	rdsMod->data[1].symbol_shift = M_PI/2;
-		#if STREAMS > 2
-		rdsMod->data[2].symbol_shift = M_PI;
-			#if STREAMS > 3
-			rdsMod->data[3].symbol_shift = 3*M_PI/2;
-			#endif
-		#endif
-	#endif
+	rdsMod->data = (RDSModulatorModulationData*)calloc(num_streams, sizeof(RDSModulatorModulationData));
+	if (rdsMod->data == NULL) {
+		fprintf(stderr, "Error: Could not allocate memory for RDS modulation data\n");
+		return;
+	}
+
+	for (uint8_t i = 0; i < num_streams; i++) {
+		rdsMod->data[i].symbol_shift = i * M_PI / 2.0f;
+	}
 
 	if(modulatorsaved()) Modulator_loadFromFile(&rdsMod->params);
 	else Modulator_saveToFile(&rdsMod->params, "ALL");
 }
 
+void cleanup_rds_modulator(RDSModulator* rdsMod) {
+	if (rdsMod->data) {
+		free(rdsMod->data);
+		rdsMod->data = NULL;
+	}
+}
+
 float get_rds_sample(RDSModulator* rdsMod, uint8_t stream) {
+	if (stream >= rdsMod->num_streams) {
+		return 0.0f;
+	}
+
 	rdsMod->data[stream].phase += 1187.5 / RDS_SAMPLE_RATE;
 
 	if (rdsMod->data[stream].phase >= 1.0f) {

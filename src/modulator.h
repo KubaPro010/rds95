@@ -23,18 +23,20 @@ typedef struct
 	uint8_t prev_output : 1;
 	uint8_t cur_output : 1;
 	uint8_t cur_bit : 1;
-	uint8_t symbol_shift: 7;
+	float symbol_shift;
 	float phase;
 } RDSModulatorModulationData;
 
 typedef struct {
-	RDSModulatorModulationData data[STREAMS];
+	RDSModulatorModulationData *data;
 	RDSModulatorParameters params;
 	RDSEncoder* enc;
+	uint8_t num_streams;
 } RDSModulator;
 
 void Modulator_saveToFile(RDSModulatorParameters *emp, const char *option);
 void Modulator_loadFromFile(RDSModulatorParameters *emp);
 int modulatorsaved();
-void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc);
+void init_rds_modulator(RDSModulator* rdsMod, RDSEncoder* enc, uint8_t num_streams);
+void cleanup_rds_modulator(RDSModulator* rdsMod);
 float get_rds_sample(RDSModulator* rdsMod, uint8_t stream);

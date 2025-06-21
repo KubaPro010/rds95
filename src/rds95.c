@@ -12,6 +12,8 @@
 #include "ascii_cmd.h"
 
 #define RDS_DEVICE "RDS"
+#define DEFAULT_STREAMS 1
+#define MAX_STREAMS 8
 
 #define NUM_MPX_FRAMES	128
 
@@ -44,9 +46,12 @@ static inline void show_help(char *name) {
 		"\n"
 		"\t-C,--ctl\tFIFO control pipe\n"
 		"\t-d,--device\tPulseAudio device to use (default: %s)\n"
+		"\t-s,--streams\tNumber of RDS streams (1-%d, default: %d)\n"
 		"\n",
 		name,
-		RDS_DEVICE
+		RDS_DEVICE,
+		MAX_STREAMS,
+		DEFAULT_STREAMS
 	);
 }
 
@@ -55,6 +60,7 @@ int main(int argc, char **argv) {
 
 	char control_pipe[51] = "\0";
 	char rds_device_name[32] = RDS_DEVICE;
+	uint8_t num_streams = DEFAULT_STREAMS;
 
 	pa_simple *rds_device = NULL;
 	pa_sample_spec format;
@@ -63,12 +69,14 @@ int main(int argc, char **argv) {
 	pthread_attr_t attr;
 	pthread_t control_pipe_thread;
 
-	const char	*short_opt = "C:d:";
+	const char	*short_opt = "C:d:s:h";
 
 	struct option	long_opt[] =
 	{
 		{"ctl",		required_argument, NULL, 'C'},
 		{"device",	required_argument, NULL, 'd'},
+		{"streams",	required_argument, NULL, 's'},
+		{"help",	no_argument,       NULL, 'h'},
 		{ 0,		0,		0,	0 }
 	};
 
@@ -82,11 +90,23 @@ int main(int argc, char **argv) {
 				memcpy(rds_device_name, optarg, 31);
 				rds_device_name[31] = '\0';
 				break;
+			case 's':
+				num_streams = (uint8_t)atoi(optarg);
+				if (num_streams < 1 || num_streams > MAX_STREAMS) {
+					fprintf(stderr, "Error: Number of streams must be between 1 and %d\n", MAX_STREAMS);
+					return 1;
+				}
+				break;
+			case 'h':
+				show_help(argv[0]);
+				return 0;
 			default:
 				show_help(argv[0]);
 				return 1;
 		}
 	}
+
+	printf("Using %d RDS stream(s)\n", num_streams);
 
 	pthread_attr_init(&attr);
 
@@ -94,12 +114,12 @@ int main(int argc, char **argv) {
 	signal(SIGTERM, stop);
 
 	format.format = PA_SAMPLE_FLOAT32NE;
-	format.channels = STREAMS;
+	format.channels = num_streams;  // Use dynamic stream count
 	format.rate = RDS_SAMPLE_RATE;
 
 	buffer.prebuf = 0;
-	buffer.tlength = NUM_MPX_FRAMES*STREAMS;
-	buffer.maxlength = NUM_MPX_FRAMES*STREAMS;
+	buffer.tlength = NUM_MPX_FRAMES * num_streams;
+	buffer.maxlength = NUM_MPX_FRAMES * num_streams;
 
 	rds_device = pa_simple_new(
 		NULL,
@@ -120,7 +140,7 @@ int main(int argc, char **argv) {
 	RDSEncoder rdsEncoder;
 	RDSModulator rdsModulator;
 	init_rds_encoder(&rdsEncoder);
-	init_rds_modulator(&rdsModulator, &rdsEncoder);
+	init_rds_modulator(&rdsModulator, &rdsEncoder, num_streams);
 
 	if (control_pipe[0]) {
 		if (open_control_pipe(control_pipe) == 0) {
@@ -139,16 +159,25 @@ int main(int argc, char **argv) {
 
 	int pulse_error;
 
-	float rds_buffer[NUM_MPX_FRAMES*STREAMS];
+	// Dynamically allocate buffer based on stream count
+	float *rds_buffer = (float*)malloc(NUM_MPX_FRAMES * num_streams * sizeof(float));
+	if (rds_buffer == NULL) {
+		fprintf(stderr, "Error: Could not allocate memory for RDS buffer\n");
+		goto exit;
+	}
 
 	while(!stop_rds) {
-		for (uint16_t i = 0; i < NUM_MPX_FRAMES * STREAMS; i++) rds_buffer[i] = get_rds_sample(&rdsModulator, i % STREAMS);
+		for (uint16_t i = 0; i < NUM_MPX_FRAMES * num_streams; i++) {
+			rds_buffer[i] = get_rds_sample(&rdsModulator, i % num_streams);
+		}
 
-		if (pa_simple_write(rds_device, rds_buffer, sizeof(rds_buffer), &pulse_error) != 0) {
+		if (pa_simple_write(rds_device, rds_buffer, NUM_MPX_FRAMES * num_streams * sizeof(float), &pulse_error) != 0) {
 			fprintf(stderr, "Error: could not play audio. (%s : %d)\n", pa_strerror(pulse_error), pulse_error);
 			break;
 		}
 	}
+
+	free(rds_buffer);
 
 exit:
 	if (control_pipe[0]) {
@@ -156,6 +185,7 @@ exit:
 		pthread_join(control_pipe_thread, NULL);
 	}
 
+	cleanup_rds_modulator(&rdsModulator);  // Clean up dynamically allocated memory
 	pthread_attr_destroy(&attr);
 	if (rds_device != NULL) pa_simple_free(rds_device);
 
