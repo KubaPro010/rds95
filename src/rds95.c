@@ -45,7 +45,7 @@ static inline void show_help(char *name) {
 		"\t-c,--config\tSet the config path [default: %s]\n"
 		"\n",
 		name,
-		DEFAULT_CONFIG_PATH,
+		DEFAULT_CONFIG_PATH
 	);
 }
 
