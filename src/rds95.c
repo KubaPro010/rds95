@@ -42,14 +42,10 @@ static inline void show_help(char *name) {
 		"\n"
 		"Usage: %s [options]\n"
 		"\n"
-		"\t-C,--ctl\tFIFO control pipe\n"
-		"\t-d,--device\tPulseAudio device to use (default: %s)\n"
-		"\t-s,--streams\tNumber of RDS streams (1-%d, default: %d)\n"
+		"\t-c,--config\tSet the config path [default: %s]\n"
 		"\n",
 		name,
-		RDS_DEVICE,
-		MAX_STREAMS,
-		DEFAULT_STREAMS
+		DEFAULT_CONFIG_PATH,
 	);
 }
 
@@ -74,9 +70,9 @@ static int config_handler(void* user, const char* section, const char* name, con
 		config->num_streams = atoi(value);
 		if(config->num_streams > MAX_STREAMS || config->num_streams == 0) return 1;
 	} else {
-		return 1;
+		return 0;
 	}
-	return 0;
+	return 1;
 }
 
 int main(int argc, char **argv) {
