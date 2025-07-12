@@ -9,6 +9,7 @@
 #include "rds.h"
 #include "modulator.h"
 #include "control_pipe.h"
+#include "udp_server.h"
 #include "lib.h"
 #include "ascii_cmd.h"
 
@@ -37,6 +38,16 @@ static void *control_pipe_worker(void* modulator) {
 	pthread_exit(NULL);
 }
 
+static void *udp_server_worker() {
+	while (!stop_rds) {
+		poll_udp_server();
+		msleep(READ_TIMEOUT_MS);
+	}
+
+	close_udp_server();
+	pthread_exit(NULL);
+}
+
 static inline void show_help(char *name) {
 	printf(
 		"\n"
@@ -52,27 +63,32 @@ static inline void show_help(char *name) {
 typedef struct
 {
 	char control_pipe[51];
+	uint16_t udp_port;
 	char rds_device_name[32];
 	uint8_t num_streams;
 } RDS95_Config;
 
 static int config_handler(void* user, const char* section, const char* name, const char* value) {
-	RDS95_Config* config = (RDS95_Config*)user;
+    RDS95_Config* config = (RDS95_Config*)user;
 
-	#define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
-	if(MATCH("rds95", "control_pipe")) {
-		strncpy(config->control_pipe, value, 49);
-        config->control_pipe[50] = '\0';
-	} else if(MATCH("devices", "rds95")) {
-		strncpy(config->rds_device_name, value, 30);
-        config->rds_device_name[31] = '\0';
-	} else if(MATCH("rds95", "streams")) {
-		config->num_streams = atoi(value);
-		if(config->num_streams > MAX_STREAMS || config->num_streams == 0) return 1;
-	} else {
-		return 0;
-	}
-	return 1;
+    #define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
+
+    if (MATCH("rds95", "control_pipe")) {
+        strncpy(config->control_pipe, value, sizeof(config->control_pipe) - 1);
+        config->control_pipe[sizeof(config->control_pipe) - 1] = '\0';
+    } else if (MATCH("rds95", "udp_port")) {
+        config->udp_port = (uint16_t)atoi(value);
+    } else if (MATCH("devices", "rds95")) {
+        strncpy(config->rds_device_name, value, sizeof(config->rds_device_name) - 1);
+        config->rds_device_name[sizeof(config->rds_device_name) - 1] = '\0';
+    } else if (MATCH("rds95", "streams")) {
+        int streams = atoi(value);
+        if (streams > MAX_STREAMS || streams == 0) return 0;
+        config->num_streams = (uint8_t)streams;
+    } else {
+        return 0;  // Unknown config key
+    }
+    return 1;
 }
 
 int main(int argc, char **argv) {
@@ -81,6 +97,7 @@ int main(int argc, char **argv) {
 	char config_path[64] = DEFAULT_CONFIG_PATH;
 	RDS95_Config config = {
 		.control_pipe = "\0",
+		.udp_port = 0,
 		.rds_device_name = RDS_DEVICE,
 		.num_streams = DEFAULT_STREAMS
 	};
@@ -91,6 +108,7 @@ int main(int argc, char **argv) {
 
 	pthread_attr_t attr;
 	pthread_t control_pipe_thread;
+	pthread_t udp_server_thread;
 
 	const char	*short_opt = "c:h";
 
@@ -174,6 +192,21 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	if(config.udp_port) {
+		if(open_udp_server(config.udp_port, &rdsModulator) == 0) {
+			fprintf(stderr, "Reading control commands on UDP:%d.\n", config.udp_port);
+			int r = pthread_create(&udp_server_thread, &attr, udp_server_worker, NULL);
+			if (r < 0) {
+				fprintf(stderr, "Could not create UDP server thread.\n");
+				config.udp_port = 0;
+				goto exit;
+			} else fprintf(stderr, "Created UDP server thread.\n");
+		} else {
+			fprintf(stderr, "Failed to open UDP server\n");
+			config.udp_port = 0;
+		}
+	}
+
 	int pulse_error;
 
 	// Dynamically allocate buffer based on stream count
@@ -200,6 +233,11 @@ exit:
 	if (config.control_pipe[0]) {
 		fprintf(stderr, "Waiting for pipe thread to shut down.\n");
 		pthread_join(control_pipe_thread, NULL);
+	}
+
+	if(config.udp_port) {
+		fprintf(stderr, "Waiting for UDP thread to shut down.\n");
+		pthread_join(udp_server_thread, NULL);
 	}
 
 	cleanup_rds_modulator(&rdsModulator);  // Clean up dynamically allocated memory
