@@ -37,7 +37,7 @@ static void handle_##name(char *arg, RDSModulator* mod, char* output) { \
 
 #define AF_HANDLER(name, af_struct, af_entry, add_func) \
 static void handle_##name(char *arg, RDSModulator* mod, char* output) { \
-	if (arg[0] == '\0') { \
+	if (arg[0] == 0) { \
 		memset(&(mod->enc->data[mod->enc->program].af_entry), 0, sizeof(mod->enc->data[mod->enc->program].af_entry)); \
 		return; \
 	} \
@@ -90,7 +90,7 @@ static void handle_rds2mod(char *arg, RDSModulator* mod, char* output) {
 }
 static void handle_rdsgen(char *arg, RDSModulator* mod, char* output) {
 	mod->params.rdsgen = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 STRING_HANDLER(ptyn, PTYN_LENGTH, set_rds_ptyn)
@@ -104,6 +104,72 @@ RAW_STRING_HANDLER(ert, ERT_LENGTH, set_rds_ert)
 
 HEX_HANDLER(ecc, ecc)
 HEX_HANDLER(slcd, slc_data)
+
+static void handle_udg(char *arg, char *pattern, RDSModulator* mod, char* output) {
+	uint8_t all_scanned = 1, bad_format = 0;
+	uint16_t blocks[8][3];
+	int sets = 0;
+	char *ptr = arg;
+
+	while (sets < 8) {
+		int count = sscanf(ptr, "%4hx%4hx%4hx", &blocks[sets][0], &blocks[sets][1], &blocks[sets][2]);
+		if (count != 3) {
+			all_scanned = 0;
+			break;
+		}
+		sets++;
+		while (*ptr && *ptr != ',') ptr++;
+		if (*ptr == ',') ptr++;
+		else {
+			bad_format = 1;
+			break;
+		}
+	}
+
+	if (strcmp(pattern, "1") == 0) {
+		memcpy(&(mod->enc->data[mod->enc->program].udg1), &blocks, sets * sizeof(uint16_t[3]));
+		mod->enc->data[mod->enc->program].udg1_len = sets;
+	} else if(strcmp(pattern, "2") == 0) {
+		memcpy(&(mod->enc->data[mod->enc->program].udg2), &blocks, sets * sizeof(uint16_t[3]));
+		mod->enc->data[mod->enc->program].udg2_len = sets;
+	} else strcpy(output, "!");
+	if(bad_format) strcpy(output, "-");
+	else if(all_scanned) strcpy(output, "+");
+	else strcpy(output, "/");
+}
+
+static void handle_udg2(char *arg, char *pattern, RDSModulator* mod, char* output) {
+	uint8_t all_scanned = 1, bad_format = 0;
+	uint16_t blocks[8][4];
+	int sets = 0;
+	char *ptr = arg;
+
+	while (sets < 8) {
+		int count = sscanf(ptr, "%4hx%4hx%4hx%4hx", &blocks[sets][0], &blocks[sets][1], &blocks[sets][2], &blocks[sets][3]);
+		if (count != 4) {
+			all_scanned = 0;
+			break;
+		}
+		sets++;
+		while (*ptr && *ptr != ',') ptr++;
+		if (*ptr == ',') ptr++;
+		else {
+			bad_format = 1;
+			break;
+		}
+	}
+
+	if (strcmp(pattern, "1") == 0) {
+		memcpy(&(mod->enc->data[mod->enc->program].udg1_rds2), &blocks, sets * sizeof(uint16_t[4]));
+		mod->enc->data[mod->enc->program].udg1_len_rds2 = sets;
+	} else if(strcmp(pattern, "2") == 0) {
+		memcpy(&(mod->enc->data[mod->enc->program].udg2_rds2), &blocks, sets * sizeof(uint16_t[4]));
+		mod->enc->data[mod->enc->program].udg2_len_rds2 = sets;
+	} else strcpy(output, "!");
+	if(bad_format) strcpy(output, "-");
+	else if(all_scanned) strcpy(output, "+");
+	else strcpy(output, "/");
+}
 
 static void handle_rtp(char *arg, RDSModulator* mod, char* output) {
 	uint8_t tags[6];
@@ -124,7 +190,7 @@ static void handle_ertp(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_link(char *arg, RDSModulator* mod, char* output) {
-	if(arg[0] == '\0') {
+	if(arg[0] == 0) {
 		mod->enc->state[mod->enc->program].eon_linkage = 0;
 		return;
 	}
@@ -215,8 +281,8 @@ static void handle_ertprun(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_program(char *arg, RDSModulator* mod, char* output) {
 	int16_t program = atoi(arg)-1;
-	if(program == '\0') {
-		strcpy(output, "-\0");
+	if(program == 0) {
+		strcpy(output, "-");
 		return;
 	}
 	if(program >= PROGRAMS) program = (PROGRAMS-1);
@@ -228,25 +294,25 @@ static void handle_program(char *arg, RDSModulator* mod, char* output) {
 }
 
 static void handle_grpseq(char *arg, RDSModulator* mod, char* output) {
-	if (arg[0] == '\0') set_rds_grpseq(mod->enc, DEFAULT_GRPSQC);
+	if (arg[0] == 0) set_rds_grpseq(mod->enc, DEFAULT_GRPSQC);
 	else set_rds_grpseq(mod->enc, arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 static void handle_grpseq2(char *arg, RDSModulator* mod, char* output) {
-	if (arg[0] == '\0') set_rds_grpseq2(mod->enc, "\0");
+	if (arg[0] == 0) set_rds_grpseq2(mod->enc, "\0");
 	else set_rds_grpseq2(mod->enc, arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_dttmout(char *arg, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].rt_text_timeout = atoi(arg);
 	mod->enc->state[mod->enc->program].rt_text_timeout_state = mod->enc->data[mod->enc->program].rt_text_timeout;
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_level(char *arg, RDSModulator* mod, char* output) {
 	mod->params.level = atoi(arg)/255.0f;
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_reset(char *arg, RDSModulator* mod, char* output) {
@@ -254,79 +320,13 @@ static void handle_reset(char *arg, RDSModulator* mod, char* output) {
 	loadFromFile(mod->enc);
 	for(int i = 0; i < PROGRAMS; i++) reset_rds_state(mod->enc, i);
 	Modulator_loadFromFile(&mod->params);
-	strcpy(output, "\0");
-}
-
-static void handle_udg(char *arg, char *pattern, RDSModulator* mod, char* output) {
-	uint8_t all_scanned = 1, bad_format = 0;
-	uint16_t blocks[8][3];
-	int sets = 0;
-	char *ptr = arg;
-
-	while (sets < 8) {
-		int count = sscanf(ptr, "%4hx%4hx%4hx", &blocks[sets][0], &blocks[sets][1], &blocks[sets][2]);
-		if (count != 3) {
-			all_scanned = 0;
-			break;
-		}
-		sets++;
-		while (*ptr && *ptr != ',') ptr++;
-		if (*ptr == ',') ptr++;
-		else {
-			bad_format = 1;
-			break;
-		}
-	}
-
-	if (strcmp(pattern, "1") == 0) {
-		memcpy(&(mod->enc->data[mod->enc->program].udg1), &blocks, sets * sizeof(uint16_t[3]));
-		mod->enc->data[mod->enc->program].udg1_len = sets;
-	} else if(strcmp(pattern, "2") == 0) {
-		memcpy(&(mod->enc->data[mod->enc->program].udg2), &blocks, sets * sizeof(uint16_t[3]));
-		mod->enc->data[mod->enc->program].udg2_len = sets;
-	} else strcpy(output, "!\0");
-	if(bad_format) strcpy(output, "-\0");
-	else if(all_scanned) strcpy(output, "+\0");
-	else strcpy(output, "/\0");
-}
-
-static void handle_udg2(char *arg, char *pattern, RDSModulator* mod, char* output) {
-	uint8_t all_scanned = 1, bad_format = 0;
-	uint16_t blocks[8][4];
-	int sets = 0;
-	char *ptr = arg;
-
-	while (sets < 8) {
-		int count = sscanf(ptr, "%4hx%4hx%4hx%4hx", &blocks[sets][0], &blocks[sets][1], &blocks[sets][2], &blocks[sets][3]);
-		if (count != 4) {
-			all_scanned = 0;
-			break;
-		}
-		sets++;
-		while (*ptr && *ptr != ',') ptr++;
-		if (*ptr == ',') ptr++;
-		else {
-			bad_format = 1;
-			break;
-		}
-	}
-
-	if (strcmp(pattern, "1") == 0) {
-		memcpy(&(mod->enc->data[mod->enc->program].udg1_rds2), &blocks, sets * sizeof(uint16_t[4]));
-		mod->enc->data[mod->enc->program].udg1_len_rds2 = sets;
-	} else if(strcmp(pattern, "2") == 0) {
-		memcpy(&(mod->enc->data[mod->enc->program].udg2_rds2), &blocks, sets * sizeof(uint16_t[4]));
-		mod->enc->data[mod->enc->program].udg2_len_rds2 = sets;
-	} else strcpy(output, "!\0");
-	if(bad_format) strcpy(output, "-\0");
-	else if(all_scanned) strcpy(output, "+\0");
-	else strcpy(output, "/\0");
+	strcpy(output, "+");
 }
 
 static void handle_init(char *arg, RDSModulator* mod, char* output) {
 	(void)arg;
 	set_rds_defaults(mod->enc, mod->enc->program);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_ver(char *arg, RDSModulator* mod, char* output) {
@@ -337,12 +337,12 @@ static void handle_ver(char *arg, RDSModulator* mod, char* output) {
 
 static void handle_eonen(char *arg, char *pattern, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].enabled = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_eonpi(char *arg, char *pattern, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pi = strtoul(arg, NULL, 16);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_eonps(char *arg, char *pattern, RDSModulator* mod, char* output) {
@@ -354,34 +354,34 @@ static void handle_eonps(char *arg, char *pattern, RDSModulator* mod, char* outp
 	uint16_t len = 0;
 	while (*arg != 0 && len < 24) eon->ps[len++] = *arg++;
 
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_eonpty(char *arg, char *pattern, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].pty = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_eonta(char *arg, char *pattern, RDSModulator* mod, char* output) {
 	if (!mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].enabled ||
 		!mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].tp) {
-		strcpy(output, "-\0");
+		strcpy(output, "-");
 		return;
 	}
 	mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].ta = atoi(arg);
 	if(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].ta) mod->enc->data[mod->enc->program].ta = 1;
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_eontp(char *arg, char *pattern, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].tp = atoi(arg);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_eonaf(char *arg, char *pattern, RDSModulator* mod, char* output) {
-	if (arg[0] == '\0') {
+	if (arg[0] == '') {
 		memset(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), 0, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
-		strcpy(output, "+\0");
+		strcpy(output, "+");
 		return;
 	}
 
@@ -408,12 +408,12 @@ static void handle_eonaf(char *arg, char *pattern, RDSModulator* mod, char* outp
 	while (arg_count-- != 0) add_rds_af(&new_af, *af_iter++);
 
 	memcpy(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), &new_af, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static void handle_eondt(char *arg, char *pattern, RDSModulator* mod, char* output) {
 	mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].data = strtoul(arg, NULL, 16);
-	strcpy(output, "+\0");
+	strcpy(output, "+");
 }
 
 static const command_handler_t commands_eq3[] = {
@@ -555,7 +555,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 	for(uint16_t i = 0; i < cmd_len; i++) if(str[i] == '\t') str[i] = ' ';
 
 	strncpy(upper_str, str, CTL_BUFFER_SIZE);
-	upper_str[CTL_BUFFER_SIZE-1] = '\0';
+	upper_str[CTL_BUFFER_SIZE-1] = 0;
 
 	for(uint16_t i = 0; i < cmd_len && upper_str[i] != '='; i++) {
 		if(upper_str[i] >= 'a' && upper_str[i] <= 'z') upper_str[i] = upper_str[i] - 'a' + 'A';
@@ -575,7 +575,7 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 		size_t copy_len = strlen(option_str);
 		if (copy_len >= sizeof(option)) copy_len = sizeof(option) - 1;
 		memcpy(option, option_str, copy_len);
-		option[copy_len] = '\0';
+		option[copy_len] = 0;
 		saveToFile(mod->enc, option);
 		Modulator_saveToFile(&mod->params, option);
 		return;
@@ -638,5 +638,5 @@ void process_ascii_cmd(RDSModulator* mod, char *str, char *cmd_output) {
 	}
 
 	if (cmd_output != NULL && cmd_reached) strcpy(cmd_output, output);
-	if (!cmd_reached) strcpy(output, "?\0");
+	if (!cmd_reached) strcpy(output, "?");
 }
