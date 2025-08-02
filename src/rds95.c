@@ -15,7 +15,7 @@
 
 #define RDS_DEVICE "RDS"
 #define DEFAULT_CONFIG_PATH "/etc/rds95.conf"
-#define DEFAULT_STREAMS 2
+#define DEFAULT_STREAMS 1
 #define MAX_STREAMS 4
 
 #define NUM_MPX_FRAMES	128
