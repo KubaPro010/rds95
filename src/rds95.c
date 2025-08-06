@@ -13,7 +13,6 @@
 #include "lib.h"
 #include "ascii_cmd.h"
 
-#define RDS_DEVICE "RDS"
 #define DEFAULT_CONFIG_PATH "/etc/rds95.conf"
 #define DEFAULT_STREAMS 1
 #define MAX_STREAMS 4
@@ -64,7 +63,7 @@ typedef struct
 {
 	char control_pipe[51];
 	uint16_t udp_port;
-	char rds_device_name[32];
+	char rds_device_name[48];
 	uint8_t num_streams;
 } RDS95_Config;
 
@@ -98,7 +97,7 @@ int main(int argc, char **argv) {
 	RDS95_Config config = {
 		.control_pipe = "\0",
 		.udp_port = 0,
-		.rds_device_name = RDS_DEVICE,
+		.rds_device_name = "\0",
 		.num_streams = DEFAULT_STREAMS
 	};
 
@@ -139,6 +138,11 @@ int main(int argc, char **argv) {
 	if(res != 0) {
 		fprintf(stderr, "Error: Could not read ini config, error code as return code.\n");
 		return res;
+	}
+
+	if(_strnlen(config.rds_device_name, 48) == 0) {
+		printf("Error: No output device\n");
+		return 1;
 	}
 
 	printf("Using %d RDS stream(s)\n", config.num_streams);

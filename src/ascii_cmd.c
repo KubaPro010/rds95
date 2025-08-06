@@ -379,7 +379,7 @@ static void handle_eontp(char *arg, char *pattern, RDSModulator* mod, char* outp
 }
 
 static void handle_eonaf(char *arg, char *pattern, RDSModulator* mod, char* output) {
-	if (arg[0] == '') {
+	if (arg[0] == 0) {
 		memset(&(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af), 0, sizeof(mod->enc->data[mod->enc->program].eon[atoi(pattern)-1].af));
 		strcpy(output, "+");
 		return;
